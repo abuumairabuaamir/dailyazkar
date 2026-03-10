@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>About App</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Daily Azkar">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+        /* --- FONTS --- */
+        @font-face { font-family: 'MyUrduFont'; src: url('fonts/jameel.ttf'); }
+        @font-face { font-family: 'Amiri'; src: url('fonts/amiri.ttf'); }
+        @font-face { font-family: 'TiroBangla'; src: url('fonts/tiro.ttf'); }
+
+        :root {
+            --notch-height: calc(max(5px, env(safe-area-inset-top)) + 30px);
+        }
+
+        body {
+            background-color: #eceff1; margin: 0; padding: 0;
+            user-select: none; overflow: hidden; 
+        }
+
+        html[lang="ur"] body { font-family: 'MyUrduFont', sans-serif; direction: rtl; }
+        html[lang="ar"] body { font-family: 'Amiri', serif; direction: rtl; }
+        html[lang="en"] body { font-family: 'MyUrduFont', sans-serif; direction: ltr; } 
+        html[lang="bn"] body { font-family: 'TiroBangla', serif; direction: ltr; }
+
+        .global-notch {
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--notch-height);
+            display: flex; justify-content: space-between; align-items: flex-end;
+            padding: 0 15px 8px 15px; box-sizing: border-box;
+            background-color: #1b5e20; color: #e0f2f1; font-size: 13px; z-index: 500;
+            direction: ltr; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .global-notch .ar-text { font-family: 'Amiri', serif; font-size: 16px; color: #ffeb3b; direction: rtl;}
+        .global-notch .en-text { font-family: sans-serif; letter-spacing: 1px; }
+
+        .app-container {
+            display: flex; flex-direction: column; height: 100vh; width: 100%;
+            max-width: 800px; margin: 0 auto; overflow: hidden;
+            padding-top: var(--notch-height); box-sizing: border-box;
+        }
+
+        .header {
+            flex: 0 0 auto; background-color: #2e7d32; color: white; padding: 15px;
+            font-size: 22px; font-weight: bold; display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 100;
+        }
+        
+        .back-btn { text-decoration: none; color: white; font-size: 24px; padding: 0 15px; cursor: pointer; display: flex; align-items: center; }
+        html[dir="rtl"] .back-icon { transform: scaleX(-1); }
+
+        .scrollable-content {
+            flex: 1; overflow-y: auto; padding: 15px; -webkit-overflow-scrolling: touch;
+            padding-bottom: max(50px, env(safe-area-inset-bottom));
+        }
+        .scrollable-content::-webkit-scrollbar { display: none; }
+
+        .card {
+            background: white; padding: 20px; border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px;
+            text-align: center; border-top: 5px solid #1b5e20;
+        }
+
+        h2 { color: #1b5e20; margin-top: 0; font-size: 26px; margin-bottom: 10px; }
+        p { font-size: 19px; color: #37474f; line-height: 1.7; margin: 10px 0; }
+        .developer-name { font-size: 24px; color: #d32f2f; font-weight: bold; margin-top: 10px; }
+
+        .btn-container { display: flex; flex-direction: column; gap: 10px; align-items: center; margin-top: 15px; }
+        
+        .action-btn {
+            display: inline-block; width: 85%; padding: 12px;
+            color: white; text-decoration: none; border-radius: 30px;
+            font-size: 18px; font-weight: bold; font-family: inherit; cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2); transition: 0.2s; border: none;
+        }
+        .action-btn:active { transform: scale(0.95); }
+        .bg-razorpay { background-color: #2196F3; }
+        .bg-paypal { background-color: #003087; } /* 🌟 NEW PAYPAL COLOR 🌟 */
+        .bg-share { background-color: #fb8c00; }
+        .bg-policy { background-color: #1b5e20; }
+
+        .privacy-point { text-align: start; margin-bottom: 15px; padding-bottom: 5px; }
+        .privacy-title { font-weight: bold; color: #2e7d32; font-size: 20px; }
+        .privacy-desc { font-size: 18px; color: #546e7a; margin-top: 5px; line-height: 1.5; }
+
+        .contact-row { display: flex; justify-content: center; flex-wrap: wrap; gap: 20px; margin-top: 20px; }
+        .contact-item { display: flex; flex-direction: column; align-items: center; width: 65px; cursor: pointer; }
+        .small-btn {
+            width: 55px; height: 55px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2); transition: 0.1s;
+        }
+        .small-btn:active { transform: scale(0.92); }
+        .small-btn svg { width: 28px; height: 28px; fill: white; }
+        .label { font-size: 13px; color: #78909c; font-weight: bold; margin-top: 5px; font-family: sans-serif; }
+        .version { text-align: center; font-size: 14px; color: #b0bec5; margin-top: 30px; font-family: sans-serif; }
+    </style>
+</head>
+<body>
+
+<div id="globalNotchBar" class="global-notch">
+    <span class="en-text">Daily Azkar</span>
+    <span class="ar-text">الأذكار اليومية</span>
+</div>
+
+<div class="app-container">
+
+    <div class="header">
+        <a href="index.html" class="back-btn">
+            <svg class="back-icon" viewBox="0 0 24 24" width="28" height="28" fill="white">
+                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"></path>
+            </svg>
+        </a>
+        <span id="ui_header_title">ایپ کے بارے میں</span>
+        <div style="width: 40px;"></div>
+    </div>
+
+    <div class="scrollable-content">
+
+        <div class="card">
+            <h2 id="ui_app_title">ڈیلی اذکار</h2>
+            <p id="ui_app_desc">اس ایپ میں قرآن مجید (انڈو پاک اور مصحف مدینہ)، مسنون اذکار، نماز کا مکمل طریقہ، اوقاتِ نماز، زکوٰۃ کیلکولیٹر، حج و عمرہ کی رہنمائی اور دیگر بہت سی اسلامی معلومات شامل ہیں۔</p>
+            <p style="color: #2e7d32; font-weight: bold;" id="ui_sadaqah">(صدقہ جاریہ)</p>
+            
+            <div class="btn-container">
+                <button onclick="openExternal('whatsapp://send?text=Download Daily Azkar (Ad-Free) App: https://play.google.com/store/apps/details?id=com.abuumair.dailyazkar')" class="action-btn bg-share" id="ui_btn_share">
+                    📢 ایپ شیئر کریں
+                </button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 id="ui_support_title">تعاون کریں (Support Us)</h2>
+            <p id="ui_support_desc">یہ ایپ مکمل طور پر فری اور اشتہارات سے پاک ہے۔ اس پروجیکٹ کی بہتری کے لیے آپ تعاون کر سکتے ہیں۔</p>
+            
+            <div class="btn-container">
+                <button onclick="openExternal('https://razorpay.me/@islamicapp')" class="action-btn bg-razorpay" id="ui_btn_razorpay">
+                    💳 ریزر پے کے ذریعے تعاون
+                </button>
+                
+                <button onclick="openExternal('https://paypal.me/YOUR_PAYPAL_LINK')" class="action-btn bg-paypal" id="ui_btn_paypal">
+                    🌍 پے پال کے ذریعے تعاون
+                </button>
+            </div>
+            <p style="color: #1b5e20; font-weight: bold; margin-top: 15px;" id="ui_support_footer">جزاك اللہ خیرا، اللہ آپ کے ہدیے کو قبول فرمائے۔</p>
+        </div>
+
+        <div class="card">
+            <h2 id="ui_privacy_title">پرائیویسی پالیسی</h2>
+            <div class="privacy-point">
+                <div class="privacy-title" id="ui_loc_title">لوکیشن (Location):</div>
+                <div class="privacy-desc" id="ui_loc_desc">لوکیشن صرف نماز کے اوقات کے لیے استعمال ہوتی ہے اور اسے کہیں محفوظ نہیں کیا جاتا۔</div>
+            </div>
+
+            <button onclick="openExternal('https://sites.google.com/view/daily-azkar-policy/home')" class="action-btn bg-policy" id="ui_btn_privacy">
+                🌐 مکمل پرائیویسی پالیسی دیکھیں
+            </button>
+        </div>
+
+        <div class="card">
+            <h2 id="ui_dev_title">ڈویلپر</h2>
+            <div class="developer-name" id="ui_dev_name">ابو عمیر ابو عامر</div>
+            
+            <p style="font-size: 18px; font-weight: bold; color: #37474f; margin-top: 15px;" id="ui_contact_title">رابطہ کریں:</p>
+
+            <div class="contact-row">
+                
+                <div class="contact-item" onclick="openExternal('https://wa.me/message/S3EAB33PT2BVG1')">
+                    <div class="small-btn" style="background-color: #25D366;">
+                        <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                    </div>
+                    <span class="label">WhatsApp</span>
+                </div>
+
+                <div class="contact-item" onclick="openExternal('https://www.facebook.com/share/1C8tkZWa37/')">
+                    <div class="small-btn" style="background-color: #1877F2;">
+                        <svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    </div>
+                    <span class="label">Facebook</span>
+                </div>
+
+                <div class="contact-item" onclick="openExternal('https://t.me/dailyazkarabuumair')">
+                    <div class="small-btn" style="background-color: #2AABEE;">
+                        <svg viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.32.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.895-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+                    </div>
+                    <span class="label">Telegram</span>
+                </div>
+
+                <div class="contact-item" onclick="openExternal('mailto:umairaamir616@gmail.com')">
+                    <div class="small-btn" style="background-color: #D44638;">
+                        <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                    </div>
+                    <span class="label">Email</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="version">Version: 1.0</div>
+    </div>
+</div>
+
+<script>
+    // 🌟 1. EXTERNAL LINK FIX FOR APK (WEBVIEW) 🌟
+    function openExternal(url) {
+        // Yeh line APK webview ko force karti hai link ko phone ke asal browser/app me kholne ke liye
+        window.open(url, '_system') || window.open(url, '_blank');
+    }
+
+    // Hardware Back Button Fix
+    window.addEventListener("popstate", function (event) {
+        window.location.href = 'index.html';
+    });
+    history.pushState(null, document.title, location.href);
+
+    const uiText = {
+        ur: {
+            header_title: "ایپ کے بارے میں",
+            app_title: "ڈیلی اذکار",
+            app_desc: "اس ایپ میں قرآن مجید (انڈو پاک اور مصحف مدینہ)، مسنون اذکار، نماز کا مکمل طریقہ، اوقاتِ نماز، زکوٰۃ کیلکولیٹر، حج و عمرہ کی رہنمائی اور دیگر بہت سی اسلامی معلومات شامل ہیں۔",
+            sadaqah: "(صدقہ جاریہ)",
+            btn_share: "📢 ایپ شیئر کریں",
+            support_title: "تعاون کریں (Support Us)",
+            support_desc: "یہ ایپ مکمل طور پر فری اور اشتہارات سے پاک ہے۔ اس پروجیکٹ کی بہتری کے لیے آپ تعاون کر سکتے ہیں۔",
+            btn_razorpay: "💳 ریزر پے کے ذریعے تعاون",
+            btn_paypal: "🌍 پے پال کے ذریعے تعاون",
+            support_footer: "جزاك اللہ خیرا، اللہ آپ کے ہدیے کو قبول فرمائے۔",
+            privacy_title: "پرائیویسی پالیسی",
+            loc_title: "لوکیشن (Location):",
+            loc_desc: "لوکیشن صرف نماز کے اوقات کے لیے استعمال ہوتی ہے اور اسے کہیں محفوظ نہیں کیا جاتا۔",
+            btn_privacy: "🌐 مکمل پرائیویسی پالیسی دیکھیں",
+            dev_title: "ڈویلپر",
+            dev_name: "ابو عمیر ابو عامر",
+            contact_title: "رابطہ کریں:"
+        },
+        en: {
+            header_title: "About App",
+            app_title: "Daily Azkar",
+            app_desc: "This app includes the Holy Quran (Indo-Pak & Madani Mushaf), Sunnah Adhkar, complete method of Salah, Prayer Times, Zakat Calculator, Hajj & Umrah guide, and much more.",
+            sadaqah: "(Sadaqah Jariyah)",
+            btn_share: "📢 Share This App",
+            support_title: "Support Us",
+            support_desc: "This app is completely free and ad-free. You can contribute to the improvement of this project.",
+            btn_razorpay: "💳 Support via Razorpay",
+            btn_paypal: "🌍 Support via PayPal",
+            support_footer: "JazakAllahu Khairan, may Allah accept your gift.",
+            privacy_title: "Privacy Policy",
+            loc_title: "Location:",
+            loc_desc: "GPS is used only for prayer times calculation and is not saved anywhere.",
+            btn_privacy: "🌐 View Full Privacy Policy",
+            dev_title: "Developer",
+            dev_name: "Abu Umair Abu Aamir",
+            contact_title: "Contact:"
+        },
+        bn: {
+            header_title: "অ্যাপ সম্পর্কে",
+            app_title: "ডেইলি আজকার",
+            app_desc: "এই অ্যাপটিতে আল-কুরআন (ইন্দো-পাক ও মাদানী মুসহাফ), মাসনুন আজকার, নামাজের পূর্ণাঙ্গ নিয়ম, নামাজের সময়সূচি, জাকাত ক্যালকুলেটর, হজ ও ওমরাহ গাইড এবং আরও অনেক কিছু অন্তর্ভুক্ত রয়েছে।",
+            sadaqah: "(সাদাকাহ জারিয়া)",
+            btn_share: "📢 অ্যাপটি শেয়ার করুন",
+            support_title: "সহযোগিতা করুন",
+            support_desc: "এই অ্যাপটি সম্পূর্ণ ফ্রি এবং বিজ্ঞাপনমুক্ত। এই প্রজেক্টের উন্নতির জন্য আপনি সহযোগিতা করতে পারেন।",
+            btn_razorpay: "💳 রেজারপে দিয়ে সহযোগিতা",
+            btn_paypal: "🌍 পেপ্যাল দিয়ে সহযোগিতা",
+            support_footer: "জাযাকাল্লাহু খাইরান, আল্লাহ আপনার উপহার কবুল করুন।",
+            privacy_title: "গোপনীয়তা নীতি",
+            loc_title: "লোকেশন (Location):",
+            loc_desc: "লোকেশন শুধুমাত্র নামাজের সময়ের জন্য ব্যবহার করা হয় এবং এটি কোথাও সংরক্ষণ করা হয় না।",
+            btn_privacy: "🌐 সম্পূর্ণ গোপনীয়তা নীতি দেখুন",
+            dev_title: "ডেভেলপার",
+            dev_name: "আবু উমায়ের আবু আমির",
+            contact_title: "যোগাযোগ করুন:"
+        },
+        ar: {
+            header_title: "عن التطبيق",
+            app_title: "الأذكار اليومية",
+            app_desc: "يحتوي هذا التطبيق على القرآن الكريم (المصحف الهندي والمصحف المدني)، الأذكار المسنونة، صفة الصلاة، مواقيت الصلاة، حاسبة الزكاة، دليل الحج والعمرة، وغيرها الكثير.",
+            sadaqah: "(صدقة جارية)",
+            btn_share: "📢 شارك التطبيق",
+            support_title: "ادعمنا",
+            support_desc: "هذا التطبيق مجاني بالكامل وخالٍ من الإعلانات. يمكنك المساهمة في تطوير هذا المشروع.",
+            btn_razorpay: "💳 الدعم عبر Razorpay",
+            btn_paypal: "🌍 الدعم عبر PayPal",
+            support_footer: "جزاك الله خيراً، وتقبل الله هديتك.",
+            privacy_title: "سياسة الخصوصية",
+            loc_title: "الموقع (Location):",
+            loc_desc: "يتم استخدام الموقع فقط لحساب أوقات الصلاة ولا يتم حفظه في أي مكان.",
+            btn_privacy: "🌐 عرض سياسة الخصوصية الكاملة",
+            dev_title: "المطور",
+            dev_name: "أبو عمير أبو عامر",
+            contact_title: "تواصل معنا:"
+        }
+    };
+
+    window.onload = function() {
+        let currentLang = localStorage.getItem('selectedLang') || 'ur';
+        document.documentElement.lang = currentLang;
+        
+        let t = uiText[currentLang];
+        if(t) {
+            document.getElementById('ui_header_title').innerText = t.header_title;
+            document.getElementById('ui_app_title').innerText = t.app_title;
+            document.getElementById('ui_app_desc').innerText = t.app_desc;
+            document.getElementById('ui_sadaqah').innerText = t.sadaqah;
+            document.getElementById('ui_btn_share').innerText = t.btn_share;
+            document.getElementById('ui_support_title').innerText = t.support_title;
+            document.getElementById('ui_support_desc').innerText = t.support_desc;
+            document.getElementById('ui_btn_razorpay').innerText = t.btn_razorpay;
+            document.getElementById('ui_btn_paypal').innerText = t.btn_paypal;
+            document.getElementById('ui_support_footer').innerText = t.support_footer;
+            document.getElementById('ui_privacy_title').innerText = t.privacy_title;
+            document.getElementById('ui_loc_title').innerText = t.loc_title;
+            document.getElementById('ui_loc_desc').innerText = t.loc_desc;
+            document.getElementById('ui_btn_privacy').innerText = t.btn_privacy;
+            document.getElementById('ui_dev_title').innerText = t.dev_title;
+            document.getElementById('ui_dev_name').innerText = t.dev_name;
+            document.getElementById('ui_contact_title').innerText = t.contact_title;
+        }
+    };
+</script>
+
+</body>
+</html>

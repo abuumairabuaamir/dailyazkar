@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Jawami al-Dua</title>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Daily Azkar">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+        /* --- 1. FONTS SETUP --- */
+        @font-face { font-family: 'MyUrduFont'; src: url('fonts/jameel.ttf'); }
+        @font-face { font-family: 'Amiri'; src: url('fonts/amiri.ttf'); }
+        @font-face { font-family: 'TiroBangla'; src: url('fonts/tiro.ttf'); }
+        
+        :root {
+            /* 🌟 Notch bar ki height fix ki gayi hai 🌟 */
+            --notch-height: calc(max(5px, env(safe-area-inset-top)) + 30px);
+        }
+
+        /* --- 2. MAIN LAYOUT SETTINGS --- */
+        html, body {
+            height: 100%; width: 100%; margin: 0; padding: 0;
+            overflow: hidden; 
+            background-color: #e8f5e9; /* Light Green Background */
+        }
+
+        /* --- DYNAMIC FONT & DIRECTION --- */
+        html[lang="ur"] body { font-family: 'MyUrduFont', sans-serif; direction: rtl; }
+        html[lang="ar"] body { font-family: 'Amiri', serif; direction: rtl; }
+        html[lang="en"] body { font-family: 'MyUrduFont', sans-serif; direction: ltr; } 
+        html[lang="bn"] body { font-family: 'TiroBangla', serif; direction: ltr; }
+
+        /* --- 3. SHOW/HIDE LOGIC --- */
+        .urdu, .english, .bangla { display: none !important; }
+        html[lang="ur"] .urdu { display: block !important; }
+        html[lang="en"] .english { display: block !important; }
+        html[lang="bn"] .bangla { display: block !important; }
+
+        /* 🌟 GLOBAL FIXED NOTCH BAR (Always Visible) 🌟 */
+        .global-notch {
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--notch-height);
+            display: flex; justify-content: space-between; align-items: flex-end;
+            padding: 0 15px 8px 15px; box-sizing: border-box;
+            background-color: #1b5e20; color: #e0f2f1; font-size: 13px; z-index: 500;
+            direction: ltr; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .global-notch .ar-text { font-family: 'Amiri', serif; font-size: 16px; color: #ffeb3b; direction: rtl;}
+        .global-notch .en-text { font-family: sans-serif; letter-spacing: 1px; }
+
+        /* --- APP CONTAINER --- */
+        .app-container {
+            display: flex; flex-direction: column;
+            height: 100%; width: 100%;
+            max-width: 800px; margin: 0 auto;
+            padding-top: var(--notch-height); /* Patti ke niche se shuru ho */
+            box-sizing: border-box;
+        }
+
+        /* --- FIXED HEADER --- */
+        .fixed-header {
+            flex: 0 0 auto; width: 100%; 
+            padding: 10px; box-sizing: border-box; z-index: 100;
+            background-color: #e8f5e9;
+        }
+
+        .header-box { 
+            background: #2e7d32; color: white; padding: 15px; 
+            border-radius: 10px; text-align: center; 
+            font-size: 26px; font-weight: bold; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3); 
+            border: 1px solid #1b5e20;
+            width: 100%; box-sizing: border-box; margin: 0; margin-bottom: 10px;
+        }
+
+        /* --- SCROLLABLE CONTENT --- */
+        .scrollable-content {
+            flex: 1; overflow-y: auto; width: 100%;
+            padding: 15px; box-sizing: border-box;
+            padding-bottom: max(80px, env(safe-area-inset-bottom));
+            -webkit-overflow-scrolling: touch; 
+            scrollbar-width: none; -ms-overflow-style: none;
+        }
+        .scrollable-content::-webkit-scrollbar { display: none; }
+
+        /* --- CARD STYLES --- */
+        .card { 
+            background: #ffffff; padding: 20px; border-radius: 15px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 25px; 
+            text-align: center; border-bottom: 5px solid #2e7d32; 
+        }
+        
+        .arabic { 
+            font-family: 'Amiri', serif; 
+            font-size: 22px; 
+            font-weight: normal; 
+            color: #1b5e20; 
+            line-height: 1.8; margin-bottom: 12px; 
+            background: #c8e6c9; padding: 12px; border-radius: 8px; 
+            direction: rtl; 
+        }
+
+        .urdu { font-family: 'MyUrduFont'; font-size: 20px; color: #212121; margin-bottom: 8px; line-height: 1.6; direction: rtl; }
+        .english { font-family: 'MyUrduFont', sans-serif; font-size: 20px; color: #424242; margin-bottom: 15px; direction: ltr; line-height: 1.5; background: #f5f5f5; padding: 10px; border-radius: 5px; }
+        .bangla { font-family: 'TiroBangla', serif; font-size: 18px; color: #212121; margin-bottom: 15px; direction: ltr; line-height: 1.6; background: #e8f5e9; padding: 10px; border-radius: 5px; }
+
+        .ref { font-size: 13px; color: #757575; display: block; margin-top: 15px; font-family: sans-serif; }
+
+        .back-btn { display: block; background: #2e7d32; color: white; text-align: center; padding: 12px; border-radius: 8px; text-decoration: none; margin-top: 30px; font-size: 20px; font-family: inherit; }
+    </style>
+</head>
+<body>
+
+    <div id="globalNotchBar" class="global-notch">
+        <span class="en-text">Daily Azkar</span>
+        <span class="ar-text">الأذكار اليومية</span>
+    </div>
+
+    <div class="app-container">
+
+        <div class="fixed-header">
+            <div class="header-box" id="pageTitle">جوامع الدعاء</div>
+        </div>
+
+        <div class="scrollable-content">
+
+            <div class="card" id="card1">
+                <div class="arabic">اللَّهُمَّ رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً، وَفِي الْآخِرَةِ حَسَنَةً، وَقِنَا عَذَابَ النَّارِ</div>
+                <div class="urdu">اے اللہ! اے ہمارے رب! ہمیں دنیا میں بھلائی عطا فرما اور آخرت میں بھی بھلائی عطا فرما اور ہمیں آگ کے عذاب سے بچا۔</div>
+                <div class="english">O Allah, our Lord, give us good in this world, and good in the Hereafter, and save us from the punishment of the Fire.</div>
+                <div class="bangla">হে আল্লাহ! হে আমাদের রব! আমাদেরকে দুনিয়াতে কল্যাণ দান করুন এবং আখিরাতেও কল্যাণ দান করুন এবং আমাদেরকে জাহান্নামের আযাব থেকে রক্ষা করুন।</div>
+                <span class="ref">(Bukhari: 6389, Muslim: 2690)</span>
+            </div>
+
+            <div class="card" id="card2">
+                <div class="arabic">لَا إِلَهَ إِلَّا أَنْتَ سُبْحَانَكَ إِنِّي كُنْتُ مِنَ الظَّالِمِينَ</div>
+                <div class="urdu">تیرے سوا کوئی معبود نہیں، تو پاک ہے، بیشک میں ہی ظالموں میں سے ہوں۔</div>
+                <div class="english">There is no deity except You; exalted are You. Indeed, I have been of the wrongdoers.</div>
+                <div class="bangla">আপনি ছাড়া কোনো উপাস্য নেই, আপনি পবিত্র, মহান। নিশ্চয়ই আমি জালিমদের অন্তর্ভুক্ত।</div>
+                <span class="ref">(Sahih At-Targhib: 1644)</span>
+            </div>
+
+            <div class="card" id="card3">
+                <div class="arabic">اللَّهُمَّ اغْفِرْ لِي، وَارْحَمْنِي، وَعَافِنِي، وَارْزُقْنِي</div>
+                <div class="urdu">اے اللہ! مجھے بخش دے، مجھ پر رحم فرما، مجھے عافیت دے اور مجھے رزق عطا فرما۔</div>
+                <div class="english">O Allah, forgive me, have mercy upon me, protect me, and provide for me.</div>
+                <div class="bangla">হে আল্লাহ! আমাকে ক্ষমা করুন, আমার ওপর রহম করুন, আমাকে নিরাপত্তা দিন এবং আমাকে রিজিক দান করুন।</div>
+                <span class="ref">(Muslim: 2697)</span>
+            </div>
+
+            <div class="card" id="card4">
+                <div class="arabic">اللَّهُمَّ أَعِنَّا عَلَى شُكْرِكَ، وَذِكْرِكَ، وَحُسْنِ عِبَادَتِكَ</div>
+                <div class="urdu">اے اللہ! اپنا شکر ادا کرنے، اپنا ذکر کرنے اور اپنی بہترین عبادت کرنے پر ہماری مدد فرما۔</div>
+                <div class="english">O Allah, help us to remember You, to thank You, and to worship You in the best of manners.</div>
+                <div class="bangla">হে আল্লাহ! আপনার শুকরিয়া আদায় করতে, আপনার জিকির করতে এবং আপনার উত্তম ইবাদত করতে আমাদের সাহায্য করুন।</div>
+                <span class="ref">(Silsilah Sahiha: 844)</span>
+            </div>
+
+            <div class="card" id="card5">
+                <div class="arabic">اللَّهُمَّ إِنِّي أَسْأَلُكَ الْمُعَافَاةَ فِي الدُّنْيَا وَالْآخِرَةِ</div>
+                <div class="urdu">اے اللہ! میں تجھ سے دنیا اور آخرت میں عافیت مانگتا ہوں۔</div>
+                <div class="english">O Allah, I ask You for well-being in this world and the Hereafter.</div>
+                <div class="bangla">হে আল্লাহ! আমি আপনার কাছে দুনিয়া ও আখিরাতে নিরাপত্তা ও সুস্থতা প্রার্থনা করছি।</div>
+                <span class="ref">(Sahih Al-Jami': 5703)</span>
+            </div>
+
+            <div class="card" id="card6">
+                <div class="arabic">اللَّهُمَّ أَصْلِحْ لِي دِينِي الَّذِي هُوَ عِصْمَةُ أَمْرِي، وَأَصْلِحْ لِي دُنْيَايَ الَّتِي فِيهَا مَعَاشِي، وَأَصْلِحْ لِي آخِرَتِي الَّتِي فِيهَا مَعَادِي، وَاجْعَلِ الْحَيَاةَ زِيَادَةً لِي فِي كُلِّ خَيْرٍ، وَاجْعَلِ الْمَوْتَ رَاحَةً لِي مِنْ كُلِّ شَرٍّ</div>
+                <div class="urdu">اے اللہ! میرے لیے میرا دین سنوار دے جو میرے ہر کام کے بچاؤ کا ذریعہ ہے، اور میری دنیا سنوار دے جس میں میری گزر بسر ہے، اور میری آخرت سنوار دے جس میں مجھے لوٹ کر جانا ہے، اور میری زندگی کو ہر بھلائی میں اضافے کا سبب بنا، اور میری موت کو ہر برائی سے راحت کا ذریعہ بنا۔</div>
+                <div class="english">O Allah, set right for me my religion which is the safeguard of my affairs. And set right for me my world in which is my life. And set right for me my Hereafter to which is my return. And make my life an increase for me in every good, and make my death a rest for me from every evil.</div>
+                <div class="bangla">হে আল্লাহ! আমার দ্বীনকে আমার জন্য সঠিক করে দিন, যা আমার সব কাজের রক্ষাকবচ। আমার দুনিয়াকে সঠিক করে দিন, যেখানে আমার জীবনযাপন। আমার আখিরাতকে সঠিক করে দিন, যেখানে আমার প্রত্যাবর্তন। আমার জীবনকে প্রতিটি কল্যাণের জন্য বৃদ্ধি স্বরূপ করুন এবং আমার মৃত্যু যেন প্রতিটি অনিষ্ট থেকে আমার জন্য শান্তির কারণ হয়।</div>
+                <span class="ref">(Muslim: 2720)</span>
+            </div>
+
+            <div class="card" id="card7">
+                <div class="arabic">اللَّهُمَّ إِنِّي أَسْأَلُكَ الْهُدَى، وَالتَّقَى، وَالْعَفَافَ، وَالْغِنَى</div>
+                <div class="urdu">اے اللہ! میں تجھ سے ہدایت، تقویٰ، پاکدامنی اور استغناء (لوگوں سے بے نیازی) کا سوال کرتا ہوں۔</div>
+                <div class="english">O Allah, I ask You for guidance, piety, chastity, and self-sufficiency.</div>
+                <div class="bangla">হে আল্লাহ! আমি আপনার কাছে হিদায়াত, তাকওয়া, পবিত্রতা এবং স্বনির্ভরতা (অমুখাপেক্ষিতা) প্রার্থনা করছি।</div>
+                <span class="ref">(Muslim: 2721)</span>
+            </div>
+
+            <div class="card" id="card8">
+                <div class="arabic">يَا مُقَلِّبَ الْقُلُوبِ ثَبِّتْ قَلْبِي عَلَى دِينِكَ</div>
+                <div class="urdu">اے دلوں کو پھیرنے والے! میرے دل کو اپنے دین پر ثابت قدم رکھ۔</div>
+                <div class="english">O Turner of the hearts, keep my heart firm upon Your religion.</div>
+                <div class="bangla">হে অন্তরসমূহ পরিবর্তনকারী! আমার অন্তরকে আপনার দ্বীনের ওপর অবিচল রাখুন।</div>
+                <span class="ref">(Silsilah Sahiha: 2091)</span>
+            </div>
+
+            <div class="card" id="card9">
+                <div class="arabic">اللَّهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّي</div>
+                <div class="urdu">اے اللہ! بیشک تو بہت معاف کرنے والا ہے، معاف کرنے کو پسند کرتا ہے، پس مجھے معاف فرما دے۔</div>
+                <div class="english">O Allah, You are Pardoning and You love to pardon, so pardon me.</div>
+                <div class="bangla">হে আল্লাহ! নিশ্চয়ই আপনি ক্ষমাশীল, ক্ষমা করতে ভালোবাসেন, সুতরাং আমাকে ক্ষমা করে দিন।</div>
+                <span class="ref">(Ibn Majah: 3119)</span>
+            </div>
+
+            <div class="card" id="card10">
+                <div class="arabic">اللَّهُمَّ اكْفِنِي بِحَلَالِكَ عَنْ حَرَامِكَ، وَأَغْنِنِي بِفَضْلِكَ عَمَّنْ سِوَاكَ</div>
+                <div class="urdu">اے اللہ! مجھے اپنا حلال رزق دے کر حرام سے بچا لے، اور اپنے فضل سے مجھے اپنے سوا ہر کسی سے بے نیاز کر دے۔</div>
+                <div class="english">O Allah, suffice me with what You have allowed instead of what You have forbidden, and make me independent of all others besides You.</div>
+                <div class="bangla">হে আল্লাহ! আপনার হালাল রিজিকের মাধ্যমে আমাকে হারাম থেকে বাঁচিয়ে রাখুন এবং আপনার অনুগ্রহ দিয়ে আপনি ছাড়া অন্য সকলের থেকে আমাকে অমুখাপেক্ষী করে দিন।</div>
+                <span class="ref">(Sahih Al-Jami': 2625)</span>
+            </div>
+
+            <div class="card" id="card11">
+                <div class="arabic">اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنْ جَارِ السُّوءِ فِي دَارِ الْمُقَامَةِ، فَإِنَّ جَارَ الْبَادِيَةِ يَتَحَوَّلُ</div>
+                <div class="urdu">اے اللہ! میں مستقل قیام گاہ (اپنے گھر) میں برے پڑوسی سے تیری پناہ مانگتا ہوں، کیونکہ صحرا کا (سفر کا) پڑوسی تو بدل جاتا ہے۔</div>
+                <div class="english">O Allah, I seek refuge in You from a bad neighbor in the permanent abode, for the neighbor of the desert changes.</div>
+                <div class="bangla">হে আল্লাহ! আমি আপনার কাছে স্থায়ী আবাসস্থলের খারাপ প্রতিবেশী থেকে আশ্রয় চাই, কারণ অস্থায়ী বা ভ্রমণের প্রতিবেশী পরিবর্তন হয়ে যায়।</div>
+                <span class="ref">(Sahih Al-Jami: 1290)</span>
+            </div>
+
+            <div class="card" id="card12">
+                <div class="arabic">اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْقِلَّةِ وَالْفَقْرِ وَالذِّلَّةِ، وَأَعُوذُ بِكَ أَنْ أَظْلِمَ أَوْ أُظْلَمَ</div>
+                <div class="urdu">اے اللہ! میں قلت سے، محتاجی سے اور ذلت سے تیری پناہ مانگتا ہوں، اور تیری پناہ مانگتا ہوں اس بات سے کہ میں کسی پر ظلم کروں یا مجھ پر ظلم کیا جائے۔</div>
+                <div class="english">O Allah, I seek refuge in You from poverty, lack, and humiliation, and I seek refuge in You from wronging others or being wronged.</div>
+                <div class="bangla">হে আল্লাহ! আমি আপনার কাছে স্বল্পতা, দারিদ্র্য ও লাঞ্ছনা থেকে আশ্রয় চাই। আর আমি আপনার কাছে আশ্রয় চাই কাউকে জুলুম করা বা কারও দ্বারা মজলুম হওয়া থেকে।</div>
+                <span class="ref">(Sahih An-Nasa'i: 5477)</span>
+            </div>
+
+            <div class="card" id="card13">
+                <div class="arabic">اللَّهُمَّ حَاسِبْنِي حِسَابًا يَسِيرًا</div>
+                <div class="urdu">اے اللہ! مجھ سے آسان حساب لے۔</div>
+                <div class="english">O Allah, grant me an easy reckoning.</div>
+                <div class="bangla">হে আল্লাহ! আমার হিসাব-নিকাশ সহজ করে দিন।</div>
+                <span class="ref">(Musnad Ahmad, Hakim)</span>
+            </div>
+
+            <div class="card" id="card14">
+                <div class="arabic">اللَّهُمَّ إِنِّي أَسْأَلُكَ فِعْلَ الْخَيْرَاتِ، وَتَرْكَ الْمُنْكَرَاتِ، وَحُبَّ الْمَسَاكِينِ، وَإِذَا أَرَدْتَ بِعِبَادِكَ فِتْنَةً فَاقْبِضْنِي إِلَيْكَ غَيْرَ مَفْتُونٍ</div>
+                <div class="urdu">اے اللہ! میں تجھ سے نیک کام کرنے، برائیوں کو چھوڑنے اور مسکینوں سے محبت کرنے کا سوال کرتا ہوں، اور جب تو اپنے بندوں کو کسی آزمائش میں ڈالنے کا ارادہ کرے تو مجھے فتنے میں پڑے بغیر اپنی طرف اٹھا لے۔</div>
+                <div class="english">O Allah, I ask You to grant me the performance of good deeds, abandonment of bad deeds, and love for the poor; and if You intend to try Your slaves, then take me to You without letting me fall into trial.</div>
+                <div class="bangla">হে আল্লাহ! আমি আপনার কাছে সৎকাজ করার, মন্দ কাজ বর্জন করার এবং দরিদ্রদের ভালোবাসার তৌফিক চাই। আর আপনি যখন আপনার বান্দাদের পরীক্ষায় ফেলার ইচ্ছা করেন, তখন আমাকে ফিতনায় পতিত না করে আপনার কাছে তুলে নিন।</div>
+                <span class="ref">(Tirmidhi: 3233)</span>
+            </div>
+
+            <div class="card" id="card15">
+                <div class="arabic">اللَّهُمَّ إِنِّي أَسْأَلُكَ إِيمَانًا لَا يَرْتَدُّ، وَنَعِيمًا لَا يَنْفَدُ، وَمُرَافَقَةَ مُحَمَّدٍ فِي أَعْلَى جَنَّةِ الْخُلْدِ</div>
+                <div class="urdu">اے اللہ! میں تجھ سے ایسے ایمان کا سوال کرتا ہوں جو کبھی نہ پھرے، اور ایسی نعمت کا جو کبھی ختم نہ ہو، اور ہمیشہ رہنے والی جنت کے سب سے اعلیٰ درجے میں حضرت محمد ﷺ کی رفاقت (ساتھ) کا سوال کرتا ہوں۔</div>
+                <div class="english">O Allah, I ask You for faith that does not revert, a bounty that does not deplete, and the companionship of Muhammad in the highest level of the eternal Paradise.</div>
+                <div class="bangla">হে আল্লাহ! আমি আপনার কাছে এমন ঈমান চাই যা কখনো ফিরে যায় না, এমন নেয়ামত চাই যা কখনো শেষ হয় না এবং চিরস্থায়ী জান্নাতের সর্বোচ্চ স্তরে মুহাম্মাদ (সা.)-এর সান্নিধ্য চাই।</div>
+                <span class="ref">(Silsilah Sahiha: 5/379)</span>
+            </div>
+
+            <div class="card" id="card16">
+                <div class="arabic">اللَّهُمَّ انْفَعْنِي بِمَا عَلَّمْتَنِي، وَعَلِّمْنِي مَا يَنْفَعُنِي، وَارْزُقْنِي عِلْمًا تَنْفَعُنِي بِهِ</div>
+                <div class="urdu">اے اللہ! جو کچھ تو نے مجھے سکھایا ہے اس سے مجھے نفع دے، اور مجھے وہ سکھا جو مجھے نفع دے، اور مجھے ایسا علم عطا فرما جس سے تو مجھے فائدہ پہنچائے۔</div>
+                <div class="english">O Allah, benefit me by that which You have taught me, teach me that which will benefit me, and provide me with knowledge that will benefit me.</div>
+                <div class="bangla">হে আল্লাহ! আপনি আমাকে যা শিখিয়েছেন তা দিয়ে আমাকে উপকৃত করুন, যা আমার উপকারে আসবে তা আমাকে শিখিয়ে দিন এবং আমাকে এমন জ্ঞান দান করুন যা দিয়ে আমি লাভবান হতে পারি।</div>
+                <span class="ref">(Silsilah Sahiha: 3151)</span>
+            </div>
+
+            <div class="card" id="card17">
+                <div class="arabic">اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنْ جَهْدِ الْبَلَاءِ، وَدَرَكِ الشَّقَاءِ، وَسُوءِ الْقَضَاءِ، وَشَمَاتَةِ الْأَعْدَاءِ</div>
+                <div class="urdu">اے اللہ! میں تیری پناہ مانگتا ہوں سخت آزمائش سے، بدبختی کے پانے سے، برے فیصلے سے، اور دشمنوں کے ہنسنے سے۔</div>
+                <div class="english">O Allah, I seek refuge in You from the severe trials, from falling into misery, from a bad destiny, and from the malicious rejoicing of enemies.</div>
+                <div class="bangla">হে আল্লাহ! আমি আপনার কাছে কঠিন পরীক্ষা, দুর্ভাগ্যে পতিত হওয়া, খারাপ ফয়সালা এবং শত্রুদের আনন্দিত হওয়া থেকে আশ্রয় চাই।</div>
+                <span class="ref">(Bukhari: 6347)</span>
+            </div>
+
+            <div class="card" id="card18">
+                <div class="arabic">اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْهَمِّ وَالْحَزَنِ، وَالْعَجْزِ وَالْكَسَلِ، وَالْبُخْلِ وَالْجُبْنِ، وَضَلَعِ الدَّيْنِ وَغَلَبَةِ الرِّجَالِ</div>
+                <div class="urdu">اے اللہ! میں فکر اور غم، عاجزی اور سستی، بخیلی اور بزدلی، قرض کے بوجھ اور لوگوں کے غلبے سے تیری پناہ مانگتا ہوں۔</div>
+                <div class="english">O Allah, I seek refuge in You from anxiety and sorrow, from inability and laziness, from miserliness and cowardice, and from the burden of debts and from being overpowered by men.</div>
+                <div class="bangla">হে আল্লাহ! আমি আপনার কাছে দুশ্চিন্তা ও পেরেশানি, অক্ষমতা ও অলসতা, কৃপণতা ও কাপুরুষতা এবং ঋণের বোঝা ও মানুষের আধিপত্য থেকে আশ্রয় চাই।</div>
+                <span class="ref">(Bukhari: 2893)</span>
+            </div>
+
+            <div class="card" id="card19">
+                <div class="arabic">اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنْ زَوَالِ نِعْمَتِكَ، وَتَحَوُّلِ عَافِيَتِكَ، وَفُجَاءَةِ نِقْمَتِكَ، وَجَمِيعِ سَخَطِكَ</div>
+                <div class="urdu">اے اللہ! میں تیری نعمت کے چھن جانے، تیری دی ہوئی عافیت کے بدل جانے، تیرے اچانک عذاب کے آنے، اور تیری ہر طرح کی ناراضگی سے تیری پناہ مانگتا ہوں۔</div>
+                <div class="english">O Allah, I seek refuge in You from the withdrawal of Your blessing, the sudden change in the good health You granted, the suddenness of Your punishment, and all of Your anger.</div>
+                <div class="bangla">হে আল্লাহ! আমি আপনার কাছে আপনার নেয়ামত দূর হয়ে যাওয়া, আপনার দেওয়া সুস্থতা পরিবর্তন হয়ে যাওয়া, আপনার আকস্মিক শাস্তি এবং আপনার সকল প্রকার ক্ষোভ থেকে আশ্রয় চাই।</div>
+                <span class="ref">(Muslim: 2739)</span>
+            </div>
+
+            <div class="card" id="card20">
+                <div class="arabic">اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنْ شَرِّ مَا عَمِلْتُ، وَمِنْ شَرِّ مَا لَمْ أَعْمَلْ</div>
+                <div class="urdu">اے اللہ! میں تیری پناہ مانگتا ہوں ان کاموں کے شر سے جو میں نے کیے، اور ان کاموں کے شر سے جو میں نے نہیں کیے۔</div>
+                <div class="english">O Allah, I seek refuge in You from the evil of what I have done, and from the evil of what I have not done.</div>
+                <div class="bangla">হে আল্লাহ! আমি যে কাজ করেছি তার অনিষ্ট থেকে এবং যে কাজ করিনি তার অনিষ্ট থেকে আপনার কাছে আশ্রয় চাই।</div>
+                <span class="ref">(Muslim: 2716)</span>
+            </div>
+
+            <a href="azkar_menu.html" class="back-btn" id="btnBack">واپس جائیں</a>
+
+        </div>
+    </div>
+
+    <script>
+        // 🌟 1. Hardware Back Button Fix 🌟
+        window.addEventListener("popstate", function (event) {
+            window.location.href = 'azkar_menu.html';
+        });
+        history.pushState(null, document.title, location.href);
+
+        const uiText = {
+            ur: { 
+                title: "جوامع الدعاء", back: "واپس جائیں"
+            },
+            ar: { 
+                title: "جوامع الدعاء", back: "رجوع"
+            },
+            en: { 
+                title: "Jawami' al-Dua", back: "Go Back"
+            },
+            bn: { 
+                title: "জাওয়ামিউদ দুআ", back: "ফিরে যান"
+            }
+        };
+
+        let currentLang = 'ur'; 
+
+        window.onload = function() {
+            currentLang = localStorage.getItem('selectedLang') || 'ur';
+            document.documentElement.lang = currentLang;
+
+            const text = uiText[currentLang];
+            if(text) {
+                document.getElementById('pageTitle').innerText = text.title;
+                document.getElementById('btnBack').innerText = text.back;
+            }
+        };
+    </script>
+
+</body>
+</html>

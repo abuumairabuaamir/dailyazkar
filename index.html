@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Islamic Azkar App</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Daily Azkar">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+        /* --- 1. FONTS --- */
+        @font-face { font-family: 'MyUrduFont'; src: url('fonts/jameel.ttf'); }
+        @font-face { font-family: 'Amiri'; src: url('fonts/amiri.ttf'); }
+        @font-face { font-family: 'TiroBangla'; src: url('fonts/tiro.ttf'); }
+
+        /* --- 2. MAIN LAYOUT SETTINGS --- */
+        html, body {
+            height: 100%; width: 100%; margin: 0; padding: 0;
+            overflow: hidden;
+            background: url('https://i.pinimg.com/736x/87/05/29/8705296061680d2222301981297d2685.jpg') no-repeat center center fixed; 
+            background-size: cover;
+        }
+
+        html[lang="ur"] body, html[lang="en"] body { font-family: 'MyUrduFont', 'Arial', sans-serif; }
+        html[lang="ar"] body { font-family: 'Amiri', serif; }
+        html[lang="bn"] body { font-family: 'TiroBangla', serif; }
+
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 40, 30, 0.85); z-index: -1; }
+
+        .app-container {
+            display: flex; flex-direction: column;
+            height: 100%; width: 100%; max-width: 800px; margin: 0 auto;
+        }
+
+        /* --- 3: EDGE TO EDGE NOTCH BAR --- */
+        .notch-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: max(5px, env(safe-area-inset-top)) 15px 5px 15px; 
+            background-color: rgba(0,0,0,0.3);
+            color: #e0f2f1; font-size: 13px; z-index: 10;
+            direction: ltr; /* English Left, Arabic Right always */
+        }
+        .notch-bar .ar-text { font-family: 'Amiri', serif; font-size: 16px; color: #ffeb3b; direction: rtl;}
+        .notch-bar .en-text { font-family: sans-serif; letter-spacing: 1px; }
+
+        /* --- FIXED HEADER --- */
+        .fixed-header {
+            flex: 0 0 auto; width: 100%; padding: 10px 10px 0 10px;
+            box-sizing: border-box; z-index: 10;
+        }
+
+        .scrollable-content {
+            flex: 1; overflow-y: auto; width: 100%;
+            padding: 5px 10px 10px 10px; box-sizing: border-box;
+            padding-bottom: max(50px, env(safe-area-inset-bottom));
+            -webkit-overflow-scrolling: touch; 
+            scrollbar-width: none; -ms-overflow-style: none;
+        }
+        .scrollable-content::-webkit-scrollbar { display: none; }
+
+        /* --- PRAYER STRIP --- */
+        .prayer-strip {
+            display: flex; justify-content: space-between;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 8px 5px; border-radius: 12px; margin-bottom: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .prayer-item { display: flex; flex-direction: column; align-items: center; width: 16%; }
+        .p-name { color: #a5d6a7; font-size: 14px; margin-bottom: 0px; line-height: 1.2; white-space: nowrap; font-weight: normal; }
+        .p-time { color: #ffeb3b; font-size: 16px; margin-top: -2px; direction: ltr; font-weight: normal; }
+        .hanafi-label { color: #ffcc80; }
+
+        /* --- 🌟 ISLAMIC DOME HERO SECTION --- */
+        .islamic-hero {
+            display: flex; justify-content: space-between; align-items: stretch;
+            margin-bottom: 15px; width: 100%; box-sizing: border-box; gap: 8px;
+        }
+        
+        .side-date-col {
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            flex: 1; 
+            background: rgba(0,0,0,0.4); border-radius: 10px;
+            padding: 5px; border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            box-sizing: border-box; overflow: hidden; 
+        }
+        .date-title { color: #a5d6a7; font-size: 11px; margin-bottom: 5px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 2px;}
+        .date-value { color: #fff; font-size: 13px; font-weight: bold; text-align: center; line-height: 1.4;}
+        .date-value.ar-date { font-family: 'Amiri', serif; color: #e0f7fa; font-size: 15px; font-weight: normal;}
+
+        .mini-ramadan {
+            margin-top: 8px; padding-top: 5px; border-top: 1px dashed rgba(255, 255, 255, 0.3);
+            width: 100%; text-align: center;
+        }
+        
+        .mini-r-title { color: #ffcc80; font-size: 12px; display: block; margin-bottom: 2px; }
+        html[lang="ur"] .mini-r-title { font-size: 20px; font-weight: normal; }
+        html[lang="ar"] .mini-r-title { font-size: 16px; font-weight: normal; }
+        
+        .mini-r-time { color: #ffffff; font-size: 13px; font-weight: bold; direction: ltr; display: block; }
+
+        .dome-box {
+            flex: 2; 
+            border-radius: 60px 60px 10px 10px; 
+            background-color: #f1f8e9;
+            background-image: 
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M0 20L20 0l20 20-20 20z' fill='none' stroke='%23004d40' stroke-width='1' stroke-opacity='0.15'/%3E%3Cpath d='M10 10h20v20H10z' fill='none' stroke='%23004d40' stroke-width='1' stroke-opacity='0.15' transform='rotate(45 20 20)'/%3E%3Ccircle cx='20' cy='20' r='6' fill='%23004d40' fill-opacity='0.08'/%3E%3C/svg%3E"),
+                linear-gradient(135deg, rgba(255,255,255,0.92), rgba(241,248,233,0.92));
+            border: 3px solid #ffb300; 
+            box-shadow: 0 8px 15px rgba(0,0,0,0.4);
+            padding: 12px 5px; text-align: center; box-sizing: border-box;
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        .embed-header { color: #d84315; font-size: 13px; font-weight: bold; margin-bottom: 4px; border-bottom: 1px dashed #ccc; padding-bottom: 2px; }
+        .embed-arabic { font-family: 'Amiri', serif; font-size: 17px; color: #004d40; line-height: 1.4; margin-bottom: 4px; font-weight: normal;}
+        .embed-trans { font-size: 12px; color: #424242; line-height: 1.3; margin-bottom: 3px; }
+        .embed-ref { font-size: 11px; color: #757575; font-weight: bold; direction: ltr; }
+
+        /* --- 🎛️ BOTTOM CONTROL STRIP --- */
+        .control-strip {
+            display: flex; justify-content: space-between; align-items: center;
+            background: linear-gradient(90deg, rgba(0,77,64,0.85), rgba(0,105,92,0.85));
+            border-radius: 25px; margin-bottom: 10px; width: 100%; box-sizing: border-box;
+            border: 1px solid #a5d6a7; box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .ctrl-item {
+            flex: 1; text-align: center; padding: 6px 5px; color: white;
+            font-size: 14px; border-left: 1px solid rgba(255,255,255,0.3);
+            display: flex; justify-content: center; align-items: center; gap: 8px;
+        }
+        html[dir="rtl"] .ctrl-item { border-left: none; border-right: 1px solid rgba(255,255,255,0.3); }
+        .ctrl-item:first-child { border: none !important; }
+        
+        .ctrl-item.loc-item { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #ffeb3b; font-weight: bold; display: block; cursor: pointer;}
+        .lang-select-transparent {
+            background: transparent; color: white; border: none; font-size: 14px; 
+            font-family: inherit; width: auto; text-align: center; outline: none; cursor: pointer; flex-grow: 1;
+        }
+        .lang-select-transparent option { background: #004d40; color: white; }
+
+        /* --- MENU BUTTONS GRID --- */
+        .button-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .menu-button {
+            background: linear-gradient(145deg, #ffffff, #f2f2f2); border-radius: 12px; padding: 10px 5px; margin: 0;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; text-decoration: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15); border: 2px solid #1b5e20; transition: transform 0.1s;
+        }
+        .menu-button:active { transform: scale(0.96); }
+        .icon svg { width: 28px; height: 28px; margin-bottom: 5px; }
+        .button-text { color: #1b5e20; font-size: 15px; font-weight: bold; flex-grow: 1; margin: 0; padding: 0; text-align: center !important; }
+        .btn-azkar { border-color: #FBC02D; }
+        .btn-azkar .button-text { color: #F57F17; }
+
+        /* 🟢 MODALS 🟢 */
+        .modal { 
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0; 
+            width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); 
+            justify-content: center; align-items: center; 
+            overflow-y: auto; 
+        }
+        .modal-content { 
+            background-color: #fefefe; margin: auto; padding: 20px; border: 2px solid #4CAF50; 
+            width: 85%; max-width: 400px; border-radius: 15px; color: #333; 
+            text-align: right; box-shadow: 0 5px 15px rgba(0,0,0,0.5); 
+            max-height: 85vh; 
+            overflow-y: auto; 
+            position: relative;
+        }
+        
+        html[dir="ltr"] .modal-content { text-align: left; }
+        .modal-title { font-size: 22px; font-weight: bold; color: #1b5e20; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 15px; text-align: center; }
+        .setting-group { margin-bottom: 15px; background: #f9f9f9; padding: 10px; border-radius: 8px; border: 1px solid #eee; }
+        .setting-label { font-size: 16px; font-weight: bold; color: #00695C; display: block; margin-bottom: 5px; }
+        .adj-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: center; }
+        .adj-item { display: flex; justify-content: space-between; background: #fff; padding: 5px 10px; border-radius: 5px; border: 1px solid #ddd; }
+        .adj-item input, .setting-group select { width: 60px; padding: 4px; border-radius: 5px; border: 1px solid #ccc; text-align: center; font-size: 16px; font-family: sans-serif; }
+        .manual-loc-input { width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; font-size: 16px; font-family: inherit; margin-bottom: 5px; }
+        .btn-loc { background: #00897b; color: white; padding: 6px 12px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; width: 100%; font-family: inherit;}
+        .btn-loc:active { opacity: 0.8; }
+        .modal-buttons { display: flex; justify-content: space-between; margin-top: 20px; }
+        .btn-save { background: #4CAF50; color: white; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 16px; }
+        .btn-close { background: #f44336; color: white; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; font-family: inherit; font-size: 16px; }
+
+        /* 🌟 ONBOARDING MODAL STYLES 🌟 */
+        #onboardingModal { padding: 20px 0; } 
+        #onboardingModal .modal-content {
+            background: #ffffff; border: 3px solid #1b5e20; text-align: center; direction: ltr; font-family: sans-serif;
+            max-height: 90vh; overflow-y: auto; margin: auto;
+        }
+        .ob-title { color: #1b5e20; font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+        .ob-desc { color: #555; font-size: 16px; margin-bottom: 20px; line-height: 1.5;}
+        .ob-step { display: none; }
+        .ob-step.active { display: block; }
+        .ob-select { width: 100%; padding: 12px; font-size: 18px; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 15px; background: #f1f8e9;}
+        .ob-btn-next { background: #E65100; color: white; padding: 12px; width: 100%; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer;}
+        .ob-btn-start { background: #1b5e20; color: white; padding: 12px; width: 100%; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer;}
+        
+        /* 🌟 LANDSCAPE SCROLL FIX (PATTI) 🌟 */
+        @media screen and (orientation: landscape) and (max-height: 600px) {
+            .app-container {
+                display: block; 
+                overflow-y: auto; 
+                scrollbar-width: thin;
+                scrollbar-color: rgba(255, 255, 255, 0.6) rgba(0,0,0,0.2);
+            }
+            .app-container::-webkit-scrollbar {
+                display: block !important; 
+                width: 6px;
+            }
+            .app-container::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); }
+            .app-container::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.7); border-radius: 10px; }
+            .fixed-header { flex: none; }
+            .scrollable-content { overflow-y: visible; padding-bottom: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="overlay"></div>
+
+    <div id="onboardingModal" class="modal" style="background-color: rgba(0,25,15,0.9);">
+        <div class="modal-content">
+            
+            <div id="ob_step1" class="ob-step active">
+                <div class="ob-title">Welcome / مرحباً</div>
+                <div class="ob-desc">Please select your preferred language.<br><span style="font-family:'Amiri',serif;" dir="rtl">يرجى تحديد لغتك المفضلة:</span></div>
+                <select id="ob_lang_select" class="ob-select">
+                    <option value="ur">اردو (Urdu)</option>
+                    <option value="en">English</option>
+                    <option value="ar">العربية (Arabic)</option>
+                    <option value="bn">বাংলা (Bangla)</option>
+                </select>
+                <button class="ob-btn-next" onclick="nextOnboardingStep()">Next / التالي ➔</button>
+            </div>
+
+            <div id="ob_step2" class="ob-step">
+                <div class="ob-title">Set Location / إعداد الموقع</div>
+                <div class="ob-desc">Find your location to get accurate prayer times:<br><span style="font-family:'Amiri',serif;" dir="rtl">حدد موقعك لمعرفة أوقات الصلاة:</span></div>
+                
+                <button class="btn-loc" style="padding: 12px; font-size: 16px; background: #1976D2; margin-bottom: 15px;" onclick="autoDetectLocation(true)">📍 Auto Detect (GPS) / تحديد تلقائي</button>
+                
+                <div style="margin: 10px 0; color: #757575; font-weight: bold;">OR / أو</div>
+
+                <input type="text" id="ob_city_input" class="manual-loc-input" placeholder="City Name (e.g. Mecca, London)" style="padding: 12px; text-align: center;">
+                <button class="btn-loc" style="padding: 10px; font-size: 16px; background: #00897b;" onclick="searchObLocation()">🔍 Search / بحث</button>
+                
+                <div id="ob_loc_status" style="font-size: 14px; margin-top: 10px; color: #d32f2f; font-weight: bold;"></div>
+
+                <button class="ob-btn-start" id="ob_btn_start" style="margin-top: 20px; display: none;" onclick="finishOnboarding()">Start App / ابدأ التطبيق ✅</button>
+            </div>
+
+        </div>
+    </div>
+
+
+    <div class="app-container" id="mainAppUI" style="display: none;">
+        
+        <div class="notch-bar">
+            <span class="en-text">Daily Azkar</span>
+            <span class="ar-text">الأذكار اليومية</span>
+        </div>
+
+        <div class="fixed-header">
+            
+            <div class="prayer-strip">
+                <div class="prayer-item"><span class="p-name" id="lbl_fajr">فجر</span><span class="p-time" id="t-fajr">--:--</span></div>
+                <div class="prayer-item"><span class="p-name" id="lbl_dhuhr">ظہر</span><span class="p-time" id="t-dhuhr">--:--</span></div>
+                <div class="prayer-item"><span class="p-name" id="lbl_asr">عصر</span><span class="p-time" id="t-asr-shafi">--:--</span></div>
+                <div class="prayer-item"><span class="p-name hanafi-label" id="lbl_asr_h">عصر حنفی</span><span class="p-time" id="t-asr-hanafi">--:--</span></div>
+                <div class="prayer-item"><span class="p-name" id="lbl_maghrib">مغرب</span><span class="p-time" id="t-maghrib">--:--</span></div>
+                <div class="prayer-item"><span class="p-name" id="lbl_isha">عشاء</span><span class="p-time" id="t-isha">--:--</span></div>
+            </div>
+
+            <div class="islamic-hero">
+                <div class="side-date-col">
+                    <span class="date-title" id="lbl_greg_title">عیسوی تاریخ</span>
+                    <span class="date-value" id="dateUr">...</span>
+                    
+                    <div class="mini-ramadan">
+                        <span class="mini-r-title" id="lbl_sehr">ختمِ سحر</span>
+                        <span class="mini-r-time" id="sehrTime">--:--</span>
+                    </div>
+                </div>
+
+                <div class="dome-box" id="dailyEmbedBox">
+                    <div class="embed-header" id="embedType">آج کی دعا</div>
+                    <div class="embed-arabic" id="embedArabic">رَبَّنَا آتِنَا فِي الدُّنْيَا...</div>
+                    <div class="embed-trans" id="embedTrans">اے ہمارے رب...</div>
+                    <div class="embed-ref" id="embedRef">(البقرة: 201)</div>
+                </div>
+
+                <div class="side-date-col">
+                    <span class="date-title" id="lbl_hijri_title">ہجری تاریخ</span>
+                    <span class="date-value ar-date" id="dateAr">...</span>
+                    
+                    <div class="mini-ramadan">
+                        <span class="mini-r-title" id="lbl_iftar">افطار</span>
+                        <span class="mini-r-time" id="iftarTime">--:--</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="control-strip">
+                <div class="ctrl-item loc-item" onclick="openSettings()" id="cityName">تلاش جاری...</div>
+                
+                <div class="ctrl-item">
+                    <span id="digitalClock" style="direction: ltr; display: inline-block; font-weight: bold; font-size: 15px;">00:00:00</span>
+                </div>
+                
+                <div class="ctrl-item">
+                    <span onclick="openSettings()" style="cursor: pointer; font-size: 18px;" title="Settings">⚙️</span>
+                    
+                    <select id="languageSelector" class="lang-select-transparent" onchange="changeLanguage(this.value)">
+                        <option value="ur">اردو</option>
+                        <option value="ar">العربية</option>
+                        <option value="en">English</option>
+                        <option value="bn">বাংলা</option>
+                    </select>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="scrollable-content">
+
+            <div class="button-grid">
+                <a href="azkar_menu.html" class="menu-button btn-azkar">
+                    <div class="icon"><svg viewBox="0 0 24 24" fill="#FBC02D"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+                    <span class="button-text" id="btn_daily">روزانہ کے اذکار</span>
+                </a>
+
+                <a href="javascript:void(0)" onclick="openQuranMenu()" class="menu-button" style="border-color: #4CAF50;">
+                    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></div>
+                    <span class="button-text" style="color: #4CAF50;" id="btn_quran">قرآن مجید</span>
+                </a>
+
+                <a href="juma.html" class="menu-button">
+                    <div class="icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 7V21M12 7C12 7 16 5 20 7V21C16 19 12 21 12 21M12 7C12 7 8 5 4 7V21C8 19 12 21 12 21M12 7C12 7 8 5 4 7V21C8 19 12 21 12 21M12 7C12 7 8 5 4 7V21C8 19 12 21 12 21M12 7C12 7 8 5 4 7V21C8 19 12 21 12 21M12 7C12 7 8 5 4 7V21C8 19 12 21 12 21M12 7C12 7 8 5 4 7V21C8 19 12 21 12 21M12 7C12 7 8 5 4 7V21C8 19 12 21 12 21M12 7C12 7 8 5 4 7V21C8 19 12 21 12 21M12 7C12 7 8 5 4 7V21C8 19 12 21 12 21M12 7C12 7 8 5 4 7V21C8 19 12 21 12 21M12 7C12 7 8 5 4 7V21C8 19 12 21 12 21M12 7C12 7 8 5 4 7V21C8 19 12 21 12 21M12 7C12 7 8 5 4 7V21C8 19 12 21 12 21M12 7C12 7 8 5 4 7V21C8 19 12 21 12 21M12 7C12 7 8 5 4 7V21C8 19 12 21 12 21" stroke="#673AB7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 3H20V7" stroke="#673AB7" stroke-width="2" stroke-linecap="round"/></svg></div>
+                    <span class="button-text" id="btn_juma">جمعہ کے اعمال</span>
+                </a>
+
+                <a href="eidain.html" class="menu-button" style="border-color: #00BCD4;">
+                    <div class="icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#00BCD4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        </svg>
+                    </div>
+                    <span class="button-text" style="color: #0097A7;" id="btn_eidain">احکامِ عیدین</span>
+                </a>
+
+                <a href="namaz.html" class="menu-button">
+                    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#2980b9" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></div>
+                    <span class="button-text" id="btn_namaz">نماز کا طریقہ</span>
+                </a>
+
+                <a href="ramadan.html" class="menu-button">
+                    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#00695C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></div>
+                    <span class="button-text" id="btn_ramadan">رمضان المبارک</span>
+                </a>
+
+                <a href="zakat.html" class="menu-button">
+                    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg></div>
+                    <span class="button-text" id="btn_zakat">احکامِ زکوٰۃ</span>
+                </a>
+
+                <a href="calculator.html" class="menu-button" style="border-color: #E65100;">
+                    <div class="icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#E65100" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+                            <line x1="8" y1="6" x2="16" y2="6"></line>
+                            <line x1="8" y1="10" x2="8.01" y2="10"></line>
+                            <line x1="12" y1="10" x2="12.01" y2="10"></line>
+                            <line x1="16" y1="10" x2="16.01" y2="10"></line>
+                            <line x1="8" y1="14" x2="8.01" y2="14"></line>
+                            <line x1="12" y1="14" x2="12.01" y2="14"></line>
+                            <line x1="16" y1="14" x2="16.01" y2="14"></line>
+                            <line x1="8" y1="18" x2="8.01" y2="18"></line>
+                            <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                            <line x1="16" y1="18" x2="16.01" y2="18"></line>
+                        </svg>
+                    </div>
+                    <span class="button-text" style="color: #E65100;" id="btn_calc">زکوٰۃ کیلکولیٹر</span>
+                </a>
+
+                <a href="hajj.html" class="menu-button">
+                    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#1565C0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l8-4 8 4v14M8 21v-2a2 2 0 0 1 4 0v2"></path></svg></div>
+                    <span class="button-text" id="btn_hajj">حج اور عمرہ</span>
+                </a>
+
+                <a href="about.html" class="menu-button" style="border-color: #607d8b;">
+                    <div class="icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="#607d8b" stroke-width="2"/><path d="M12 16V12" stroke="#607d8b" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="8" r="1" fill="#607d8b"/></svg></div>
+                    <span class="button-text" style="color: #607d8b;" id="btn_about">ایپ کے بارے میں</span>
+                </a>
+            </div> 
+        </div>
+
+    </div>
+
+    <div id="quranModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title" id="mod_quran_title">قرآن کا نسخہ منتخب کریں</div>
+            <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 15px;">
+                <a href="quran.html" class="menu-button" style="border-color: #4CAF50;">
+                    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></div>
+                    <span class="button-text" style="color: #4CAF50; font-size: 18px;" id="btn_quran_indo">ہندوپاک مصحف</span>
+                </a>
+                <a href="quran_madani.html" class="menu-button" style="border-color: #004d40;">
+                    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#004d40" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg></div>
+                    <span class="button-text" style="color: #004d40; font-size: 18px;" id="btn_quran_madani">مدنی مصحف</span>
+                </a>
+                <a href="quran_maliksaud.html" class="menu-button" style="border-color: #1976D2;">
+                    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#1976D2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg></div>
+                    <span class="button-text" style="color: #1976D2; font-size: 18px;" id="btn_quran_saud">مصحف الملك سعود</span>
+                </a>
+            </div>
+            <button class="btn-close" style="margin-top: 20px; width: 100%; text-align: center;" onclick="closeQuranMenu()" id="btn_close_quran">بند کریں</button>
+        </div>
+    </div>
+
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title" id="mod_title">وقت اور تاریخ کی سیٹنگز</div>
+            
+            <div class="setting-group" style="background: #e0f2f1; border-color: #b2dfdb;">
+                <span class="setting-label" id="mod_loc_lbl" style="color:#004d40;">لوکیشن تبدیل کریں:</span>
+                
+                <button class="btn-loc" style="background: #1976D2; margin-bottom: 10px;" id="btn_auto_loc" onclick="autoDetectLocation(false)">📍 موجودہ لوکیشن (GPS)</button>
+                
+                <div style="text-align:center; margin: 5px 0; font-size:14px; color:#555;">یا (OR)</div>
+
+                <input type="text" id="manual_city_input" class="manual-loc-input" placeholder="مثلاً: Lucknow, Makkah">
+                <button class="btn-loc" id="btn_search_loc" onclick="searchManualLocation()">شہر تلاش کریں</button>
+                <div id="loc_search_status" style="font-size: 14px; margin-top: 5px; color: #d32f2f; text-align: center; font-weight: bold;"></div>
+            </div>
+
+            <div class="setting-group">
+                <span class="setting-label" id="mod_hijri_lbl">ہجری تاریخ کی تبدیلی (دن):</span>
+                <select id="adj_hijri" style="width: 100%;">
+                    <option value="-2">-2</option>
+                    <option value="-1">-1</option>
+                    <option value="0" selected>0</option>
+                    <option value="1">+1</option>
+                    <option value="2">+2</option>
+                </select>
+            </div>
+            <div class="setting-group">
+                <span class="setting-label" id="mod_prayer_lbl">نمازوں کے اوقات میں تبدیلی (منٹ):</span>
+                <div class="adj-grid">
+                    <div class="adj-item"><span id="mod_fajr">فجر</span> <input type="number" id="adj_fajr" value="0"></div>
+                    <div class="adj-item"><span id="mod_dhuhr">ظہر</span> <input type="number" id="adj_dhuhr" value="0"></div>
+                    <div class="adj-item"><span id="mod_asr">عصر</span> <input type="number" id="adj_asr" value="0"></div>
+                    <div class="adj-item"><span id="mod_maghrib">مغرب</span> <input type="number" id="adj_maghrib" value="0"></div>
+                    <div class="adj-item"><span id="mod_isha">عشاء</span> <input type="number" id="adj_isha" value="0"></div>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-save" id="mod_save" onclick="saveSettings()">محفوظ کریں</button>
+                <button class="btn-close" id="mod_close" onclick="closeSettings()">بند کریں</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let hijriOffset = parseInt(localStorage.getItem('hijriOffset')) || 0;
+        let pOffsets = JSON.parse(localStorage.getItem('prayerOffsets')) || { fajr:0, dhuhr:0, asr:0, maghrib:0, isha:0 };
+        let lastShafi = null;
+        let lastHanafi = null;
+
+        const dailyMessages = [
+            { type: { ur: "آج کی دعا", en: "Dua of the Day", ar: "دعاء اليوم", bn: "আজকের দোয়া" }, arabic: "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ", trans: { ur: "اے ہمارے رب! ہمیں دنیا میں نیکی دے اور آخرت میں بھی بھلائی عطا فرما اور ہمیں آگ کے عذاب سے بچا۔", en: "Our Lord, give us in this world [that which is] good and in the Hereafter [that which is] good and protect us from the punishment of the Fire.", ar: "دعاء جامع لطلب خيري الدنيا والآخرة والوقاية من النار.", bn: "হে আমাদের পালনকর্তা! আমাদেরকে দুনিয়াতেও কল্যাণ দান কর এবং আখেরাতেও কল্যাণ দান কর।" }, ref: "(البقرة: 201)" },
+            { type: { ur: "آج کی حدیث", en: "Hadith of the Day", ar: "حديث اليوم", bn: "আজকের হাদিস" }, arabic: "خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ", trans: { ur: "تم میں سے بہترین شخص وہ ہے جو قرآن سیکھے اور سکھائے۔", en: "The best among you (Muslims) are those who learn the Qur'an and teach it.", ar: "أفضلكم وأعلاكم منزلة من تعلم القرآن وعلمه لغيره.", bn: "তোমাদের মধ্যে সর্বোত্তম ব্যক্তি সেই, যে কুরআন শেখে এবং অন্যকে শেখায়।" }, ref: "(صحیح بخاری: 5027)" },
+            { type: { ur: "آج کی آیت", en: "Verse of the Day", ar: "آية اليوم", bn: "আজকের আয়াত" }, arabic: "فَاذْكُرُونِي أَذْكُرْكُمْ وَاشْكُرُوا لِي وَلَا تَكْفُرُونِ", trans: { ur: "پس تم مجھے یاد کرو، میں تمہیں یاد رکھوں گا، اور میرا شکر ادا کرو اور میری ناشکری نہ کرو۔", en: "So remember Me; I will remember you. And be grateful to Me and do not deny Me.", ar: "اذكروني بالطاعة أذكركم بالثواب والمغفرة.", bn: "অতএব তোমরা আমাকে স্মরণ কর, আমিও তোমাদেরকে স্মরণ করব।" }, ref: "(البقرة: 152)" },
+            { type: { ur: "آج کی حدیث", en: "Hadith of the Day", ar: "حديث اليوم", bn: "আজকের হাদিস" }, arabic: "الطُّهُورُ شَطْرُ الإِيمَانِ", trans: { ur: "پاکی (طہارت) نصف ایمان ہے۔", en: "Purity is half of iman (faith).", ar: "الطهارة والنظافة نصف الإيمان.", bn: "পবিত্রতা ঈমানের অর্ধেক।" }, ref: "(صحیح مسلم: 223)" },
+            { type: { ur: "آج کی دعا", en: "Dua of the Day", ar: "دعاء اليوم", bn: "আজকের দোয়া" }, arabic: "يَا مُقَلِّبَ الْقُلُوبِ ثَبِّتْ قَلْبِي عَلَى دِينِكَ", trans: { ur: "اے دلوں کو پھیرنے والے! میرے دل کو اپنے دین پر ثابت رکھ۔", en: "O Turner of the hearts, keep my heart firm upon Your religion.", ar: "دعاء عظيم لطلب الثبات على الحق والاستقامة على الدين.", bn: "হে অন্তরসমূহ পরিবর্তনকারী! আমার অন্তরকে তোমার দ্বীনের ওপর অবিচল রাখো।" }, ref: "(جامع الترمذي: 2140)" },
+            { type: { ur: "آج کی آیت", en: "Verse of the Day", ar: "آية اليوم", bn: "আজকের আয়াত" }, arabic: "إِنَّ مَعَ الْعُسْرِ يُسْرًا", trans: { ur: "بیشک ہر مشکل کے ساتھ آسانی ہے۔", en: "Indeed, with hardship [will be] ease.", ar: "بشارة عظيمة بأن الفرج والمخرج يأتي مصاحباً للضيق والشدة.", bn: "নিশ্চয়ই কষ্টের সাথেই রয়েছে স্বস্তি।" }, ref: "(الشرح: 6)" },
+            { type: { ur: "آج کی حدیث", en: "Hadith of the Day", ar: "حديث اليوم", bn: "আজকের হাদিস" }, arabic: "تَبَسُّمُكَ فِي وَجْهِ أَخِيكَ لَكَ صَدَقَةٌ", trans: { ur: "تمہارا اپنے بھائی کے سامنے مسکرانا بھی صدقہ ہے۔", en: "Your smiling in the face of your brother is charity.", ar: "إظهار البشاشة والسرور لأخيك المسلم عمل تؤجر عليه كأجر الصدقة.", bn: "তোমার ভাইয়ের প্রতি তোমার মুচকি হাসাও একটি সদকা।" }, ref: "(جامع الترمذي: 1956)" },
+            { type: { ur: "آج کی دعا", en: "Dua of the Day", ar: "دعاء اليوم", bn: "আজকের দোয়া" }, arabic: "اللَّهُمَّ إِنِّي أَسْأَلُكَ عِلْمًا نَافِعًا، وَرِزْقًا طَيِّبًا، وَعَمَلًا مُتَقَبَّلًا", trans: { ur: "اے اللہ! میں تجھ سے نفع بخش علم، پاکیزہ رزق اور قبول ہونے والے عمل کا سوال کرتا ہوں۔", en: "O Allah, I ask You for beneficial knowledge, goodly provision and acceptable deeds.", ar: "دعاء مبارك لطلب العلم النافع والرزق الحلال والعمل المقبول.", bn: "হে আল্লাহ! আমি আপনার কাছে উপকারী ইলম, পবিত্র রিযিক এবং কবুলযোগ্য আমল প্রার্থনা করছি।" }, ref: "(ابن ماجه: 925)" },
+            { type: { ur: "آج کی آیت", en: "Verse of the Day", ar: "آية اليوم", bn: "আজকের আয়াত" }, arabic: "لَئِن شَكَرْتُمْ لَأَزِيدَنَّكُمْ", trans: { ur: "اگر تم شکر ادا کرو گے تو میں تمہیں ضرور زیادہ دوں گا۔", en: "If you are grateful, I will surely increase you [in favor].", ar: "وعد إلهي بزيادة النعم وبركتها لمن شكر الله عليها.", bn: "যদি তোমরা কৃতজ্ঞতা প্রকাশ কর, তবে আমি অবশ্যই তোমাদেরকে আরও বাড়িয়ে দেব।" }, ref: "(إبراهيم: 7)" },
+            { type: { ur: "آج کی حدیث", en: "Hadith of the Day", ar: "حديث اليوم", bn: "আজকের হাদিস" }, arabic: "كَلِمَتَانِ حَبِيبَتَانِ إِلَى الرَّحْمَنِ... سُبْحَانَ اللَّهِ وَبِحَمْدِهِ، سُبْحَانَ اللَّهِ الْعَظِيمِ", trans: { ur: "دو کلمے رحمٰن کو بہت پسند ہیں... سبحان اللہ وبحمدہ، سبحان اللہ العظیم۔", en: "Two words are beloved to the Most Merciful... Subhan Allahi wa bihamdihi, Subhan Allahil Azeem.", ar: "هاتان الكلمتان خفيفتان على اللسان، ثقيلتان في الميزان، حبيبتان للرحمن.", bn: "দুটি বাক্য দয়াময় আল্লাহর কাছে অতি প্রিয়... সুবহানাল্লাহি ওয়া বিহামদিহি, সুবহানাল্লাহিল আযীম।" }, ref: "(صحیح بخاری: 7563)" },
+            { type: { ur: "آج کی دعا", en: "Dua of the Day", ar: "دعاء اليوم", bn: "আজকের দোয়া" }, arabic: "رَبِّ اجْعَلْنِي مُقِيمَ الصَّلَاةِ وَمِن ذُرِّيَّتِي ۚ رَبَّنَا وَتَقَبَّلْ دُعَاءِ", trans: { ur: "اے میرے رب! مجھے اور میری اولاد کو نماز قائم کرنے والا بنا دے، اے ہمارے رب! اور میری دعا قبول فرما۔", en: "My Lord, make me an establisher of prayer, and [many] from my descendants. Our Lord, and accept my supplication.", ar: "دعاء لإقامة الصلاة والمداومة عليها للنفس والذرية.", bn: "হে আমার পালনকর্তা! আমাকে ও আমার বংশধরদেরকে নামাজ কায়েমকারী বানাও।" }, ref: "(إبراهيم: 40)" },
+            { type: { ur: "آج کی آیت", en: "Verse of the Day", ar: "آية اليوم", bn: "আজকের আয়াত" }, arabic: "وَقَالَ رَبُّكُمُ ادْعُونِي أَسْتَجِبْ لَكُمْ", trans: { ur: "اور تمہارے رب نے فرمایا: مجھ سے دعا کرو، میں تمہاری دعا قبول کروں گا۔", en: "And your Lord says, 'Call upon Me; I will respond to you.'", ar: "أمر من الله لعباده بالدعاء مع وعد محقق بالإجابة.", bn: "আর তোমাদের রব বলেছেন: তোমরা আমাকে ডাকো, আমি তোমাদের ডাকে সাড়া দেব।" }, ref: "(غافر: 60)" },
+            { type: { ur: "آج کی حدیث", en: "Hadith of the Day", ar: "حديث اليوم", bn: "আজকের হাদিস" }, arabic: "لَيْسَ الشَّدِيدُ بِالصُّرَعَةِ، إِنَّمَا الشَّدِيدُ الَّذِي يَمْلِكُ نَفْسَهُ عِنْدَ الْغَضَبِ", trans: { ur: "پہلوان وہ نہیں جو لوگوں کو پچھاڑ دے، بلکہ پہلوان وہ ہے جو غصے کے وقت خود پر قابو رکھے۔", en: "The strong man is not the good wrestler, but the strong man is he who controls himself when he is angry.", ar: "القوي الحقيقي ليس من يغلب الناس، بل من يتحكم في نفسه عند الغضب.", bn: "প্রকৃত বীর সে নয় যে কুস্তিতে জয়ী হয়, বরং প্রকৃত বীর সে, যে রাগের সময় নিজেকে নিয়ন্ত্রণ করতে পারে।" }, ref: "(صحیح بخاری: 6114)" },
+            { type: { ur: "آج کی دعا", en: "Dua of the Day", ar: "دعاء اليوم", bn: "আজকের দোয়া" }, arabic: "اللَّهُمَّ أَعِنِّي عَلَى ذِكْرِكَ، وَشُكْرِكَ، وَحُسْنِ عِبَادَتِكَ", trans: { ur: "اے اللہ! اپنا ذکر کرنے، اپنا شکر ادا کرنے اور اپنی بہترین عبادت کرنے میں میری مدد فرما۔", en: "O Allah, help me to remember You, to thank You, and to worship You in the best of manners.", ar: "دعاء لطلب التوفيق والإعانة من الله على ذكره وشكره وحسن عبادته.", bn: "হে اللہ! আপনার জিকির, আপনার শুকريا এবং আপনার সুন্দর ইবাদত করতে আমাকে সাহায্য করুন।" }, ref: "(ابو داود: 1522)" }
+        ];
+
+        const translations = {
+            ur: {
+                dir: "rtl",
+                fajr: "فجر", dhuhr: "ظہر", asr: "عصر", asr_h: "عصر حنفی", maghrib: "مغرب", isha: "عشاء",
+                sehr: "ختمِ سحر", iftar: "افطار",
+                lbl_greg_title: "عیسوی تاریخ", lbl_hijri_title: "ہجری تاریخ",
+                btn_daily: "روزانہ کے اذکار", btn_quran: "قرآن مجید", btn_juma: "جمعہ کے اعمال", btn_namaz: "نماز کا طریقہ", btn_ramadan: "رمضان المبارک", btn_zakat: "احکامِ زکوٰۃ", btn_calc: "زکوٰۃ کیلکولیٹر", btn_eidain: "احکامِ عیدین", btn_hajj: "حج اور عمرہ", btn_about: "ایپ کے بارے میں",
+                loc_finding: "تلاش جاری...", loc_found: "لوکیشن مل گئی", loc_error: "لوکیشن ایرر", loc_nosupport: "GPS سپورٹ نہیں",
+                btn_settings_txt: "سیٹنگز", mod_title: "وقت اور تاریخ کی سیٹنگز", mod_hijri_lbl: "ہجری تاریخ کی تبدیلی (دن):", mod_prayer_lbl: "نمازوں کے اوقات میں تبدیلی (منٹ):", mod_save: "محفوظ کریں", mod_close: "بند کریں",
+                mod_quran_title: "قرآن کا نسخہ منتخب کریں", btn_quran_indo: "ہندوپاک مصحف", btn_quran_madani: "مدنی مصحف", btn_quran_saud: "مصحف الملك سعود", btn_close_quran: "بند کریں",
+                mod_loc_lbl: "لوکیشن تبدیل کریں:", btn_search_loc: "شہر تلاش کریں", loc_placeholder: "مثلاً: Lucknow, Makkah", loc_fail_msg: "شہر نہیں ملا! درست اسپیلنگ لکھیں۔", loc_success_msg: "شہر اپڈیٹ ہو گیا!", btn_auto_loc: "📍 موجودہ لوکیشن (GPS)",
+                ob_title_loc: "شہر کا انتخاب کریں", ob_desc_loc: "نمازوں کے اوقات جاننے کے لیے اپنے شہر کا نام لکھیں:", ob_btn_start: "ایپ شروع کریں ✅", ob_search: "🔍 تلاش کریں"
+            },
+            ar: {
+                dir: "rtl",
+                fajr: "الفجر", dhuhr: "الظهر", asr: "العصر", asr_h: "العصر (حنفي)", maghrib: "المغرب", isha: "العشاء",
+                sehr: "نهاية السحور", iftar: "الإفطار",
+                lbl_greg_title: "التاريخ", lbl_hijri_title: "التاريخ الهجري",
+                btn_daily: "أذكار الصباح والمساء", btn_quran: "القرآن الكريم", btn_juma: "أعمال يوم الجمعة", btn_namaz: "كيفية الصلاة", btn_ramadan: "شهر رمضان", btn_zakat: "أحكام الزكاة", btn_calc: "حاسبة الزكاة", btn_eidain: "أحكام العيدين", btn_hajj: "الحج والعمرة", btn_about: "حول التطبيق",
+                loc_finding: "جاري البحث...", loc_found: "تم تحديد الموقع", loc_error: "خطأ في الموقع", loc_nosupport: "GPS غير مدعوم",
+                btn_settings_txt: "الإعدادات", mod_title: "إعدادات التاريخ والأوقات", mod_hijri_lbl: "تعديل التاريخ الهجري (أيام):", mod_prayer_lbl: "تعديل أوقات الصلاة (دقائق):", mod_save: "حفظ", mod_close: "إغلاق",
+                mod_quran_title: "اختر المصحف", btn_quran_indo: "مصحف هندوپاك", btn_quran_madani: "مصحف المدينة", btn_quran_saud: "مصحف الملك سعود", btn_close_quran: "إغلاق",
+                mod_loc_lbl: "تغيير الموقع:", btn_search_loc: "بحث عن المدينة", loc_placeholder: "مثال: Lucknow, Makkah", loc_fail_msg: "المدينة غير موجودة!", loc_success_msg: "تم تحديث المدينة بنجاح!", btn_auto_loc: "📍 تحديد الموقع (GPS)",
+                ob_title_loc: "إعداد الموقع", ob_desc_loc: "أدخل اسم مدينتك لأوقات الصلاة:", ob_btn_start: "ابدأ التطبيق ✅", ob_search: "🔍 بحث"
+            },
+            en: {
+                dir: "ltr",
+                fajr: "Fajr", dhuhr: "Dhuhr", asr: "Asr", asr_h: "Asr (Hanafi)", maghrib: "Maghrib", isha: "Isha",
+                sehr: "Suhoor Ends", iftar: "Iftar",
+                lbl_greg_title: "Date", lbl_hijri_title: "Hijri Date",
+                btn_daily: "Daily Azkar", btn_quran: "Quran Majeed", btn_juma: "Jumu'ah Deeds", btn_namaz: "Prayer Method", btn_ramadan: "Ramadan", btn_zakat: "Zakat Rules", btn_calc: "Zakat Calculator", btn_eidain: "Eid Rulings", btn_hajj: "Hajj & Umrah", btn_about: "About App",
+                loc_finding: "Locating...", loc_found: "Location Found", loc_error: "Location Error", loc_nosupport: "GPS Not Supported",
+                btn_settings_txt: "Settings", mod_title: "Time & Date Settings", mod_hijri_lbl: "Hijri Date Adjustment (Days):", mod_prayer_lbl: "Prayer Time Adjustment (Minutes):", mod_save: "Save", mod_close: "Close",
+                mod_quran_title: "Select Quran Print", btn_quran_indo: "Indo-Pak Print", btn_quran_madani: "Madani Print", btn_quran_saud: "King Saud Mushaf", btn_close_quran: "Close",
+                mod_loc_lbl: "Change Location:", btn_search_loc: "Search City", loc_placeholder: "e.g. New Delhi, Makkah", loc_fail_msg: "City not found! Check spelling.", loc_success_msg: "City Updated!", btn_auto_loc: "📍 Find My Location (GPS)",
+                ob_title_loc: "Set Location", ob_desc_loc: "Enter your city name for prayer times:", ob_btn_start: "Start App ✅", ob_search: "🔍 Search"
+            },
+            bn: {
+                dir: "ltr",
+                fajr: "ফজর", dhuhr: "জোহর", asr: "আছর", asr_h: "আছর (হানাফি)", maghrib: "মাগরিব", isha: "এশা",
+                sehr: "সেহরির শেষ", iftar: "ইফতার",
+                lbl_greg_title: "তারিখ", lbl_hijri_title: "হিজরি তারিখ",
+                btn_daily: "প্রতিদিনের আজকার", btn_quran: "কুরআন মাজিদ", btn_juma: "জুমুআর আমল", btn_namaz: "নামাজ শিক্ষা", btn_ramadan: "রমজান", btn_zakat: "যাকাতের হুকুম", btn_calc: "যাকাত ক্যালকুলেটর", btn_eidain: "ঈদের মাসায়েল", btn_hajj: "হজ ও ওমরাহ", btn_about: "অ্যাপ সম্পর্কে",
+                loc_finding: "অবস্থান খুঁজছে...", loc_found: "অবস্থান পাওয়া গেছে", loc_error: "অবস্থান ত্রুটি", loc_nosupport: "GPS সমর্থিত নয়",
+                btn_settings_txt: "সেটিংস", mod_title: "তারিখ ও সময়ের সেটিংস", mod_hijri_lbl: "হিজরি তারিখ পরিবর্তন (দিন):", mod_prayer_lbl: "নামাজের সময় পরিবর্তন (মিনিট):", mod_save: "সংরক্ষণ করুন", mod_close: "বন্ধ করুন",
+                mod_quran_title: "কুরআন প্রিন্ট নির্বাচন করুন", btn_quran_indo: "ইন্দো-পাক প্রিন্ট", btn_quran_madani: "মাদানী প্রিন্ট", btn_quran_saud: "মালিক সাঊদ মুসহাফ", btn_close_quran: "বন্ধ করুন",
+                mod_loc_lbl: "অবস্থান পরিবর্তন করুন:", btn_search_loc: "শহর খুঁজুন", loc_placeholder: "যেমন: Kolkata, Makkah", loc_fail_msg: "শহর পাওয়া যায়নি!", loc_success_msg: "শহর আপডেট করা হয়েছে!", btn_auto_loc: "📍 বর্তমান অবস্থান (GPS)",
+                ob_title_loc: "অবস্থান সেট করুন", ob_desc_loc: "নামাজের সময়ের জন্য আপনার শহরের নাম লিখুন:", ob_btn_start: "অ্যাপ শুরু করুন ✅", ob_search: "🔍 খুঁজুন"
+            }
+        };
+
+        let currentLang = 'ur';
+
+        function changeLanguage(langCode) {
+            currentLang = langCode;
+            const data = translations[langCode];
+
+            document.documentElement.setAttribute("dir", data.dir);
+            document.documentElement.lang = langCode;
+
+            setText('lbl_fajr', data.fajr); setText('lbl_dhuhr', data.dhuhr); setText('lbl_asr', data.asr); setText('lbl_asr_h', data.asr_h); setText('lbl_maghrib', data.maghrib); setText('lbl_isha', data.isha);
+            setText('lbl_sehr', data.sehr); setText('lbl_iftar', data.iftar);
+            
+            setText('lbl_greg_title', data.lbl_greg_title); setText('lbl_hijri_title', data.lbl_hijri_title);
+
+            setText('btn_daily', data.btn_daily); setText('btn_quran', data.btn_quran); setText('btn_juma', data.btn_juma); setText('btn_namaz', data.btn_namaz); setText('btn_ramadan', data.btn_ramadan); setText('btn_zakat', data.btn_zakat); setText('btn_calc', data.btn_calc); setText('btn_eidain', data.btn_eidain); setText('btn_hajj', data.btn_hajj); setText('btn_about', data.btn_about);
+            
+            setText('mod_title', data.mod_title); setText('mod_hijri_lbl', data.mod_hijri_lbl); setText('mod_prayer_lbl', data.mod_prayer_lbl); 
+            setText('mod_save', data.mod_save); setText('mod_close', data.mod_close);
+            setText('mod_fajr', data.fajr); setText('mod_dhuhr', data.dhuhr); setText('mod_asr', data.asr); setText('mod_maghrib', data.maghrib); setText('mod_isha', data.isha);
+            
+            setText('mod_quran_title', data.mod_quran_title); 
+            setText('btn_quran_indo', data.btn_quran_indo); 
+            setText('btn_quran_madani', data.btn_quran_madani); 
+            setText('btn_quran_saud', data.btn_quran_saud); 
+            setText('btn_close_quran', data.btn_close_quran);
+
+            setText('mod_loc_lbl', data.mod_loc_lbl);
+            setText('btn_search_loc', data.btn_search_loc);
+            document.getElementById('manual_city_input').placeholder = data.loc_placeholder;
+            setText('btn_auto_loc', data.btn_auto_loc);
+
+            const locElem = document.getElementById('cityName');
+            if(locElem.innerText.includes("...")) locElem.innerText = data.loc_finding;
+
+            setText('ob_title_loc', data.ob_title_loc);
+            setText('ob_desc_loc', data.ob_desc_loc);
+            setText('ob_btn_start', data.ob_btn_start);
+            if(document.getElementById('ob_search_btn')) document.getElementById('ob_search_btn').innerText = data.ob_search;
+
+            updateDate();
+            setDailyEmbedBox();
+            localStorage.setItem('selectedLang', langCode);
+        }
+
+        function setText(id, text) { const el = document.getElementById(id); if(el) el.innerText = text; }
+
+        function setDailyEmbedBox() {
+            let dayOfMonth = new Date().getDate();
+            let messageIndex = (dayOfMonth - 1) % dailyMessages.length; 
+            let item = dailyMessages[messageIndex];
+
+            document.getElementById('embedType').innerText = item.type[currentLang] || item.type['ur'];
+            document.getElementById('embedArabic').innerText = item.arabic;
+            document.getElementById('embedTrans').innerText = item.trans[currentLang] || item.trans['ur'];
+            document.getElementById('embedRef').innerText = item.ref;
+        }
+
+        function openQuranMenu() { document.getElementById('quranModal').style.display = "flex"; }
+        function closeQuranMenu() { document.getElementById('quranModal').style.display = "none"; }
+
+        function openSettings() {
+            document.getElementById('adj_hijri').value = hijriOffset;
+            document.getElementById('adj_fajr').value = pOffsets.fajr;
+            document.getElementById('adj_dhuhr').value = pOffsets.dhuhr;
+            document.getElementById('adj_asr').value = pOffsets.asr;
+            document.getElementById('adj_maghrib').value = pOffsets.maghrib;
+            document.getElementById('adj_isha').value = pOffsets.isha;
+            document.getElementById('loc_search_status').innerText = "";
+            document.getElementById('settingsModal').style.display = "flex";
+        }
+
+        function closeSettings() { document.getElementById('settingsModal').style.display = "none"; }
+
+        function saveSettings() {
+            hijriOffset = parseInt(document.getElementById('adj_hijri').value) || 0;
+            pOffsets = {
+                fajr: parseInt(document.getElementById('adj_fajr').value) || 0,
+                dhuhr: parseInt(document.getElementById('adj_dhuhr').value) || 0,
+                asr: parseInt(document.getElementById('adj_asr').value) || 0,
+                maghrib: parseInt(document.getElementById('adj_maghrib').value) || 0,
+                isha: parseInt(document.getElementById('adj_isha').value) || 0
+            };
+
+            localStorage.setItem('hijriOffset', hijriOffset);
+            localStorage.setItem('prayerOffsets', JSON.stringify(pOffsets));
+
+            closeSettings();
+            
+            const savedLat = localStorage.getItem('savedLat');
+            const savedLon = localStorage.getItem('savedLon');
+            if (savedLat && savedLon) {
+                fetchPrayerTimes(savedLat, savedLon);
+            } else {
+                updateDate();
+                renderPrayerTimes(); 
+            }
+        }
+
+        function searchManualLocation() {
+            const cityInput = document.getElementById('manual_city_input').value.trim();
+            const statusText = document.getElementById('loc_search_status');
+            const data = translations[currentLang];
+
+            if (!cityInput) return;
+
+            statusText.style.color = "#1565c0";
+            statusText.innerText = data.loc_finding;
+
+            const geoUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cityInput)}&addressdetails=1&accept-language=en`;
+            
+            fetch(geoUrl)
+                .then(res => res.json())
+                .then(result => {
+                    if (result && result.length > 0) {
+                        const lat = result[0].lat;
+                        const lon = result[0].lon;
+                        
+                        let cleanCityName = cityInput;
+                        if (result[0].address) {
+                            let addr = result[0].address;
+                            cleanCityName = addr.city || addr.town || addr.village || addr.suburb || addr.state_district || addr.county || result[0].name;
+                        } else if (result[0].name) {
+                            cleanCityName = result[0].name;
+                        }
+
+                        localStorage.setItem('savedLat', lat);
+                        localStorage.setItem('savedLon', lon);
+                        localStorage.setItem('savedCity', cleanCityName);
+                        localStorage.setItem('isAppSetupDone', 'yes');
+
+                        document.getElementById('cityName').innerText = cleanCityName;
+                        fetchPrayerTimes(lat, lon);
+
+                        statusText.style.color = "#2e7d32";
+                        statusText.innerText = data.loc_success_msg || "Location Saved!";
+                        
+                        setTimeout(closeSettings, 1000);
+                        if(document.getElementById('ob_btn_start')) document.getElementById('ob_btn_start').style.display = 'block';
+                    } else {
+                        statusText.style.color = "#d32f2f";
+                        statusText.innerText = data.loc_fail_msg || "City not found!";
+                    }
+                })
+                .catch(err => {
+                    statusText.style.color = "#d32f2f";
+                    statusText.innerText = data.loc_error || "Search Error!";
+                });
+        }
+
+        function autoDetectLocation(isFromOnboarding) {
+            const statusTextId = isFromOnboarding ? 'ob_loc_status' : 'loc_search_status';
+            const statusText = document.getElementById(statusTextId);
+            const data = translations[currentLang] || translations['en'];
+
+            statusText.style.color = "#1565c0";
+            statusText.innerText = data.loc_finding || "Locating...";
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        localStorage.setItem('savedLat', lat);
+                        localStorage.setItem('savedLon', lon);
+                        
+                        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=14&accept-language=en`)
+                        .then(res => res.json())
+                        .then(geoData => {
+                            let city = "Location Found";
+                            if (geoData && geoData.address) {
+                                let addr = geoData.address;
+                                city = addr.city || addr.town || addr.village || addr.suburb || addr.municipality || addr.county || addr.state_district || geoData.name || "Unknown";
+                            } else if (geoData && geoData.name) {
+                                city = geoData.name;
+                            }
+                            
+                            localStorage.setItem('savedCity', city);
+                            document.getElementById('cityName').innerText = city;
+                            fetchPrayerTimes(lat, lon);
+                            
+                            statusText.style.color = "#2e7d32";
+                            statusText.innerText = data.loc_success_msg || "Location Found!";
+                            
+                            if(isFromOnboarding) {
+                                localStorage.setItem('isAppSetupDone', 'yes');
+                                document.getElementById('ob_btn_start').style.display = 'block';
+                            } else {
+                                setTimeout(closeSettings, 1000);
+                            }
+                        }).catch(() => {
+                            localStorage.setItem('savedCity', "Location Found");
+                            document.getElementById('cityName').innerText = "Location Found";
+                            fetchPrayerTimes(lat, lon);
+                            
+                            statusText.style.color = "#2e7d32";
+                            statusText.innerText = data.loc_success_msg || "Location Found!";
+                            
+                            if(isFromOnboarding) {
+                                localStorage.setItem('isAppSetupDone', 'yes');
+                                document.getElementById('ob_btn_start').style.display = 'block';
+                            } else {
+                                setTimeout(closeSettings, 1000);
+                            }
+                        });
+                    },
+                    (error) => {
+                        statusText.style.color = "#d32f2f";
+                        statusText.innerText = data.loc_error || "GPS Error! Try Manual Search.";
+                    },
+                    { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
+                );
+            } else {
+                statusText.style.color = "#d32f2f";
+                statusText.innerText = data.loc_nosupport || "GPS Not Supported.";
+            }
+        }
+
+        function searchObLocation() {
+            const cityInput = document.getElementById('ob_city_input').value.trim();
+            const statusText = document.getElementById('ob_loc_status');
+
+            if (!cityInput) return;
+
+            statusText.style.color = "#1565c0";
+            statusText.innerText = "Searching... / جاري البحث...";
+
+            const geoUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cityInput)}&addressdetails=1&accept-language=en`;
+            
+            fetch(geoUrl)
+                .then(res => res.json())
+                .then(result => {
+                    if (result && result.length > 0) {
+                        const lat = result[0].lat;
+                        const lon = result[0].lon;
+                        
+                        let cleanCityName = cityInput;
+                        if (result[0].address) {
+                            let addr = result[0].address;
+                            cleanCityName = addr.city || addr.town || addr.village || addr.suburb || addr.state_district || addr.county || result[0].name;
+                        } else if (result[0].name) {
+                            cleanCityName = result[0].name;
+                        }
+
+                        localStorage.setItem('savedLat', lat);
+                        localStorage.setItem('savedLon', lon);
+                        localStorage.setItem('savedCity', cleanCityName);
+                        localStorage.setItem('isAppSetupDone', 'yes'); 
+
+                        statusText.style.color = "#2e7d32";
+                        statusText.innerText = "Location Saved! / تم الحفظ!";
+                        
+                        document.getElementById('ob_btn_start').style.display = 'block';
+                    } else {
+                        statusText.style.color = "#d32f2f";
+                        statusText.innerText = "City not found! / المدينة غير موجودة!";
+                    }
+                })
+                .catch(err => {
+                    statusText.style.color = "#d32f2f";
+                    statusText.innerText = "Search Error! / خطأ في البحث!";
+                });
+        }
+
+        function nextOnboardingStep() {
+            const lang = document.getElementById('ob_lang_select').value;
+            changeLanguage(lang);
+            document.getElementById('languageSelector').value = lang;
+            
+            document.getElementById('ob_step1').classList.remove('active');
+            document.getElementById('ob_step2').classList.add('active');
+        }
+
+        function finishOnboarding() {
+            document.getElementById('onboardingModal').style.display = 'none';
+            document.getElementById('mainAppUI').style.display = 'flex';
+            
+            const savedLat = localStorage.getItem('savedLat');
+            const savedLon = localStorage.getItem('savedLon');
+            const savedCity = localStorage.getItem('savedCity');
+            
+            if(savedCity) document.getElementById('cityName').innerText = savedCity;
+            if(savedLat && savedLon) fetchPrayerTimes(savedLat, savedLon);
+        }
+
+        function updateClock() {
+            const now = new Date();
+            let hours = now.getHours(); let minutes = now.getMinutes(); let seconds = now.getSeconds();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12; hours = hours ? hours : 12; 
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            seconds = seconds < 10 ? '0' + seconds : seconds;
+            document.getElementById('digitalClock').innerText = hours + ':' + minutes + ':' + seconds + ' ' + ampm;
+            
+            if(hours === 12 && minutes === '00' && seconds === '00' && ampm === 'AM') {
+                updateDate();
+            }
+        }
+
+        function updateDate() {
+            const now = new Date();
+            
+            let dateLocale = 'ur-PK';
+            if(currentLang === 'en') dateLocale = 'en-US';
+            else if(currentLang === 'ar') dateLocale = 'ar-SA';
+            else if(currentLang === 'bn') dateLocale = 'bn-BD';
+
+            let gDayName = now.toLocaleDateString(dateLocale, { weekday: 'long' }); 
+            let gDayNum = now.toLocaleDateString(dateLocale, { day: 'numeric' }); 
+            let gMonth = now.toLocaleDateString(dateLocale, { month: 'short' }); 
+            let gYear = now.toLocaleDateString(dateLocale, { year: 'numeric' }); 
+
+            document.getElementById('dateUr').innerHTML = `${gDayName}<br>${gDayNum} ${gMonth}<br>${gYear}`;
+            
+            let hijriDateObj = new Date(now);
+            hijriDateObj.setDate(hijriDateObj.getDate() + hijriOffset); 
+            
+            let hDayName = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', { weekday: 'long' }).format(now);
+            let hDayNum = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', { day: 'numeric' }).format(hijriDateObj);
+            let hMonth = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', { month: 'long' }).format(hijriDateObj);
+            let hYear = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', { year: 'numeric' }).format(hijriDateObj);
+
+            document.getElementById('dateAr').innerHTML = `${hDayName}<br>${hDayNum} ${hMonth}<br>${hYear} `;
+        }
+
+        function initApp() {
+            const isSetupDone = localStorage.getItem('isAppSetupDone');
+            
+            if (!isSetupDone) {
+                document.getElementById('onboardingModal').style.display = 'flex';
+            } else {
+                document.getElementById('mainAppUI').style.display = 'flex';
+                
+                const savedLang = localStorage.getItem('selectedLang') || 'ur';
+                document.getElementById('languageSelector').value = savedLang;
+                changeLanguage(savedLang);
+
+                const savedCity = localStorage.getItem('savedCity');
+                const savedLat = localStorage.getItem('savedLat');
+                const savedLon = localStorage.getItem('savedLon');
+
+                if (savedCity) {
+                    document.getElementById('cityName').innerText = savedCity;
+                }
+
+                if (savedLat && savedLon) {
+                    let cachedS = localStorage.getItem('cachedShafi');
+                    let cachedH = localStorage.getItem('cachedHanafi');
+                    if (cachedS && cachedH) {
+                        try {
+                            lastShafi = JSON.parse(cachedS);
+                            lastHanafi = JSON.parse(cachedH);
+                            renderPrayerTimes();
+                        } catch(e) {}
+                    }
+                    fetchPrayerTimes(savedLat, savedLon);
+                } else {
+                    autoDetectLocation(false); 
+                }
+            }
+            
+            setInterval(updateClock, 1000); 
+            updateClock();
+            updateDate();
+            setDailyEmbedBox();
+        }
+
+        function fetchPrayerTimes(lat, lon) {
+            const date = new Date();
+            const dateString = `${date.getDate()}-${date.getMonth()+1}-${date.getFullYear()}`;
+            const urlShafi = `https://api.aladhan.com/v1/timings/${dateString}?latitude=${lat}&longitude=${lon}&method=1&school=0`;
+            const urlHanafi = `https://api.aladhan.com/v1/timings/${dateString}?latitude=${lat}&longitude=${lon}&method=1&school=1`;
+            
+            Promise.all([fetch(urlShafi).then(res => res.json()), fetch(urlHanafi).then(res => res.json())])
+            .then(([dataShafi, dataHanafi]) => {
+                lastShafi = dataShafi.data.timings;
+                lastHanafi = dataHanafi.data.timings;
+                
+                localStorage.setItem('cachedShafi', JSON.stringify(lastShafi));
+                localStorage.setItem('cachedHanafi', JSON.stringify(lastHanafi));
+                
+                renderPrayerTimes();
+            }).catch(err => {
+                console.error("No Internet / API Error. Using Cached Data.");
+                let cachedS = localStorage.getItem('cachedShafi');
+                let cachedH = localStorage.getItem('cachedHanafi');
+                if (cachedS && cachedH) {
+                    lastShafi = JSON.parse(cachedS);
+                    lastHanafi = JSON.parse(cachedH);
+                    renderPrayerTimes();
+                }
+            });
+        }
+
+        function renderPrayerTimes() {
+            if(!lastShafi) return;
+            document.getElementById('t-fajr').innerText = addOffsetAndFormat(lastShafi.Fajr, pOffsets.fajr);
+            document.getElementById('t-dhuhr').innerText = addOffsetAndFormat(lastShafi.Dhuhr, pOffsets.dhuhr);
+            document.getElementById('t-asr-shafi').innerText = addOffsetAndFormat(lastShafi.Asr, pOffsets.asr);
+            document.getElementById('t-asr-hanafi').innerText = addOffsetAndFormat(lastHanafi.Asr, pOffsets.asr);
+            document.getElementById('t-maghrib').innerText = addOffsetAndFormat(lastShafi.Maghrib, pOffsets.maghrib);
+            document.getElementById('t-isha').innerText = addOffsetAndFormat(lastShafi.Isha, pOffsets.isha);
+            document.getElementById('sehrTime').innerText = addOffsetAndFormat(lastShafi.Fajr, pOffsets.fajr);
+            document.getElementById('iftarTime').innerText = addOffsetAndFormat(lastShafi.Maghrib, pOffsets.maghrib);
+        }
+
+        function addOffsetAndFormat(time24, offsetMins) {
+            let [hours, minutes] = time24.split(':').map(Number);
+            let totalMins = (hours * 60) + minutes + parseInt(offsetMins || 0);
+            if(totalMins < 0) totalMins += 24 * 60; 
+            let newH = Math.floor(totalMins / 60) % 24;
+            let newM = totalMins % 60;
+            let ampm = newH >= 12 ? 'PM' : 'AM';
+            let displayH = newH % 12; displayH = displayH ? displayH : 12; 
+            let displayM = newM < 10 ? '0' + newM : newM;
+            return `${displayH}:${displayM}`; 
+        }
+
+        window.onload = initApp;
+    </script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker Registered!', reg))
+                    .catch(err => console.error('Service Worker Failed!', err));
+            });
+        }
+    </script>
+    </body>
+</html>

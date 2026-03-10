@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Sleeping Azkar</title>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Daily Azkar">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+        /* --- 1. FONTS --- */
+        @font-face { font-family: 'MyUrduFont'; src: url('fonts/jameel.ttf'); }
+        @font-face { font-family: 'Amiri'; src: url('fonts/amiri.ttf'); }
+        @font-face { font-family: 'TiroBangla'; src: url('fonts/tiro.ttf'); }
+        
+        :root {
+            /* 🌟 Notch bar ki height fix ki gayi hai 🌟 */
+            --notch-height: calc(max(5px, env(safe-area-inset-top)) + 30px);
+        }
+
+        /* --- 2. MAIN LAYOUT SETTINGS --- */
+        html, body {
+            height: 100%; width: 100%; margin: 0; padding: 0;
+            overflow: hidden; 
+            background-color: #1a237e; /* Dark Blue Background */
+        }
+
+        /* --- DYNAMIC FONT & DIRECTION --- */
+        html[lang="ur"] body { font-family: 'MyUrduFont', sans-serif; direction: rtl; }
+        html[lang="ar"] body { font-family: 'Amiri', serif; direction: rtl; }
+        html[lang="en"] body { font-family: 'MyUrduFont', sans-serif; direction: ltr; } 
+        html[lang="bn"] body { font-family: 'TiroBangla', serif; direction: ltr; }
+
+        /* --- 3. SHOW/HIDE LOGIC (FIXED) --- */
+        .urdu, .english, .bangla { display: none !important; }
+        html[lang="ur"] .urdu { display: block !important; }
+        html[lang="en"] .english { display: block !important; }
+        html[lang="bn"] .bangla { display: block !important; }
+
+        /* 🌟 GLOBAL FIXED NOTCH BAR (Always Visible) 🌟 */
+        .global-notch {
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--notch-height);
+            display: flex; justify-content: space-between; align-items: flex-end;
+            padding: 0 15px 8px 15px; box-sizing: border-box;
+            background-color: #0d47a1; /* Deep Blue Theme */
+            color: #e0f2f1; font-size: 13px; z-index: 500;
+            direction: ltr; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .global-notch .ar-text { font-family: 'Amiri', serif; font-size: 16px; color: #ffeb3b; direction: rtl;}
+        .global-notch .en-text { font-family: sans-serif; letter-spacing: 1px; }
+
+        /* --- APP CONTAINER --- */
+        .app-container {
+            display: flex; flex-direction: column;
+            height: 100%; width: 100%;
+            max-width: 800px; margin: 0 auto;
+            padding-top: var(--notch-height); /* Patti ke niche se shuru ho */
+            box-sizing: border-box;
+        }
+
+        /* --- FIXED HEADER --- */
+        .fixed-header {
+            flex: 0 0 auto; width: 100%; 
+            padding: 10px; box-sizing: border-box; z-index: 100;
+            background-color: #1a237e;
+        }
+
+        .header-box { 
+            background: #0d47a1; color: white; padding: 15px; 
+            border-radius: 10px; text-align: center; 
+            font-size: 26px; font-weight: bold; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3); 
+            border: 1px solid #5c6bc0;
+            width: 100%; box-sizing: border-box; margin: 0; margin-bottom: 10px;
+        }
+
+        /* --- SCROLLABLE CONTENT --- */
+        .scrollable-content {
+            flex: 1; overflow-y: auto; width: 100%;
+            padding: 15px; box-sizing: border-box;
+            padding-bottom: max(80px, env(safe-area-inset-bottom));
+            -webkit-overflow-scrolling: touch; 
+            scrollbar-width: none; -ms-overflow-style: none;
+        }
+        .scrollable-content::-webkit-scrollbar { display: none; }
+
+        /* --- CARD STYLES --- */
+        .card { 
+            background: #ffffff; padding: 20px; border-radius: 15px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2); margin-bottom: 25px; 
+            text-align: center; border-bottom: 5px solid #304ffe; 
+            transition: background 0.5s;
+        }
+        
+        .arabic { 
+            font-family: 'Amiri', serif; 
+            font-size: 22px; 
+            font-weight: normal; 
+            color: #1a237e; 
+            line-height: 1.8; margin-bottom: 12px; 
+            background: #e8eaf6; padding: 12px; border-radius: 8px; 
+            direction: rtl; 
+        }
+
+        .urdu { font-family: 'MyUrduFont'; font-size: 20px; color: #212121; margin-bottom: 8px; line-height: 1.6; direction: rtl; }
+        .english { font-family: 'MyUrduFont', sans-serif; font-size: 20px; color: #424242; margin-bottom: 15px; direction: ltr; line-height: 1.5; background: #f5f5f5; padding: 10px; border-radius: 5px; }
+        .bangla { font-family: 'TiroBangla', serif; font-size: 18px; color: #212121; margin-bottom: 15px; direction: ltr; line-height: 1.6; background: #e8eaf6; padding: 10px; border-radius: 5px; }
+
+        .ref { font-size: 13px; color: #757575; display: block; margin-bottom: 15px; font-family: sans-serif; }
+
+        /* Counter Button */
+        .counter-btn { 
+            font-family: inherit;
+            background: #c5cae9; color: #1a237e; border: 2px solid #304ffe; 
+            padding: 10px 40px; border-radius: 30px; font-size: 20px; 
+            cursor: pointer; user-select: none; width: 80%; font-weight: bold;
+            transition: all 0.2s; -webkit-tap-highlight-color: transparent;
+            padding-top: 5px; margin-bottom: 10px;
+        }
+        .counter-btn:active { transform: scale(0.95); }
+        .completed { background-color: #c8e6c9 !important; border-color: #2e7d32 !important; color: #1b5e20 !important; }
+
+        /* Read Full Surah Button */
+        .read-full-btn {
+            display: block; width: 90%; margin: 10px auto;
+            font-family: inherit;
+            background: #304ffe; color: white; border: none;
+            padding: 12px; border-radius: 8px; font-size: 18px;
+            text-decoration: none; box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+        }
+        .read-full-btn:hover { background: #283593; }
+        
+        .section-title { color: #d84315; font-size: 22px; margin-bottom: 10px; text-decoration: underline; font-weight: bold; }
+        
+        /* Dynamic Language specific instruction box */
+        .instruction-box { background: #fff3e0; color: #e65100; padding: 10px; border-radius: 5px; margin-bottom: 10px; font-weight: bold;}
+        html[lang="ur"] .instruction-box { font-size: 20px; font-family: 'MyUrduFont', sans-serif; }
+        html[lang="ar"] .instruction-box { font-size: 18px; font-family: 'Amiri', serif; }
+        html[lang="en"] .instruction-box { font-size: 18px; font-family: 'MyUrduFont', sans-serif; }
+        html[lang="bn"] .instruction-box { font-size: 16px; font-family: 'TiroBangla', serif; }
+
+        .back-btn { display: block; background: #304ffe; color: white; text-align: center; padding: 12px; border-radius: 8px; text-decoration: none; margin-top: 30px; font-size: 20px; font-family: inherit; }
+    </style>
+</head>
+<body>
+
+    <div id="globalNotchBar" class="global-notch">
+        <span class="en-text">Daily Azkar</span>
+        <span class="ar-text">الأذكار اليومية</span>
+    </div>
+
+    <div class="app-container">
+
+        <div class="fixed-header">
+            <div class="header-box" id="pageTitle">سونے کے اذکار</div>
+        </div>
+
+        <div class="scrollable-content">
+
+            <div class="card" id="card1">
+                <div class="section-title" id="title_sunnah">سونے سے پہلے کی سنت</div>
+                
+                <div class="instruction-box" id="inst_sunnah">نبی ﷺ سورۃ السجدہ اور سورۃ الملک پڑھے بغیر نہیں سوتے تھے۔ اگر زبانی یاد ہو تو پڑھ لیں، ورنہ نیچے دیے گئے بٹن سے تلاوت کر لیں۔ یہ عذاب قبر سے نجات کا ذریعہ ہے۔</div>
+                
+                <a href="surah_sajdah.html" class="read-full-btn" id="btn_sajdah">📖 مکمل سورۃ السجدہ پڑھیں</a>
+                <a href="surah_mulk.html" class="read-full-btn" id="btn_mulk">📖 مکمل سورۃ الملک پڑھیں</a>
+                <br>
+
+                <span class="ref">(Tirmidhi: 3404)</span>
+                
+                <button class="counter-btn" id="btn_read_done" onclick="updateCount(this, 1, 'card2')">پڑھ لیا ✅</button>
+            </div>
+
+            <div class="card" id="card2">
+                <div class="section-title" id="title_bed">بستر جھاڑنا</div>
+                
+                <div class="instruction-box" id="inst_bed">بستر کو تین بار جھاڑیں۔</div>
+
+                <div class="arabic">بِاسْمِكَ رَبِّي وَضَعْتُ جَنْبِي، وَبِكَ أَرْفَعُهُ، فَإِنْ أَمْسَكْتَ نَفْسِي فَارْحَمْهَا، وَإِنْ أَرْسَلْتَهَا فَاحْفَظْهَا، بِمَا تَحْفَظُ بِهِ عِبَادَكَ الصَّالِحِينَ</div>
+                <div class="urdu">تیرے نام سے اے میرے رب! میں نے اپنا پہلو رکھا، اور تیری ہی مدد سے اسے اٹھاؤں گا، اگر تو میری جان کو روک لے (موت دے دے) تو اس پر رحم فرما، اور اگر تو اسے چھوڑ دے (زندگی دے) تو اس کی حفاظت فرما جس طرح تو اپنے نیک بندوں کی حفاظت فرماتا ہے۔</div>
+                <div class="english">In Your Name my Lord, I lie down, and in Your Name I rise. If You take my soul, then have mercy on it, and if You release it, then protect it in the manner You protect Your righteous slaves.</div>
+                <div class="bangla">আপনার নামে হে আমার রব! আমি আমার পার্শ্বদেশ রাখলাম এবং আপনার সাহায্যেই তা উঠাব। যদি আপনি আমার প্রাণ হরণ করে নেন, তবে তার ওপর রহম করুন, আর যদি তা ফিরিয়ে দেন, তবে তার হেফাজত করুন, যেভাবে আপনি আপনার সৎ বান্দাদের হেফাজত করে থাকেন।</div>
+                <span class="ref">(Bukhari: 6320)</span>
+                <button class="counter-btn" onclick="updateCount(this, 1, 'card3')">0 / 1</button>
+            </div>
+
+            <div class="card" id="card3">
+                <div class="section-title" id="title_3qul">معوّذات (تینوں سورتیں 3 بار)</div>
+                
+                <div class="instruction-box" id="inst_3qul">ہتھیلیوں پر پھونک مار کر پورے جسم پر پھیریں۔</div>
+                
+                <div class="arabic">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ<br>قُلْ هُوَ اللَّهُ أَحَدٌ ۝ اللَّهُ الصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ ۝ وَلَمْ يَكُنْ لَهُ كُفُوًا أَحَدٌ ۝</div>
+                <div class="urdu">ترجمہ: کہہ دیجیے وہ اللہ ایک ہے۔ اللہ بے نیاز ہے۔ نہ اس کی کوئی اولاد ہے اور نہ وہ کسی کی اولاد ہے۔ اور اس کے برابر کوئی نہیں۔</div>
+                <div class="english">Say, "He is Allah, [who is] One, Allah, the Eternal Refuge. He neither begets nor is born, Nor is there to Him any equivalent."</div>
+                <div class="bangla">বলুন, তিনি আল্লাহ, এক, অদ্বিতীয়। আল্লাহ অমুখাপেক্ষী। তিনি কাউকে জন্ম দেননি এবং তাঁকেও জন্ম দেয়া হয়নি। এবং তাঁর সমতুল্য কেউ নেই।</div>
+                
+                <hr style="border: 0; border-top: 1px dashed #ccc; margin: 15px 0;">
+
+                <div class="arabic">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ<br>قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ ۝ مِنْ شَرِّ مَا خَلَقَ ۝ وَمِنْ شَرِّ غَاسِقٍ إِذَا وَقَبَ ۝ وَمِنْ شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ ۝ وَمِنْ شَرِّ حَاسِدٍ إِذَا حَسَدَ ۝</div>
+                <div class="urdu">ترجمہ: کہہ دیجیے! میں صبح کے رب کی پناہ مانگتا ہوں، ہر اس چیز کے شر سے جو اس نے پیدا کی، اور اندھیری رات کے شر سے جب وہ چھا جائے، اور گرہوں میں پھونکنے والیوں کے شر سے، اور حسد کرنے والے کے شر سے جب وہ حسد کرے۔</div>
+                <div class="english">Say, "I seek refuge in the Lord of daybreak, From the evil of that which He created, And from the evil of darkness when it settles, And from the evil of the blowers in knots, And from the evil of an envier when he envies."</div>
+                <div class="bangla">বলুন, আমি আশ্রয় গ্রহণ করছি প্রভাতের পালনকর্তার। তিনি যা সৃষ্টি করেছেন, তার অনিষ্ট থেকে। এবং অন্ধকার রাত্রির অনিষ্ট থেকে, যখন তা সমাগত হয়। এবং গ্রন্থিতে ফুৎকার দিয়ে জাদুকারিণীদের অনিষ্ট থেকে। এবং হিংসুকের অনিষ্ট থেকে, যখন সে হিংসা করে।</div>
+
+                <hr style="border: 0; border-top: 1px dashed #ccc; margin: 15px 0;">
+
+                <div class="arabic">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ<br>قُلْ أَعُوذُ بِرَبِّ النَّاسِ ۝ مَلِكِ النَّاسِ ۝ إِلَٰهِ النَّاسِ ۝ مِنْ شَرِّ الْوَسْوَاسِ الْخَنَّاسِ ۝ الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ ۝ مِنَ الْجِنَّةِ وَالنَّاسِ ۝</div>
+                <div class="urdu">ترجمہ: کہہ دیجیے! میں لوگوں کے رب کی پناہ مانگتا ہوں، لوگوں کے بادشاہ کی، لوگوں کے معبود کی، وسوسہ ڈالنے والے پیچھے ہٹ جانے والے (شیطان) کے شر سے، جو لوگوں کے سینوں میں وسوسہ ڈالتا ہے، چاہے وہ جنوں میں سے ہو یا انسانوں میں سے۔</div>
+                <div class="english">Say, "I seek refuge in the Lord of mankind, The King of mankind, The God of mankind, From the evil of the retreating whisperer - Who whispers [evil] into the breasts of mankind - From among the jinn and mankind."</div>
+                <div class="bangla">বলুন, আমি আশ্রয় চাই মানুষের পালনকর্তার। মানুষের অধিপতির, মানুষের মাবুদের। তার কুমন্ত্রণার অনিষ্ট থেকে, যে কুমন্ত্রণা দেয় ও আত্মগোপন করে। যে মানুষের অন্তরে কুমন্ত্রণা দেয়। জিন ও মানুষের মধ্য থেকে।</div>
+                
+                <span class="ref">(Bukhari: 5017)</span>
+                <button class="counter-btn" onclick="updateCount(this, 3, 'card4')">0 / 3</button>
+            </div>
+
+            <div class="card" id="card4">
+                <div class="section-title" id="title_kursi">آیت الکرسی</div>
+                
+                <div class="instruction-box" id="inst_kursi">جو شخص سوتے وقت اسے پڑھے، اللہ کی طرف سے اس پر ایک محافظ مقرر کر دیا جاتا ہے اور شیطان صبح تک اس کے قریب نہیں آتا۔</div>
+
+                <div class="arabic">اللَّهُ لَا إِلَهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ ۗ مَنْ ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ ۖ وَلَا يُحِيطُونَ بِشَيْءٍ مِنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيمُ</div>
+                <div class="urdu">ترجمہ: اللہ کے سوا کوئی معبود نہیں، وہ زندہ اور سب کو تھامنے والا ہے، نہ اسے اونگھ آتی ہے نہ نیند، اسی کا ہے جو آسمانوں میں ہے اور جو زمین میں ہے۔ کون ہے جو اس کے پاس سفارش کرے مگر اس کی اجازت کے ساتھ؟ وہ جانتا ہے جو ان کے آگے ہے اور جو ان کے پیچھے ہے، اور وہ اس کے علم میں سے کسی چیز کا احاطہ نہیں کر سکتے مگر جتنا وہ چاہے۔ اس کی کرسی نے آسمانوں اور زمین کو گھیر رکھا ہے، اور اسے ان دونوں کی حفاظت نہیں تھکاتی، اور وہ بہت بلند اور بہت عظمت والا ہے۔</div>
+                <div class="english">Allah - there is no deity except Him, the Ever-Living, the Sustainer of [all] existence. Neither drowsiness overtakes Him nor sleep. To Him belongs whatever is in the heavens and whatever is on the earth. Who is it that can intercede with Him except by His permission? He knows what is [presently] before them and what will be after them, and they encompass not a thing of His knowledge except for what He wills. His Kursi extends over the heavens and the earth, and their preservation tires Him not. And He is the Most High, the Most Great.</div>
+                <div class="bangla">আল্লাহ ছাড়া অন্য কোনো উপাস্য নেই, তিনি জীবিত, সবকিছুর ধারক। তাঁকে তন্দ্রাও স্পর্শ করতে পারে না এবং নিদ্রাও নয়। আকাশ ও ভূমণ্ডলে যা কিছু রয়েছে, সবই তাঁর। কে আছে এমন, যে সুপারিশ করবে তাঁর কাছে তাঁর অনুমতি ছাড়া? দৃষ্টির সামনে কিংবা পেছনে যা কিছু রয়েছে সে সবই তিনি জানেন। তাঁর জ্ঞানসীমা থেকে তারা কোনো কিছুকেই পরিবেষ্টিত করতে পারে না, কিন্তু যতটুকু তিনি ইচ্ছা করেন। তাঁর সিংহাসন সমস্ত আকাশ ও ভূমণ্ডলকে পরিবেষ্টিত করে আছে। আর সেগুলোকে ধারণ করা তাঁর পক্ষে কঠিন নয়। তিনিই সর্বোচ্চ এবং সর্বাপেক্ষা মহান।</div>
+                <span class="ref">(Bukhari: 2311)</span>
+                <button class="counter-btn" onclick="updateCount(this, 1, 'card5')">0 / 1</button>
+            </div>
+
+            <div class="card" id="card5">
+                <div class="section-title" id="title_baqarah">سورۃ البقرہ (آخری 2 آیات)</div>
+                
+                <div class="instruction-box" id="inst_baqarah">نبی ﷺ نے فرمایا: جو شخص رات کو سورۃ البقرہ کی آخری دو آیات پڑھ لے، وہ اسے ہر آفت سے کافی ہو جائیں گی۔</div>
+
+                <div class="arabic">آمَنَ الرَّسُولُ بِمَا أُنزِلَ إِلَيْهِ مِن رَّبِّهِ وَالْمُؤْمِنُونَ ۚ كُلٌّ آمَنَ بِاللَّهِ وَمَلَائِكَتِهِ وَكُتُبِهِ وَرُسُلِهِ لَا نُفَرِّقُ بَيْنَ أَحَدٍ مِّن رُّسُلِهِ ۚ وَقَالُوا سَمِعْنَا وَأَطَعْنَا ۖ غُفْرَانَكَ رَبَّنَا وَإِلَيْكَ الْمَصِيرُ</div>
+                <div class="urdu">ترجمہ: رسول (ﷺ) ایمان لائے اس پر جو ان کے رب کی طرف سے ان پر نازل ہوا اور مومنین بھی۔ سب نے مانا اللہ کو اور اس کے فرشتوں کو اور اس کی کتابوں کو اور اس کے رسولوں کو۔ (وہ کہتے ہیں کہ) ہم اس کے رسولوں میں سے کسی میں فرق نہیں کرتے، اور انہوں نے کہا کہ ہم نے سنا اور ہم نے مانا۔ اے ہمارے رب! ہم تیری بخشش مانگتے ہیں اور تیری ہی طرف لوٹ کر جانا ہے۔</div>
+                <div class="english">The Messenger believes in what has been sent down to him from his Lord, and (so do) the believers. Each one believes in Allah, His Angels, His Books, and His Messengers. They say, "We make no distinction between one another of His Messengers" - and they say, "We hear, and we obey. (We seek) Your Forgiveness, our Lord, and to You is the return (of all)."</div>
+                <div class="bangla">রাসূল তাঁর প্রতি তাঁর রবের পক্ষ থেকে যা অবতীর্ণ হয়েছে তার ওপর ঈমান এনেছেন এবং মুমিনগণও। প্রত্যেকেই ঈমান এনেছে আল্লাহর ওপর, তাঁর ফেরেশতাগণ, তাঁর কিতাবসমূহ এবং তাঁর রাসূলগণের ওপর। তারা বলে, ‘আমরা তাঁর রাসূলগণের মধ্যে কোনো পার্থক্য করি না’। আর তারা বলে, ‘আমরা শুনলাম এবং মানলাম। হে আমাদের রব! আমরা আপনার ক্ষমা প্রার্থনা করি, আর আপনার দিকেই প্রত্যাবর্তনস্থল’।</div>
+
+                <hr style="border: 0; border-top: 1px dashed #ccc; margin: 15px 0;">
+
+                <div class="arabic">لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا ۚ لَهَا مَا كَسَبَتْ وَعَلَيْهَا مَا اكْتَسَبَتْ ۗ رَبَّنَا لَا تُؤَاخِذْنَا إِن نَّسِينَا أَوْ أَخْطَأْنَا ۚ رَبَّنَا وَلَا تَحْمِلْ عَلَيْنَا إِصْرًا كَمَا حَمَلْتَهُ عَلَى الَّذِينَ مِن قَبْلِنَا ۚ رَبَّنَا وَلَا تُحَمِّلْنَا مَا لَا طَاقَةَ لَنَا بِهِ ۖ وَاعْفُ عَنَّا وَاغْفِرْ لَنَا وَارْحَمْنَا ۚ أَنتَ مَوْلَانَا فَانصُرْنَا عَلَى الْقَوْمِ الْكَافِرِينَ</div>
+                <div class="urdu">ترجمہ: اللہ کسی جان پر بوجھ نہیں ڈالتا مگر اس کی طاقت کے مطابق۔ اسی کے لیے ہے جو اس نے کمایا (نیکیوں میں سے) اور اسی پر وبال ہے جو اس نے کمایا (برائیوں میں سے)۔ اے ہمارے رب! ہماری گرفت نہ فرما اگر ہم بھول جائیں یا ہم سے خطا ہو جائے۔ اے ہمارے رب! اور ہم پر وہ بوجھ نہ ڈال جیسا تو نے ہم سے پہلے لوگوں پر ڈالا تھا۔ اے ہمارے رب! اور ہم پر اتنا بوجھ نہ ڈال جس کے اٹھانے کی ہم میں طاقت نہ ہو۔ اور ہم سے درگزر فرما، اور ہمیں بخش دے، اور ہم پر رحم فرما۔ تو ہی ہمارا کارساز ہے، پس کافر قوم کے مقابلے میں ہماری مدد فرما۔</div>
+                <div class="english">Allah burdens not a person beyond his scope. He gets reward for that (good) which he has earned, and he is punished for that (evil) which he has earned. "Our Lord! Punish us not if we forget or fall into error, our Lord! Lay not on us a burden like that which You did lay on those before us; our Lord! Put not on us a burden greater than we have strength to bear. Pardon us and grant us Forgiveness. Have mercy on us. You are our Maula (Patron, Supporter and Protector, etc.) and give us victory over the disbelieving people."</div>
+                <div class="bangla">আল্লাহ কোনো সত্তাকে তার সাধ্যের বাইরে কষ্ট দেন না। সে যা ভালো অর্জন করেছে তা তার জন্যই এবং সে যা মন্দ অর্জন করেছে তার বর্তাবে তারই ওপর। 'হে আমাদের রব! আমরা যদি ভুলে যাই অথবা ভুল করি তবে আপনি আমাদের পাকড়াও করবেন না। হে আমাদের রব! আমাদের ওপর এমন বোঝা চাপাবেন না যেমন বোঝা চাপিয়েছিলেন আমাদের পূর্ববর্তীদের ওপর। হে আমাদের রব! আপনি আমাদের ওপর এমন বোঝা চাপাবেন না, যা বহন করার সামর্থ্য আমাদের নেই। আর আপনি আমাদের পাপ মোচন করুন, আমাদেরকে ক্ষমা করুন, এবং আমাদের ওপর রহম করুন। আপনিই আমাদের অভিভাবক, সুতরাং কাফির সম্প্রদায়ের বিরুদ্ধে আপনি আমাদেরকে সাহায্য করুন।'</div>
+
+                <span class="ref">(Bukhari: 5009)</span>
+                <button class="counter-btn" onclick="updateCount(this, 1, 'card6')">0 / 1</button>
+            </div>
+
+            <div class="card" id="card6">
+                <div class="section-title" id="title_kafirun">سورۃ الکافرون</div>
+                
+                <div class="instruction-box" id="inst_kafirun">جو شخص سوتے وقت سورۃ الکافرون پڑھے گا وہ شرک سے بَری ہو جائے گا۔</div>
+
+                <div class="arabic">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ<br>قُلْ يَا أَيُّهَا الْكَافِرُونَ ۝ لَا أَعْبُدُ مَا تَعْبُدُونَ ۝ وَلَا أَنتُمْ عَابِدُونَ مَا أَعْبُدُ ۝ وَلَا أَنَا عَابِدٌ مَّا عَبَدتُّمْ ۝ وَلَا أَنتُمْ عَابِدُونَ مَا أَعْبُدُ ۝ لَكُمْ دِينُكُمْ وَلِيَ دِينِ ۝</div>
+                <div class="urdu">ترجمہ: کہہ دیجیے اے کافرو! میں اس کی عبادت نہیں کرتا جس کی تم عبادت کرتے ہو، اور نہ تم اس کی عبادت کرنے والے ہو جس کی میں عبادت کرتا ہوں، اور نہ میں (آئندہ) اس کی عبادت کروں گا جس کی تم نے عبادت کی، اور نہ تم اس کی عبادت کرنے والے ہو جس کی میں عبادت کرتا ہوں۔ تمہارے لیے تمہارا دین اور میرے لیے میرا دین۔</div>
+                <div class="english">Say: "O Al-Kafirun (disbelievers)! I worship not that which you worship, Nor will you worship that which I worship. And I shall not worship that which you are worshipping. Nor will you worship that which I worship. To you be your religion, and to me my religion."</div>
+                <div class="bangla">বলুন, 'হে কাফিররা! তোমরা যার ইবাদত করো আমি তার ইবাদত করি না। আর আমি যার ইবাদত করি তোমরা তার ইবাদতকারী নও। এবং তোমরা যার ইবাদত করেছ আমি তার ইবাদতকারী হবো না। আর আমি যার ইবাদত করি তোমরা তার ইবাদতকারী হবে না। তোমাদের জন্য তোমাদের দ্বীন আর আমার জন্য আমার দ্বীন।'</div>
+                <span class="ref">(Abu Dawud: 5055)</span>
+                <button class="counter-btn" onclick="updateCount(this, 1, 'card7')">0 / 1</button>
+            </div>
+
+            <div class="card" id="card7">
+                <div class="arabic">بِاسْمِكَ اللَّهُمَّ أَمُوتُ وَأَحْيَا</div>
+                <div class="urdu">اے اللہ! میں تیرے ہی نام کے ساتھ مرتا ہوں اور جیتا ہوں۔</div>
+                <div class="english">In Your Name, O Allah, I die and I live.</div>
+                <div class="bangla">হে আল্লাহ! আপনার নামেই আমি মৃত্যুবরণ করি এবং জীবিত হই।</div>
+                <span class="ref">(Bukhari: 6324)</span>
+                <button class="counter-btn" onclick="updateCount(this, 1, 'card8')">0 / 1</button>
+            </div>
+
+            <div class="card" id="card8">
+                <div class="instruction-box" id="inst_right_side">دائیں کروٹ لیٹ کر دایاں ہاتھ رخسار (گال) کے نیچے رکھ کر پڑھیں:</div>
+                
+                <div class="arabic">اللَّهُمَّ قِنِي عَذَابَكَ يَوْمَ تَبْعَثُ عِبَادَكَ</div>
+                <div class="urdu">اے اللہ! مجھے اپنے عذاب سے بچا جس دن تو اپنے بندوں کو اٹھائے گا۔</div>
+                <div class="english">O Allah, protect me from Your punishment on the day You resurrect Your slaves.</div>
+                <div class="bangla">হে আল্লাহ! যেদিন আপনি আপনার বান্দাদের পুনরুত্থিত করবেন, সেদিন আমাকে আপনার শাস্তি থেকে রক্ষা করুন।</div>
+                <span class="ref">(Abu Dawud: 5045)</span>
+                <button class="counter-btn" onclick="updateCount(this, 3, 'card9')">0 / 3</button>
+            </div>
+
+            <div class="card" id="card9">
+                <div class="arabic">اللَّهُمَّ إِنَّكَ خَلَقْتَ نَفْسِي وَأَنْتَ تَوَفَّاهَا، لَكَ مَمَاتُهَا وَمَحْيَاهَا، إِنْ أَحْيَيْتَهَا فَاحْفَظْهَا، وَإِنْ أَمَتَّهَا فَاغْفِرْ لَهَا، اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَافِيَةَ</div>
+                <div class="urdu">اے اللہ! بیشک تو نے ہی میری جان پیدا کی اور تو ہی اسے فوت کرے گا، اسی کا مرنا اور جینا تیرے ہی لیے ہے، اگر تو اسے زندہ رکھے تو اس کی حفاظت فرما اور اگر اسے مار دے تو اس کی مغفرت فرما۔ اے اللہ! میں تجھ سے عافیت کا سوال کرتا ہوں۔</div>
+                <div class="english">O Allah, You have created my soul and You take it back. Unto You is its death and its life. If You keep it alive, then protect it, and if You cause it to die, then forgive it. O Allah, I ask You for strength and well-being.</div>
+                <div class="bangla">হে আল্লাহ! আপনি আমার প্রাণ সৃষ্টি করেছেন এবং আপনিই তা হরণ করবেন। এর মৃত্যু ও জীবন আপনারই হাতে। যদি আপনি একে জীবিত রাখেন, তবে এর হেফাজত করুন, আর যদি একে মৃত্যু দেন, তবে একে ক্ষমা করুন। হে আল্লাহ! আমি আপনার কাছে নিরাপত্তা প্রার্থনা করছি।</div>
+                <span class="ref">(Muslim: 2712)</span>
+                <button class="counter-btn" onclick="updateCount(this, 1, 'card10')">0 / 1</button>
+            </div>
+
+            <div class="card" id="card10">
+                <div class="section-title" id="title_tasbeeh">تسبیح فاطمی</div>
+                <div class="arabic" style="font-size: 40px;">سُبْحَانَ اللَّهِ</div>
+                <div class="urdu">اللہ پاک ہے۔</div>
+                <div class="english">Glory is to Allah.</div>
+                <div class="bangla">আল্লাহ পবিত্র।</div>
+                <button class="counter-btn" onclick="updateCount(this, 33, 'card11')">0 / 33</button>
+            </div>
+
+            <div class="card" id="card11">
+                <div class="arabic" style="font-size: 40px;">الْحَمْدُ لِلَّهِ</div>
+                <div class="urdu">تمام تعریفیں اللہ کے لیے ہیں۔</div>
+                <div class="english">Praise is to Allah.</div>
+                <div class="bangla">সমস্ত প্রশংসা আল্লাহর জন্য।</div>
+                <button class="counter-btn" onclick="updateCount(this, 33, 'card12')">0 / 33</button>
+            </div>
+
+            <div class="card" id="card12">
+                <div class="arabic" style="font-size: 40px;">اللَّهُ أَكْبَرُ</div>
+                <div class="urdu">اللہ سب سے بڑا ہے۔</div>
+                <div class="english">Allah is the Greatest.</div>
+                <div class="bangla">আল্লাহ সর্বশ্রেষ্ঠ।</div>
+                <span class="ref">(Bukhari: 3705)</span>
+                <button class="counter-btn" onclick="updateCount(this, 34, 'card13')">0 / 34</button>
+            </div>
+
+            <div class="card" id="card13">
+                <div class="section-title" id="title_lastdua">سونے سے پہلے کی آخری دعا</div>
+                
+                <div class="instruction-box" id="inst_lastdua">نبی ﷺ نے فرمایا: جو یہ کلمات کہہ کر سو جائے اور اسی رات مر جائے تو وہ دین فطرت (اسلام) پر مرے گا۔</div>
+
+                <div class="arabic">اللَّهُمَّ أَسْلَمْتُ نَفْسِي إِلَيْكَ، وَفَوَّضْتُ أَمْرِي إِلَيْكَ، وَوَجَّهْتُ وَجْهِي إِلَيْكَ، وَأَلْجَأْتُ ظَهْرِي إِلَيْكَ، رَغْبَةً وَرَهْبَةً إِلَيْكَ، لَا مَلْجَأَ وَلَا مَنْجَا مِنْكَ إِلَّا إِلَيْكَ، آمَنْتُ بِكِتَابِكَ الَّذِي أَنْزَلْتَ، وَبِنَبِيِّكَ الَّذِي أَرْسَلْتَ</div>
+                <div class="urdu">اے اللہ! میں نے اپنی جان تیرے سپرد کر دی، اور اپنا معاملہ تیرے حوالے کر دیا، اور اپنا رخ تیری طرف کر لیا، اور اپنی پشت کا سہارا تجھے بنا لیا، (تیرے ثواب کی) رغبت رکھتے ہوئے اور (تیرے عذاب سے) ڈرتے ہوئے۔ تیرے سوا کوئی پناہ گاہ اور نجات کی جگہ نہیں مگر تیری ہی طرف۔ میں ایمان لایا تیری اس کتاب پر جو تو نے نازل کی اور تیرے اس نبی ﷺ پر جسے تو نے بھیجا۔</div>
+                <div class="english">O Allah, I submit my face to You, and I entrust my affair to You, and I turn my face towards You, and I rely completely on You, in hope and fear of You. There is no refuge and no escape from You except to You. I believe in Your Book which You have revealed and in Your Prophet whom You have sent.</div>
+                <div class="bangla">হে আল্লাহ! আমি নিজেকে আপনার কাছে সমর্পণ করলাম, আমার বিষয় আপনার কাছে সোপর্দ করলাম, আমার চেহারা আপনার দিকে ফিরালাম এবং আমার পিঠের আশ্রয় আপনার ওপর ন্যস্ত করলাম; আপনার (সওয়াবের) আশায় এবং আপনার (আযাবের) ভয়ে। আপনি ছাড়া কোনো আশ্রয়স্থল ও মুক্তির জায়গা নেই। আমি ঈমান এনেছি আপনার অবতীর্ণ কিতাবের ওপর এবং আপনার প্রেরিত নবীর ওপর।</div>
+                <span class="ref">(Bukhari: 6313)</span>
+                <button class="counter-btn" onclick="updateCount(this, 1, 'end')">0 / 1</button>
+            </div>
+
+            <a href="azkar_menu.html" class="back-btn" id="btnBack">واپس جائیں</a>
+
+        </div>
+    </div>
+
+    <script>
+        // 🌟 1. Hardware Back Button Fix 🌟
+        window.addEventListener("popstate", function (event) {
+            window.location.href = 'azkar_menu.html';
+        });
+        history.pushState(null, document.title, location.href);
+
+        const uiText = {
+            ur: { 
+                title: "سونے کے اذکار", btn_count: "گنتی: ", btn_done: "مکمل ✅", back: "واپس جائیں", 
+                msg_done: "ماشاءاللہ! سونے کے اذکار مکمل ہوئے۔ پرسکون نیند مبارک! 🌙", 
+                title_sunnah: "سونے سے پہلے کی سنت", title_bed: "بستر جھاڑنا", title_3qul: "معوّذات (تینوں سورتیں 3 بار)", 
+                title_kursi: "آیت الکرسی", title_baqarah: "سورۃ البقرہ (آخری 2 آیات)", title_kafirun: "سورۃ الکافرون",
+                title_tasbeeh: "تسبیح فاطمی", title_lastdua: "سونے سے پہلے کی آخری دعا",
+                btn_sajdah: "📖 مکمل سورۃ السجدہ پڑھیں", btn_mulk: "📖 مکمل سورۃ الملک پڑھیں", btn_read_done: "پڑھ لیا ✅",
+                inst_sunnah: "نبی ﷺ سورۃ السجدہ اور سورۃ الملک پڑھے بغیر نہیں سوتے تھے۔ اگر زبانی یاد ہو تو پڑھ لیں، ورنہ نیچے دیے گئے بٹن سے تلاوت کر لیں۔ یہ عذاب قبر سے نجات کا ذریعہ ہے۔",
+                inst_bed: "بستر کو تین بار جھاڑیں۔",
+                inst_3qul: "ہتھیلیوں پر پھونک مار کر پورے جسم پر پھیریں۔",
+                inst_kursi: "جو شخص رات کو اسے پڑھے، اللہ کی طرف سے اس پر ایک محافظ مقرر کر دیا جاتا ہے اور شیطان صبح تک اس کے قریب نہیں آتا۔",
+                inst_baqarah: "نبی ﷺ نے فرمایا: جو شخص رات کو سورۃ البقرہ کی آخری دو آیات پڑھ لے، وہ اسے ہر آفت سے کافی ہو جائیں گی۔",
+                inst_kafirun: "جو شخص سوتے وقت سورۃ الکافرون پڑھے گا وہ شرک سے بَری ہو جائے گا۔",
+                inst_right_side: "دائیں کروٹ لیٹ کر دایاں ہاتھ رخسار (گال) کے نیچے رکھ کر پڑھیں:",
+                inst_lastdua: "نبی ﷺ نے فرمایا: جو یہ کلمات کہہ کر سو جائے اور اسی رات مر جائے تو وہ دین فطرت (اسلام) پر مرے گا۔"
+            },
+            ar: { 
+                title: "أذكار النوم", btn_count: "العدد: ", btn_done: "تم ✅", back: "رجوع", 
+                msg_done: "ما شاء الله! اكتملت أذكار النوم. نومًا هنيئًا! 🌙", 
+                title_sunnah: "سنة قبل النوم", title_bed: "نفض الفراش", title_3qul: "المعوذات 3 مرات", 
+                title_kursi: "آية الكرسي", title_baqarah: "خواتيم سورة البقرة", title_kafirun: "سورة الكافرون",
+                title_tasbeeh: "تسبيح فاطمة رضي الله عنها", title_lastdua: "آخر دعاء قبل النوم",
+                btn_sajdah: "📖 قراءة سورة السجدة", btn_mulk: "📖 قراءة سورة الملك", btn_read_done: "قرأت ✅",
+                inst_sunnah: "كان النبي ﷺ لا ينام حتى يقرأ سورة السجدة وسورة الملك. اقرأهما من الأزرار أدناه إن لم تكن تحفظهما، فهما منجيتان من عذاب القبر.",
+                inst_bed: "ينفض فراشه ثلاث مرات.",
+                inst_3qul: "ينفث في كفيه ويمسح بهما جسده.",
+                inst_kursi: "من قرأ آية الكرسي عند نومه لا يزال عليه من الله حافظ ولا يقربه شيطان حتى يصبح.",
+                inst_baqarah: "الآيتان من آخر سورة البقرة من قرأهما في ليلة كفتاه.",
+                inst_kafirun: "من قرأ سورة الكافرون عند نومه برئ من الشرك.",
+                inst_right_side: "ينام على شقه الأيمن ويضع يده اليمنى تحت خده الأيمن ويقول:",
+                inst_lastdua: "قال النبي ﷺ: من قالهن ثم مات من ليلته مات على الفطرة."
+            },
+            en: { 
+                title: "Sleeping Azkar", btn_count: "Count: ", btn_done: "Done ✅", back: "Go Back", 
+                msg_done: "MashaAllah! Sleeping Azkar Completed. Have a peaceful sleep! 🌙", 
+                title_sunnah: "Sunnah Before Sleeping", title_bed: "Dusting the Bed", title_3qul: "Recite 3 Quls (3 Times)", 
+                title_kursi: "Ayatul Kursi", title_baqarah: "Surah Al-Baqarah (Last 2 Ayahs)", title_kafirun: "Surah Al-Kafirun",
+                title_tasbeeh: "Tasbeeh Fatimi", title_lastdua: "Last Dua Before Sleeping",
+                btn_sajdah: "📖 Read Surah As-Sajdah", btn_mulk: "📖 Read Surah Al-Mulk", btn_read_done: "Read ✅",
+                inst_sunnah: "The Prophet ﷺ would not sleep until he recited Surah As-Sajdah and Surah Al-Mulk. If you remember it, recite it, otherwise read from the buttons below. It is a protection from the punishment of the grave.",
+                inst_bed: "Dust the bed three times.",
+                inst_3qul: "Blow into your hands and wipe them over your entire body.",
+                inst_kursi: "Whoever recites this when going to bed, a guardian from Allah will be appointed for him and no devil will come near him until morning.",
+                inst_baqarah: "The Prophet ﷺ said: Whoever recites the last two verses of Surah Al-Baqarah at night, they will be sufficient for him.",
+                inst_kafirun: "Whoever recites Surah Al-Kafirun before going to sleep will be freed from Shirk (associating partners with Allah).",
+                inst_right_side: "Lie on your right side, place your right hand under your cheek and recite:",
+                inst_lastdua: "The Prophet ﷺ said: Whoever says this and dies in his sleep, has died in a state of the natural monotheism (Islam)."
+            },
+            bn: { 
+                title: "ঘুমানোর আজকার", btn_count: "গণনা: ", btn_done: "সম্পন্ন ✅", back: "ফিরে যান", 
+                msg_done: "মাশাআল্লাহ! ঘুমানোর আজকার সম্পন্ন হয়েছে। শান্তিময় ঘুম হোক! 🌙", 
+                title_sunnah: "ঘুমানোর আগের সুন্নত", title_bed: "বিছানা ঝাড়া", title_3qul: "৩ কুল (৩ বার পড়ুন)", 
+                title_kursi: "আয়াতুল কুরসী", title_baqarah: "সূরা আল-বাকারাহ (শেষ ২ আয়াত)", title_kafirun: "সূরা আল-কাফিরুন",
+                title_tasbeeh: "তাসবীহ ফাতেমী", title_lastdua: "ঘুমানোর আগের শেষ দোয়া",
+                btn_sajdah: "📖 সূরা আস-সাজদাহ পড়ুন", btn_mulk: "📖 সূরা আল-মুলক পড়ুন", btn_read_done: "পড়েছি ✅",
+                inst_sunnah: "নবী সাল্লাল্লাহু আলাইহি ওয়াসাল্লাম সূরা আস-সাজদাহ এবং সূরা আল-মুলক না পড়ে ঘুমাতেন না। মুখস্থ থাকলে পড়ুন, অন্যথায় নিচের বোতাম থেকে তিলাওয়াত করুন। এটি কবরের আযাব থেকে মুক্তির মাধ্যম।",
+                inst_bed: "বিছানা তিনবার ঝেড়ে নিন।",
+                inst_3qul: "হাতের তালুতে ফুঁ দিয়ে পুরো শরীরে মুছে নিন।",
+                inst_kursi: "যে ব্যক্তি রাতে ঘুমানোর সময় এটি পড়বে, আল্লাহর পক্ষ থেকে তার জন্য একজন রক্ষক নিযুক্ত করা হবে এবং সকাল পর্যন্ত কোনো শয়তান তার কাছে আসতে পারবে না।",
+                inst_baqarah: "নবী ﷺ বলেছেন: যে ব্যক্তি রাতে সূরা বাকারার শেষ দুই আয়াত পড়বে, তা তার জন্য যথেষ্ট হবে।",
+                inst_kafirun: "যে ব্যক্তি ঘুমানোর সময় সূরা কাফিরুন পড়বে, সে শিরক থেকে মুক্ত হবে।",
+                inst_right_side: "ডান কাত হয়ে শুয়ে ডান হাত গালের নিচে রেখে পড়ুন:",
+                inst_lastdua: "নবী সাল্লাল্লাহু আলাইহি ওয়াসাল্লাম বলেছেন: যে ব্যক্তি এই কালিমাগুলো পড়ে ঘুমাবে এবং ওই রাতেই মারা যাবে, সে ফিতরাতের (ইসলামের) ওপর মারা যাবে।"
+            }
+        };
+
+        let currentLang = 'ur'; 
+
+        window.onload = function() {
+            currentLang = localStorage.getItem('selectedLang') || 'ur';
+            document.documentElement.lang = currentLang;
+
+            const text = uiText[currentLang];
+            if(text) {
+                // UI Titles
+                document.getElementById('pageTitle').innerText = text.title;
+                document.getElementById('btnBack').innerText = text.back;
+                
+                // Section Titles
+                if(document.getElementById('title_sunnah')) document.getElementById('title_sunnah').innerText = text.title_sunnah;
+                if(document.getElementById('title_bed')) document.getElementById('title_bed').innerText = text.title_bed;
+                if(document.getElementById('title_3qul')) document.getElementById('title_3qul').innerText = text.title_3qul;
+                if(document.getElementById('title_kursi')) document.getElementById('title_kursi').innerText = text.title_kursi;
+                if(document.getElementById('title_baqarah')) document.getElementById('title_baqarah').innerText = text.title_baqarah;
+                if(document.getElementById('title_kafirun')) document.getElementById('title_kafirun').innerText = text.title_kafirun;
+                if(document.getElementById('title_tasbeeh')) document.getElementById('title_tasbeeh').innerText = text.title_tasbeeh;
+                if(document.getElementById('title_lastdua')) document.getElementById('title_lastdua').innerText = text.title_lastdua;
+
+                // Buttons
+                if(document.getElementById('btn_sajdah')) document.getElementById('btn_sajdah').innerText = text.btn_sajdah;
+                if(document.getElementById('btn_mulk')) document.getElementById('btn_mulk').innerText = text.btn_mulk;
+                if(document.getElementById('btn_read_done')) document.getElementById('btn_read_done').innerText = text.btn_read_done;
+
+                // Dynamic Instructions (Bug Fix for Arabic)
+                if(document.getElementById('inst_sunnah')) document.getElementById('inst_sunnah').innerText = text.inst_sunnah;
+                if(document.getElementById('inst_bed')) document.getElementById('inst_bed').innerText = text.inst_bed;
+                if(document.getElementById('inst_3qul')) document.getElementById('inst_3qul').innerText = text.inst_3qul;
+                if(document.getElementById('inst_kursi')) document.getElementById('inst_kursi').innerText = text.inst_kursi;
+                if(document.getElementById('inst_baqarah')) document.getElementById('inst_baqarah').innerText = text.inst_baqarah;
+                if(document.getElementById('inst_kafirun')) document.getElementById('inst_kafirun').innerText = text.inst_kafirun;
+                if(document.getElementById('inst_right_side')) document.getElementById('inst_right_side').innerText = text.inst_right_side;
+                if(document.getElementById('inst_lastdua')) document.getElementById('inst_lastdua').innerText = text.inst_lastdua;
+            }
+
+            // Update Counter Buttons Initial Text
+            let btns = document.querySelectorAll('.counter-btn');
+            btns.forEach(btn => {
+                if(btn.id !== 'btn_read_done') {
+                    let parts = btn.innerText.split('/');
+                    if(parts.length > 1) {
+                        btn.innerText = text.btn_count + parts[0].trim() + " / " + parts[1].trim();
+                    }
+                }
+            });
+        };
+
+        function updateCount(btn, max, nextCardId) {
+            let textData = uiText[currentLang];
+
+            // 🟢 Agar pehle se complete hai, to direct auto-scroll ho jaye
+            if (btn.innerText.includes('✅') || btn.id === 'btn_read_done') {
+                if(btn.id === 'btn_read_done' && !btn.innerText.includes('✅')) {
+                    btn.innerText = textData.btn_read_done;
+                }
+                btn.style.backgroundColor = "#c8e6c9";
+                btn.style.color = "#1b5e20";
+                btn.style.borderColor = "#2e7d32";
+                btn.parentElement.classList.add('completed');
+                autoScroll(nextCardId, textData);
+                return;
+            }
+
+            let currentText = btn.innerText; 
+            let parts = currentText.split('/'); 
+            let current = parseInt(parts[0].replace(/\D/g, '')); 
+            
+            if (current < max) {
+                current++;
+                btn.innerText = textData.btn_count + current + " / " + max;
+                
+                if (current == max) {
+                    btn.style.backgroundColor = "#c8e6c9";
+                    btn.style.color = "#1b5e20";
+                    btn.style.borderColor = "#2e7d32";
+                    btn.innerText = textData.btn_done;
+                    
+                    let card = btn.parentElement;
+                    card.classList.add('completed');
+                    autoScroll(nextCardId, textData);
+                }
+            }
+        }
+
+        // 🟢 AUTO SCROLL FUNCTION 🟢
+        function autoScroll(nextCardId, textData) {
+            if(nextCardId === 'end') {
+                setTimeout(() => {
+                    alert(textData.msg_done);
+                }, 200);
+                return;
+            }
+            setTimeout(() => {
+                let nextCard = document.getElementById(nextCardId);
+                if(nextCard) {
+                    nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 400);
+        }
+    </script>
+
+</body>
+</html>

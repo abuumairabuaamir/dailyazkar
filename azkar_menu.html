@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Daily Azkar</title>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Daily Azkar">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+        /* --- 1. FONTS --- */
+        @font-face { font-family: 'MyUrduFont'; src: url('fonts/jameel.ttf'); }
+        @font-face { font-family: 'Amiri'; src: url('fonts/amiri.ttf'); }
+        
+        :root {
+            /* 🌟 Notch bar ki height fix ki gayi hai 🌟 */
+            --notch-height: calc(max(5px, env(safe-area-inset-top)) + 30px);
+        }
+
+        /* --- 2. DYNAMIC FONT HANDLING --- */
+        /* Urdu & English -> Jameel Noori */
+        html[lang="ur"] body, html[lang="en"] body { font-family: 'MyUrduFont', 'Arial', sans-serif; }
+        /* Arabic -> Amiri */
+        html[lang="ar"] body { font-family: 'Amiri', serif; }
+        /* Bangla -> System Default */
+        html[lang="bn"] body { font-family: 'Arial', sans-serif; }
+
+        /* --- 3. MAIN LAYOUT SETTINGS --- */
+        html, body {
+            height: 100%; width: 100%; margin: 0; padding: 0;
+            overflow: hidden; /* Main Scroll Locked */
+            background: url('https://i.pinimg.com/736x/87/05/29/8705296061680d2222301981297d2685.jpg') no-repeat center center fixed; 
+            background-size: cover;
+            text-align: center;
+        }
+
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 40, 30, 0.85); z-index: -1; }
+
+        /* 🌟 GLOBAL FIXED NOTCH BAR (Always Visible) 🌟 */
+        .global-notch {
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--notch-height);
+            display: flex; justify-content: space-between; align-items: flex-end;
+            padding: 0 15px 8px 15px; box-sizing: border-box;
+            background-color: rgba(0,0,0,0.5); color: #e0f2f1; font-size: 13px; z-index: 500;
+            direction: ltr; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .global-notch .ar-text { font-family: 'Amiri', serif; font-size: 16px; color: #ffeb3b; direction: rtl;}
+        .global-notch .en-text { font-family: sans-serif; letter-spacing: 1px; }
+
+        /* --- 4. APP CONTAINER --- */
+        .app-container {
+            display: flex; flex-direction: column;
+            height: 100%; width: 100%;
+            max-width: 900px; /* Tablet Friendly Width Increased */
+            margin: 0 auto;
+            padding-top: var(--notch-height); /* Patti ke niche se shuru ho */
+            box-sizing: border-box;
+        }
+
+        /* --- 5. FIXED HEADER --- */
+        .fixed-header {
+            flex: 0 0 auto; width: 100%; 
+            padding: 10px; box-sizing: border-box; z-index: 10;
+        }
+
+        .header-box { 
+            background: rgba(255, 255, 255, 0.2); 
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white; padding: 15px; 
+            border-radius: 15px; 
+            width: 100%; box-sizing: border-box; margin: 0; margin-bottom: 10px;
+            font-size: 32px; font-weight: bold; 
+            text-shadow: 0 2px 4px black;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        /* --- 6. SCROLLABLE CONTENT --- */
+        .scrollable-content {
+            flex: 1; overflow-y: auto; width: 100%;
+            padding: 15px; box-sizing: border-box;
+            padding-bottom: max(50px, env(safe-area-inset-bottom));
+            -webkit-overflow-scrolling: touch; 
+            scrollbar-width: none; -ms-overflow-style: none;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .scrollable-content::-webkit-scrollbar { display: none; }
+
+        /* --- 7. GRID SYSTEM (Mobile Default) --- */
+        .grid-container {
+            display: grid; 
+            grid-template-columns: 1fr 1fr; /* Mobile: 2 Columns */
+            gap: 15px; width: 100%; padding-bottom: 20px;
+        }
+
+        /* --- TABLET MODE (3 ITEMS IN ONE LINE FOR 6 BUTTONS) --- */
+        @media (min-width: 650px) {
+            .grid-container { 
+                grid-template-columns: repeat(3, 1fr); /* 3 Columns for bigger screens */
+                gap: 15px; 
+            }
+            .grid-item { height: 130px !important; padding: 10px !important; }
+            .item-title { font-size: 20px !important; }
+            .icon svg { width: 45px !important; height: 45px !important; }
+        }
+
+        /* --- ITEMS STYLING --- */
+        .grid-item {
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            padding: 20px 10px; border-radius: 20px; 
+            text-align: center; text-decoration: none;
+            color: #1b5e20; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3); 
+            border: 2px solid #4CAF50;
+            display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; 
+            height: 140px; transition: transform 0.1s;
+        }
+        .grid-item:active { transform: scale(0.95); background: #e8f5e9; }
+        
+        .icon svg { width: 50px; height: 50px; margin-bottom: 10px; }
+        .item-title { font-size: 24px; font-weight: bold; white-space: nowrap; }
+
+        /* --- BACK BUTTON --- */
+        .back-btn { 
+            display: inline-block; background: rgba(0,0,0,0.6); color: white; 
+            border: 1px solid rgba(255,255,255,0.5); padding: 12px 40px; 
+            border-radius: 30px; text-decoration: none; margin-top: 10px; 
+            font-size: 22px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: background 0.2s;
+        }
+        .back-btn:active { background: rgba(0,0,0,0.8); transform: scale(0.95); }
+
+    </style>
+</head>
+<body>
+
+    <div class="overlay"></div>
+
+    <div id="globalNotchBar" class="global-notch">
+        <span class="en-text">Daily Azkar</span>
+        <span class="ar-text">الأذكار اليومية</span>
+    </div>
+
+    <div class="app-container">
+
+        <div class="fixed-header">
+            <div class="header-box" id="page_title">روزانہ کے اذکار</div>
+        </div>
+
+        <div class="scrollable-content">
+            
+            <div class="grid-container">
+                
+                <a href="morning.html" class="grid-item">
+                    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#FF9800" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></div>
+                    <span class="item-title" id="txt_morning">صبح کے اذکار</span>
+                </a>
+
+                <a href="evening.html" class="grid-item">
+                    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#00796B" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div>
+                    <span class="item-title" id="txt_evening">شام کے اذکار</span>
+                </a>
+
+                <a href="sleeping.html" class="grid-item">
+                    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#673AB7" stroke-width="2"><path d="M9 18v-6l9-2-9-2v-6l-7 3v13z"/></svg></div>
+                    <span class="item-title" id="txt_sleep">سونے کے اذکار</span>
+                </a>
+
+                <a href="salah.html" class="grid-item">
+                    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#C62828" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+                    <span class="item-title" id="txt_salah">نماز کے بعد</span>
+                </a>
+
+                <a href="jawami_dua.html" class="grid-item">
+                    <div class="icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+                            <path d="M14 4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+                            <path d="M10 4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+                            <path d="M6 6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"></path>
+                            <path d="M18 11c0 1.5-1 3-3 3h-6c-2.5 0-5-2-5-5"></path>
+                            <path d="M12 14v7"></path>
+                            <path d="M9 21h6"></path>
+                        </svg>
+                    </div>
+                    <span class="item-title" id="txt_jawami">جوامع الدعاء</span>
+                </a>
+
+                <a href="munasabat.html" class="grid-item">
+                    <div class="icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#3f51b5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                        </svg>
+                    </div>
+                    <span class="item-title" id="txt_munasabat">روزمرہ کی دعائیں</span>
+                </a>
+
+            </div>
+
+            <a href="index.html" class="back-btn" id="btn_back">واپس جائیں</a>
+
+        </div>
+    </div>
+
+    <script>
+        // 🌟 1. Hardware Back Button Fix 🌟
+        // Agar user mobile ka apna back button dabaye, tou index.html par jaye.
+        window.addEventListener("popstate", function (event) {
+            window.location.href = 'index.html';
+        });
+        history.pushState(null, document.title, location.href);
+
+        const translations = {
+            ur: {
+                dir: "rtl",
+                title: "روزانہ کے اذکار",
+                morning: "صبح کے اذکار",
+                evening: "شام کے اذکار",
+                sleep: "سونے کے اذکار",
+                salah: "نماز کے بعد",
+                jawami: "جوامع الدعاء",
+                munasabat: "روزمرہ کی دعائیں",
+                back: "واپس جائیں"
+            },
+            ar: {
+                dir: "rtl",
+                title: "الأذكار اليومية",
+                morning: "أذكار الصباح",
+                evening: "أذكار المساء",
+                sleep: "أذكار النوم",
+                salah: "أذكار بعد الصلاة",
+                jawami: "جوامع الدعاء",
+                munasabat: "أدعية المناسبات",
+                back: "رجوع"
+            },
+            en: {
+                dir: "ltr",
+                title: "Daily Azkar",
+                morning: "Morning Azkar",
+                evening: "Evening Azkar",
+                sleep: "Sleeping Azkar",
+                salah: "After Salah",
+                jawami: "Jawami' al-Dua",
+                munasabat: "Daily Occasions",
+                back: "Go Back"
+            },
+            bn: {
+                dir: "ltr",
+                title: "প্রতিদিনের আজকার",
+                morning: "সকালের আজকার",
+                evening: "সন্ধ্যার আজকার",
+                sleep: "ঘুমানোর আজকার",
+                salah: "সালাতের পর",
+                jawami: "জাওয়ামিউদ দুআ",
+                munasabat: "দৈনন্দিন দোয়া",
+                back: "ফিরে যান"
+            }
+        };
+
+        function applyLanguage() {
+            const savedLang = localStorage.getItem('selectedLang') || 'ur';
+            const data = translations[savedLang];
+
+            if (data) {
+                // Apply Direction & Lang
+                document.documentElement.setAttribute("dir", data.dir);
+                document.documentElement.lang = savedLang;
+
+                // Apply Text
+                document.getElementById('page_title').innerText = data.title;
+                document.getElementById('txt_morning').innerText = data.morning;
+                document.getElementById('txt_evening').innerText = data.evening;
+                document.getElementById('txt_sleep').innerText = data.sleep;
+                document.getElementById('txt_salah').innerText = data.salah;
+                document.getElementById('txt_jawami').innerText = data.jawami;
+                document.getElementById('txt_munasabat').innerText = data.munasabat;
+                document.getElementById('btn_back').innerText = data.back;
+            }
+        }
+
+        // Run when page loads
+        window.onload = applyLanguage;
+    </script>
+
+</body>
+</html>

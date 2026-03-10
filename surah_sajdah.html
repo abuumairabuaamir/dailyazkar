@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Surah As-Sajdah</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Daily Azkar">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+
+    <style>
+        @font-face { font-family: 'MyUrduFont'; src: url('fonts/jameel.ttf'); }
+        @font-face { font-family: 'Amiri'; src: url('fonts/amiri.ttf'); }
+        @font-face { font-family: 'TiroBangla'; src: url('fonts/tiro.ttf'); }
+
+        :root {
+            /* 🌟 Notch bar ki height fix ki gayi hai 🌟 */
+            --notch-height: calc(max(5px, env(safe-area-inset-top)) + 30px);
+        }
+
+        html, body {
+            height: 100%; width: 100%; margin: 0; padding: 0;
+            overflow: hidden; background-color: #f4ecd8;
+        }
+
+        html[lang="ur"] body, html[lang="en"] body { font-family: 'MyUrduFont', 'Arial', sans-serif; }
+        html[lang="ar"] body { font-family: 'Amiri', serif; }
+        html[lang="bn"] body { font-family: 'TiroBangla', serif; }
+
+        /* 🌟 GLOBAL FIXED NOTCH BAR (Always Visible) 🌟 */
+        .global-notch {
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--notch-height);
+            display: flex; justify-content: space-between; align-items: flex-end;
+            padding: 0 15px 8px 15px; box-sizing: border-box;
+            background-color: #8c6200; /* Dark Gold/Brown */
+            color: #fdf6e3; font-size: 13px; z-index: 500;
+            direction: ltr; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .global-notch .ar-text { font-family: 'Amiri', serif; font-size: 16px; color: #ffeb3b; direction: rtl;}
+        .global-notch .en-text { font-family: sans-serif; letter-spacing: 1px; }
+
+        .app-container { display: flex; flex-direction: column; height: 100%; width: 100%; max-width: 800px; margin: 0 auto; position: relative; }
+
+        /* 🟢 FLOATING 3D GOLDEN HEADER 🟢 */
+        .fixed-header {
+            position: fixed; top: var(--notch-height); left: 0; width: 100%; height: 50px; 
+            background: linear-gradient(180deg, #f2dd9b 0%, #d4af37 100%); 
+            border-bottom: 2px solid #a67c00;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 10px; box-sizing: border-box; z-index: 100;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15), inset 0 2px 2px rgba(255,255,255,0.7);
+            transition: transform 0.3s ease-in-out; 
+        }
+
+        .header-hidden { transform: translateY(-200%); }
+
+        .back-btn, .page-info { 
+            background: linear-gradient(180deg, #fdf6e3 0%, #e0bd58 100%);
+            border: 1px solid #a67c00; color: #3e2723; 
+            padding: 4px 12px; border-radius: 5px; font-size: 16px; cursor: pointer; text-decoration: none; 
+            display: flex; align-items: center; font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15), inset 0 1px 1px rgba(255,255,255,1); text-shadow: 1px 1px 0px rgba(255,255,255,0.5);
+        }
+        .page-title { font-size: 22px; font-weight: bold; color: #3e2723; text-shadow: 1px 1px 1px rgba(255,255,255,0.6); }
+        .page-info { direction: ltr; }
+
+        /* 🌟 BOTTOM NAVIGATION BAR 🌟 */
+        .reader-bottom-bar {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: linear-gradient(180deg, #d4af37 0%, #a67c00 100%);
+            z-index: 100; display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 15px max(10px, env(safe-area-inset-bottom)) 15px; 
+            box-sizing: border-box; box-shadow: 0 -2px 5px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease; border-top: 2px solid #f2dd9b;
+        }
+        .bottom-hidden { transform: translateY(100%); }
+        
+        .nav-btn {
+            background: rgba(255,255,255,0.25); border: 1px solid rgba(255,255,255,0.6); 
+            color: #3e2723; padding: 8px 15px; border-radius: 20px; font-size: 16px;
+            cursor: pointer; font-family: inherit; font-weight: bold; transition: 0.2s;
+            text-shadow: 1px 1px 0px rgba(255,255,255,0.5); box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .nav-btn:active { background: rgba(255,255,255,0.4); transform: scale(0.95); }
+
+        /* 🟢 SWIPER & PERFECT CENTER FIX 🟢 */
+        .swiper { 
+            width: 100%; height: 100%; box-sizing: border-box; 
+            transition: padding-top 0.3s ease, padding-bottom 0.3s ease;
+        }
+        .swiper-slide { 
+            background-color: #f4ecd8; box-sizing: border-box; 
+            display: flex; align-items: center; justify-content: center; 
+        }
+
+        .single-page-img { 
+            width: 100%; height: 100%; object-fit: contain; 
+            box-shadow: 0 0 15px rgba(0,0,0,0.15); 
+            object-position: center center; /* 🌟 Perfect Center 🌟 */
+            
+            -webkit-user-drag: none; -khtml-user-drag: none;
+            -moz-user-drag: none; -o-user-drag: none; user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        /* 🟢 LANDSCAPE SPREAD STYLES (TABLET MODE) 🟢 */
+        .spread-container { display: flex; width: 100%; height: 100%; justify-content: center; align-items: center; flex-direction: row; }
+        .page-wrapper { width: 50%; height: 100%; box-sizing: border-box; background-color: #f4ecd8; }
+        .page-wrapper img { 
+            width: 100%; height: 100%; object-fit: contain; 
+            -webkit-user-drag: none; user-select: none; -webkit-touch-callout: none;
+        }
+        
+        .right-page img { object-position: left center; }
+        .left-page img { object-position: right center; }
+        .right-page { border-left: 1px solid rgba(0,0,0,0.15); box-shadow: inset 15px 0 15px -15px rgba(0,0,0,0.3); }
+        .left-page { box-shadow: inset -15px 0 15px -15px rgba(0,0,0,0.3); }
+        .empty-page { background: transparent !important; box-shadow: none !important; border: none !important; }
+
+
+        /* MODAL */
+        .modal { display: flex; position: fixed; z-index: 600; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); justify-content: center; align-items: center; }
+        .modal-content { background: #fdf6e3; padding: 25px 20px; border-radius: 15px; text-align: center; width: 85%; max-width: 400px; box-shadow: 0 5px 20px rgba(0,0,0,0.5); border: 2px solid #d4af37; }
+        .mod-title { font-size: 24px; font-weight: bold; color: #3e2723; margin-bottom: 20px; text-shadow: 1px 1px 0px rgba(255,255,255,0.8); }
+        .print-btn { background: linear-gradient(180deg, #fdf6e3 0%, #e0bd58 100%); color: #3e2723; border: 1px solid #a67c00; padding: 12px; margin-bottom: 15px; border-radius: 8px; font-size: 20px; cursor: pointer; width: 100%; font-family: inherit; font-weight: bold; transition: all 0.2s; box-shadow: 0 3px 6px rgba(0,0,0,0.15); text-shadow: 1px 1px 0px rgba(255,255,255,0.5); }
+        .print-btn:active { background: #d4af37; transform: translateY(2px); box-shadow: none; }
+
+        #no-internet { display: none; text-align: center; padding: 100px 20px; color: #d32f2f; font-size: 24px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div id="globalNotchBar" class="global-notch">
+        <span class="en-text">Daily Azkar</span>
+        <span class="ar-text">الأذكار اليومية</span>
+    </div>
+
+    <div id="printModal" class="modal">
+        <div class="modal-content">
+            <div class="mod-title" id="txt_select_print">قرآن کا نسخہ منتخب کریں</div>
+            <button class="print-btn" onclick="selectPrint('indo')" id="txt_indo">ہندوپاک مصحف</button>
+            <button class="print-btn" onclick="selectPrint('madani')" id="txt_madani">مدنی مصحف</button>
+            <button class="print-btn" style="background: #e0e0e0; border-color: #9e9e9e;" onclick="window.location.href='sleeping.html'" id="txt_cancel">واپس جائیں</button>
+        </div>
+    </div>
+
+    <div class="fixed-header" id="mainHeader" style="display: none;">
+        <a href="sleeping.html" class="back-btn" id="txt_back">واپس</a>
+        <span class="page-title" id="txt_title">سورۃ السجدہ</span>
+        <div class="page-info"><span id="currentPageNum">-</span></div>
+    </div>
+
+    <div id="no-internet">⚠️ براہ کرم اپنا انٹرنیٹ آن کریں!</div>
+
+    <div class="swiper mySwiper" id="swiperContainer" dir="rtl" style="display: none;">
+        <div class="swiper-wrapper"></div>
+    </div>
+
+    <div class="reader-bottom-bar" id="readerBottomBar" style="display: none;">
+        <button class="nav-btn" onclick="swiper.slidePrev()" id="btn_prev">▶ پچھلا</button>
+        <button class="nav-btn" onclick="swiper.slideNext()" id="btn_next">اگلا ◀</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+
+    <script>
+        // 🌟 Hardware Back Button Fix 🌟
+        window.addEventListener("popstate", function (event) {
+            window.location.href = 'sleeping.html';
+        });
+        history.pushState(null, document.title, location.href);
+
+        const translations = {
+            ur: { dir: "rtl", back: "واپس", title: "سورۃ السجدہ", page: "صفحہ", select_print: "قرآن کا نسخہ منتخب کریں", indo: "ہندوپاک مصحف", madani: "مدنی مصحف", cancel: "واپس جائیں", btn_next: "اگلا ◀", btn_prev: "▶ پچھلا" },
+            ar: { dir: "rtl", back: "رجوع", title: "سورة السجدة", page: "صفحة", select_print: "اختر المصحف", indo: "مصحف هندوپاك", madani: "مصحف المدينة", cancel: "رجوع", btn_next: "التالي ◀", btn_prev: "▶ السابق" },
+            en: { dir: "ltr", back: "Back", title: "Surah As-Sajdah", page: "Page", select_print: "Select Quran Print", indo: "Indo-Pak Print", madani: "Madani Print", cancel: "Go Back", btn_next: "Next ▶", btn_prev: "◀ Prev" },
+            bn: { dir: "ltr", back: "ফিরে যান", title: "সূরা আস-সাজদাহ", page: "পৃষ্ঠা", select_print: "কুরআন প্রিন্ট নির্বাচন করুন", indo: "ইন্দো-পাক প্রিন্ট", madani: "মাদানী প্রিন্ট", cancel: "ফিরে যান", btn_next: "পরবর্তী ▶", btn_prev: "◀ পূর্ববর্তী" }
+        };
+
+        let currentLang = localStorage.getItem('selectedLang') || 'ur';
+        let langData = translations[currentLang] || translations['ur'];
+
+        function applyLanguage() {
+            document.documentElement.setAttribute("dir", langData.dir);
+            document.documentElement.lang = currentLang;
+            document.getElementById("txt_back").innerText = langData.back;
+            document.getElementById("txt_title").innerText = langData.title;
+            document.getElementById("txt_select_print").innerText = langData.select_print;
+            document.getElementById("txt_indo").innerText = langData.indo;
+            document.getElementById("txt_madani").innerText = langData.madani;
+            document.getElementById("txt_cancel").innerText = langData.cancel;
+            document.getElementById("btn_next").innerText = langData.btn_next;
+            document.getElementById("btn_prev").innerText = langData.btn_prev;
+        }
+
+        // 🟢 SURAH AS-SAJDAH PRINTS CONFIGURATION 🟢
+        const printConfigs = {
+            indo: { 
+                baseUrl: "https://cdn.jsdelivr.net/gh/abuumairabuaamir/quran.images@main/", 
+                filePrefix: "QuranMajeed-15Lines-SaudiPrint_page-", 
+                extension: ".webp", 
+                pad: 4, 
+                startImage: 417, // Printed page 416
+                endImage: 419,   // Printed page 418
+                offset: 1 
+            },
+            madani: { 
+                baseUrl: "https://cdn.jsdelivr.net/gh/abuumairabuaamir/quran.madani.images@main/", 
+                filePrefix: "", 
+                extension: ".webp", 
+                pad: 3, 
+                startImage: 415, 
+                endImage: 417, 
+                offset: 0 
+            }
+        };
+
+        let activeConfig = null;
+        let swiper;
+        let isLandscape = false;
+
+        function getImgUrl(imgNum) {
+            let pageNumStr = String(imgNum).padStart(activeConfig.pad, '0');
+            return activeConfig.baseUrl + activeConfig.filePrefix + pageNumStr + activeConfig.extension;
+        }
+
+        // 🌟 DYNAMIC SLIDES GENERATOR (Portrait & Landscape) 🌟
+        function buildVirtualSlides(landscapeMode) {
+            let slides = [];
+            let start = activeConfig.startImage;
+            let end = activeConfig.endImage;
+
+            if (!landscapeMode) {
+                // Portrait: 1 image per slide
+                for (let i = start; i <= end; i++) {
+                    slides.push(`
+                        <div class="swiper-zoom-container">
+                            <img src="${getImgUrl(i)}" class="single-page-img" loading="lazy">
+                        </div>
+                    `);
+                }
+            } else {
+                // Landscape: 2 images per slide
+                for (let i = start; i <= end; i += 2) {
+                    let imgRight = getImgUrl(i);
+                    let imgLeft = (i + 1 <= end) ? `<img src="${getImgUrl(i + 1)}" loading="lazy">` : '';
+                    
+                    slides.push(`
+                        <div class="swiper-zoom-container">
+                            <div class="spread-container swiper-zoom-target">
+                                <div class="page-wrapper right-page"><img src="${imgRight}" loading="lazy"></div>
+                                <div class="page-wrapper left-page ${imgLeft ? '' : 'empty-page'}">${imgLeft}</div>
+                            </div>
+                        </div>
+                    `);
+                }
+            }
+            return slides;
+        }
+
+        function getImgNumFromLandscapeIndex(l_idx) { 
+            return activeConfig.startImage + (l_idx * 2); 
+        }
+        function getLandscapeIndexFromImgNum(imgNum) { 
+            return Math.floor((imgNum - activeConfig.startImage) / 2); 
+        }
+        function getPortraitIndexFromImgNum(imgNum) {
+            return imgNum - activeConfig.startImage;
+        }
+        function getImgNumFromPortraitIndex(p_idx) {
+            return activeConfig.startImage + p_idx;
+        }
+
+        function selectPrint(printType) {
+            document.getElementById('printModal').style.display = 'none';
+            document.getElementById('swiperContainer').style.display = 'block';
+            document.getElementById('mainHeader').style.display = 'flex';
+            document.getElementById('readerBottomBar').style.display = 'flex';
+            
+            activeConfig = printConfigs[printType];
+            isLandscape = window.innerWidth > window.innerHeight;
+            initSwiper();
+        }
+
+        function initSwiper() {
+            if (typeof Swiper === 'undefined') {
+                document.getElementById('no-internet').style.display = 'block';
+                return;
+            }
+
+            swiper = new Swiper(".mySwiper", {
+                direction: "horizontal", 
+                initialSlide: 0, 
+                slidesPerView: 1, 
+                spaceBetween: 0,
+                zoom: { maxRatio: 3 },
+                virtual: { slides: buildVirtualSlides(isLandscape), addSlidesBefore: 2, addSlidesAfter: 2 },
+                on: { 
+                    slideChange: updatePageIndicator, 
+                    tap: function () { toggleHeader(); } 
+                },
+            });
+
+            window.addEventListener('resize', () => {
+                if(!swiper || !activeConfig) return;
+                let newIsLandscape = window.innerWidth > window.innerHeight;
+                if (newIsLandscape !== isLandscape) {
+                    let currentImgNum = isLandscape ? getImgNumFromLandscapeIndex(swiper.activeIndex) : getImgNumFromPortraitIndex(swiper.activeIndex);
+                    isLandscape = newIsLandscape;
+                    swiper.virtual.slides = buildVirtualSlides(isLandscape);
+                    swiper.virtual.update(true);
+                    let newIndex = isLandscape ? getLandscapeIndexFromImgNum(currentImgNum) : getPortraitIndexFromImgNum(currentImgNum);
+                    swiper.slideTo(newIndex, 0); 
+                    updatePageIndicator();
+                }
+                updateSwiperPadding();
+            });
+
+            updateSwiperPadding();
+            updatePageIndicator();
+        }
+
+        function updateSwiperPadding() {
+            let notchHeight = document.getElementById('globalNotchBar').offsetHeight;
+            let topBarHeight = document.getElementById('mainHeader').offsetHeight;
+            let bottomBarHeight = document.getElementById('readerBottomBar').offsetHeight;
+            
+            let swiperCont = document.getElementById('swiperContainer');
+            
+            if (document.getElementById('mainHeader').classList.contains('header-hidden')) {
+                // Reading mode
+                swiperCont.style.paddingTop = notchHeight + 'px';
+                swiperCont.style.paddingBottom = '0px'; 
+            } else {
+                // Normal mode
+                swiperCont.style.paddingTop = (notchHeight + topBarHeight) + 'px';
+                swiperCont.style.paddingBottom = bottomBarHeight + 'px';
+            }
+        }
+
+        function toggleHeader() {
+            document.getElementById('mainHeader').classList.toggle('header-hidden');
+            document.getElementById('readerBottomBar').classList.toggle('bottom-hidden');
+            updateSwiperPadding();
+        }
+
+        function updatePageIndicator() {
+            if(!swiper || !activeConfig) return;
+            let displayStr = "";
+
+            if (isLandscape) {
+                let l_idx = swiper.activeIndex;
+                let rightImg = getImgNumFromLandscapeIndex(l_idx);
+                let leftImg = rightImg + 1;
+                
+                let rightPrint = rightImg - activeConfig.offset;
+                let leftPrint = leftImg - activeConfig.offset;
+
+                if (leftImg > activeConfig.endImage) {
+                    displayStr = langData.page + " " + rightPrint;
+                } else {
+                    displayStr = langData.page + " " + rightPrint + " - " + leftPrint;
+                }
+            } else {
+                let currentImg = getImgNumFromPortraitIndex(swiper.activeIndex);
+                let printedPage = currentImg - activeConfig.offset; 
+                displayStr = langData.page + " " + printedPage;
+            }
+            
+            document.getElementById("currentPageNum").innerText = displayStr;
+        }
+
+        window.onload = function() { applyLanguage(); };
+    </script>
+</body>
+</html>

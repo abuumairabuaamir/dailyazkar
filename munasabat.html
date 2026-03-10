@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Daily Occasions Supplications</title>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Daily Azkar">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+        /* --- 1. FONTS SETUP --- */
+        @font-face { font-family: 'MyUrduFont'; src: url('fonts/jameel.ttf'); }
+        @font-face { font-family: 'Amiri'; src: url('fonts/amiri.ttf'); }
+        @font-face { font-family: 'TiroBangla'; src: url('fonts/tiro.ttf'); }
+        
+        :root {
+            /* 🌟 Notch bar ki height fix ki gayi hai 🌟 */
+            --notch-height: calc(max(5px, env(safe-area-inset-top)) + 30px);
+        }
+
+        /* --- 2. MAIN LAYOUT SETTINGS --- */
+        html, body {
+            height: 100%; width: 100%; margin: 0; padding: 0;
+            overflow: hidden; 
+            background-color: #e8eaf6; /* Light Indigo Background */
+        }
+
+        /* --- DYNAMIC FONT & DIRECTION --- */
+        html[lang="ur"] body { font-family: 'MyUrduFont', sans-serif; direction: rtl; }
+        html[lang="ar"] body { font-family: 'Amiri', serif; direction: rtl; }
+        html[lang="en"] body { font-family: 'MyUrduFont', sans-serif; direction: ltr; } 
+        html[lang="bn"] body { font-family: 'TiroBangla', serif; direction: ltr; }
+
+        /* --- 3. SHOW/HIDE LOGIC --- */
+        .urdu, .english, .bangla { display: none !important; }
+        html[lang="ur"] .urdu { display: block !important; }
+        html[lang="en"] .english { display: block !important; }
+        html[lang="bn"] .bangla { display: block !important; }
+
+        /* 🌟 GLOBAL FIXED NOTCH BAR (Always Visible) 🌟 */
+        .global-notch {
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--notch-height);
+            display: flex; justify-content: space-between; align-items: flex-end;
+            padding: 0 15px 8px 15px; box-sizing: border-box;
+            background-color: #1a237e; /* Dark Indigo Theme */
+            color: #e0f2f1; font-size: 13px; z-index: 500;
+            direction: ltr; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .global-notch .ar-text { font-family: 'Amiri', serif; font-size: 16px; color: #ffeb3b; direction: rtl;}
+        .global-notch .en-text { font-family: sans-serif; letter-spacing: 1px; }
+
+        /* --- APP CONTAINER --- */
+        .app-container {
+            display: flex; flex-direction: column;
+            height: 100%; width: 100%;
+            max-width: 800px; margin: 0 auto;
+            padding-top: var(--notch-height); /* Patti ke niche se shuru ho */
+            box-sizing: border-box;
+        }
+
+        /* --- FIXED HEADER --- */
+        .fixed-header {
+            flex: 0 0 auto; width: 100%; 
+            padding: 10px; box-sizing: border-box; z-index: 100;
+            background-color: #e8eaf6;
+        }
+
+        .header-box { 
+            background: #3f51b5; /* Indigo Color */
+            color: white; padding: 15px; 
+            border-radius: 10px; text-align: center; 
+            font-size: 26px; font-weight: bold; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3); 
+            border: 1px solid #303f9f;
+            width: 100%; box-sizing: border-box; margin: 0; margin-bottom: 10px;
+        }
+
+        /* --- SCROLLABLE CONTENT --- */
+        .scrollable-content {
+            flex: 1; overflow-y: auto; width: 100%;
+            padding: 15px; box-sizing: border-box;
+            padding-bottom: max(80px, env(safe-area-inset-bottom));
+            -webkit-overflow-scrolling: touch; 
+            scrollbar-width: none; -ms-overflow-style: none;
+        }
+        .scrollable-content::-webkit-scrollbar { display: none; }
+
+        /* --- CARD STYLES --- */
+        .card { 
+            background: #ffffff; padding: 20px; border-radius: 15px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 25px; 
+            text-align: center; border-bottom: 5px solid #3f51b5; 
+        }
+        
+        /* 🌟 UNDERLINE HATA DI GAYI HAI 🌟 */
+        .section-title { color: #d81b60; font-size: 24px; margin-bottom: 15px; font-weight: bold; }
+        
+        .arabic { 
+            font-family: 'Amiri', serif; 
+            font-size: 22px; 
+            font-weight: normal; 
+            color: #1a237e; 
+            line-height: 1.8; margin-bottom: 12px; 
+            background: #e8eaf6; padding: 12px; border-radius: 8px; 
+            direction: rtl; 
+        }
+        
+        .arabic-clean {
+            font-family: 'Amiri', serif; 
+            font-size: 26px; 
+            font-weight: normal; 
+            color: #1a237e; 
+            line-height: 1.8; 
+            direction: rtl; 
+            margin: 10px 0;
+        }
+
+        /* 🌟 Dynamic Font for Instructions inside Arabic Block 🌟 */
+        .inst-text { font-family: 'MyUrduFont', sans-serif; font-weight: bold; }
+        html[lang="ar"] .inst-text { font-family: 'Amiri', serif; font-weight: bold; }
+        html[lang="en"] .inst-text { font-family: 'MyUrduFont', sans-serif; font-weight: bold; }
+        html[lang="bn"] .inst-text { font-family: 'TiroBangla', serif; font-weight: bold; }
+
+        .urdu { font-family: 'MyUrduFont'; font-size: 20px; color: #212121; margin-bottom: 8px; line-height: 1.6; direction: rtl; }
+        .english { font-family: 'MyUrduFont', sans-serif; font-size: 20px; color: #424242; margin-bottom: 15px; direction: ltr; line-height: 1.5; background: #f5f5f5; padding: 10px; border-radius: 5px; }
+        .bangla { font-family: 'TiroBangla', serif; font-size: 18px; color: #212121; margin-bottom: 15px; direction: ltr; line-height: 1.6; background: #f3e5f5; padding: 10px; border-radius: 5px; }
+
+        .ref { font-size: 13px; color: #757575; display: block; margin-top: 15px; font-family: sans-serif; }
+        
+        .back-btn { display: block; background: #3f51b5; color: white; text-align: center; padding: 12px; border-radius: 8px; text-decoration: none; margin-top: 30px; font-size: 20px; font-family: inherit; }
+    </style>
+</head>
+<body>
+
+    <div id="globalNotchBar" class="global-notch">
+        <span class="en-text">Daily Azkar</span>
+        <span class="ar-text">الأذكار اليومية</span>
+    </div>
+
+    <div class="app-container">
+
+        <div class="fixed-header">
+            <div class="header-box" id="pageTitle">مختلف مواقع کی دعائیں</div>
+        </div>
+
+        <div class="scrollable-content">
+
+            <div class="card" id="card1">
+                <div class="section-title" id="t_leave_house">گھر سے نکلنے کی دعا</div>
+                <div class="arabic">بِسْمِ اللَّهِ، تَوَكَّلْتُ عَلَى اللَّهِ، وَلَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ</div>
+                <div class="urdu">اللہ کے نام سے، میں نے اللہ پر بھروسہ کیا، اور اللہ کے سوا نہ کسی برائی سے بچنے کی طاقت ہے اور نہ نیکی کرنے کی ہمت۔</div>
+                <div class="english">In the name of Allah, I place my trust in Allah, and there is no might nor power except with Allah.</div>
+                <div class="bangla">আল্লাহর নামে, আমি আল্লাহর ওপর ভরসা করলাম, এবং আল্লাহ ছাড়া গুনাহ থেকে বাঁচার ও নেক কাজ করার কোনো শক্তি নেই।</div>
+                <span class="ref">(Abu Dawud: 5095)</span>
+            </div>
+
+            <div class="card" id="card2">
+                <div class="section-title" id="t_enter_house">گھر میں داخل ہونے کی دعا</div>
+                <div class="arabic">بِسْمِ اللَّهِ وَلَجْنَا، وَبِسْمِ اللَّهِ خَرَجْنَا، وَعَلَى رَبِّنَا تَوَكَّلْنَا</div>
+                <div class="urdu">اللہ کے نام سے ہم داخل ہوئے، اور اللہ کے نام سے ہم نکلے، اور ہم نے اپنے رب ہی پر بھروسہ کیا۔</div>
+                <div class="english">In the name of Allah we enter, in the name of Allah we leave, and upon our Lord we depend.</div>
+                <div class="bangla">আল্লাহর নামে আমরা প্রবেশ করলাম, আল্লাহর নামে আমরা বের হলাম এবং আমাদের রবের ওপরই আমরা ভরসা করলাম।</div>
+                <span class="ref">(Abu Dawud: 5096)</span>
+            </div>
+
+            <div class="card" id="card3">
+                <div class="section-title" id="t_enter_masjid">مسجد میں داخل ہونے کی دعا</div>
+                <div class="arabic">اللَّهُمَّ افْتَحْ لِي أَبْوَابَ رَحْمَتِكَ</div>
+                <div class="urdu">اے اللہ! میرے لیے اپنی رحمت کے دروازے کھول دے۔</div>
+                <div class="english">O Allah, open the doors of Your mercy for me.</div>
+                <div class="bangla">হে আল্লাহ! আমার জন্য আপনার রহমতের দরজাগুলো খুলে দিন।</div>
+                <span class="ref">(Muslim: 713)</span>
+            </div>
+
+            <div class="card" id="card4">
+                <div class="section-title" id="t_leave_masjid">مسجد سے نکلنے کی دعا</div>
+                <div class="arabic">اللَّهُمَّ إِنِّي أَسْأَلُكَ مِنْ فَضْلِكَ</div>
+                <div class="urdu">اے اللہ! بیشک میں تجھ سے تیرے فضل کا سوال کرتا ہوں۔</div>
+                <div class="english">O Allah, I ask You for Your favor.</div>
+                <div class="bangla">হে আল্লাহ! নিশ্চয়ই আমি আপনার কাছে আপনার অনুগ্রহ প্রার্থনা করছি।</div>
+                <span class="ref">(Muslim: 713)</span>
+            </div>
+
+            <div class="card" id="card5">
+                <div class="section-title" id="t_enter_washroom">بیت الخلاء جانے کی دعا</div>
+                <div class="arabic">بِسْمِ اللَّهِ، اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْخُبُثِ وَالْخَبَائِثِ</div>
+                <div class="urdu">اللہ کے نام سے، اے اللہ! میں خبیث جنوں اور خبیث جنیوں سے تیری پناہ مانگتا ہوں۔</div>
+                <div class="english">In the name of Allah. O Allah, I seek refuge in You from the male and female evil spirits.</div>
+                <div class="bangla">আল্লাহর নামে। হে আল্লাহ! আমি আপনার কাছে পুরুষ ও নারী শয়তানদের অনিষ্ট থেকে আশ্রয় চাই।</div>
+                <span class="ref">(Bukhari: 142)</span>
+            </div>
+
+            <div class="card" id="card6">
+                <div class="section-title" id="t_leave_washroom">بیت الخلاء سے نکلنے کی دعا</div>
+                <div class="arabic">غُفْرَانَكَ</div>
+                <div class="urdu">اے اللہ! میں تیری بخشش مانگتا ہوں۔</div>
+                <div class="english">I seek Your forgiveness.</div>
+                <div class="bangla">আমি আপনার ক্ষমা প্রার্থনা করছি।</div>
+                <span class="ref">(Tirmidhi: 7)</span>
+            </div>
+
+            <div class="card" id="card7">
+                <div class="section-title" id="t_before_meal">کھانا شروع کرنے کی دعا</div>
+                
+                <div style="background: #e8eaf6; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <div class="arabic-clean">بِسْمِ اللَّهِ</div>
+                    <div class="urdu" style="background: none; padding: 0;">اللہ کے نام سے شروع کرتا ہوں۔</div>
+                    <div class="english" style="background: none; padding: 0; margin-bottom: 0;">In the name of Allah.</div>
+                    <div class="bangla" style="background: none; padding: 0; margin-bottom: 0;">আল্লাহর নামে শুরু করছি।</div>
+                    
+                    <hr style="border: 0; border-top: 1px dashed #c5cae9; margin: 15px 0;">
+                    
+                    <span id="lbl_forgot_meal" class="inst-text" style="font-size: 20px; color: #d81b60; display: block; margin-bottom: 5px;">(بھول جائیں تو یہ پڑھیں):</span>
+                    <div class="arabic-clean">بِسْمِ اللَّهِ فِي أَوَّلِهِ وَآخِرِهِ</div>
+                    <div class="urdu" style="background: none; padding: 0; margin-bottom: 0;">اللہ کے نام سے اس کے شروع اور آخر میں۔</div>
+                    <div class="english" style="background: none; padding: 0; margin-bottom: 0;">In the name of Allah, in its beginning and its end.</div>
+                    <div class="bangla" style="background: none; padding: 0; margin-bottom: 0;">আল্লাহর নামে এর শুরুতে এবং শেষে।</div>
+                </div>
+                
+                <span class="ref">(Abu Dawud: 3767)</span>
+            </div>
+
+            <div class="card" id="card8">
+                <div class="section-title" id="t_after_meal">کھانا کھانے کے بعد کی دعا</div>
+                <div class="arabic">الْحَمْدُ لِلَّهِ الَّذِي أَطْعَمَنَا وَسَقَانَا وَجَعَلَنَا مُسْلِمِينَ</div>
+                <div class="urdu">تمام تعریفیں اللہ کے لیے ہیں جس نے ہمیں کھلایا، پلایا اور ہمیں مسلمان بنایا۔</div>
+                <div class="english">Praise be to Allah Who has fed us, given us drink, and made us Muslims.</div>
+                <div class="bangla">সমস্ত প্রশংসা সেই আল্লাহর জন্য যিনি আমাদের খাইয়েছেন, পান করিয়েছেন এবং মুসলিম বানিয়েছেন।</div>
+                <span class="ref">(Abu Dawud: 3850)</span>
+            </div>
+
+            <div class="card" id="card9">
+                <div class="section-title" id="t_clothes">کپڑے پہننے کی دعا</div>
+                <div class="arabic">الْحَمْدُ لِلَّهِ الَّذِي كَسَانِي هَذَا الثَّوْبَ وَرَزَقَنِيهِ مِنْ غَيْرِ حَوْلٍ مِنِّي وَلَا قُوَّةٍ</div>
+                <div class="urdu">سب تعریفیں اس اللہ کے لیے ہیں جس نے مجھے یہ کپڑا پہنایا اور میری کسی طاقت اور قوت کے بغیر مجھے یہ عطا فرمایا۔</div>
+                <div class="english">Praise is to Allah Who has clothed me with this (garment) and provided it for me, though I was powerless myself and incapable.</div>
+                <div class="bangla">সমস্ত প্রশংসা আল্লাহর জন্য, যিনি আমাকে এই পোশাক পরিয়েছেন এবং আমার কোনো শক্তি ও সামর্থ্য ছাড়াই এটি আমাকে দান করেছেন।</div>
+                <span class="ref">(Abu Dawud: 4023)</span>
+            </div>
+
+            <div class="card" id="card10">
+                <div class="section-title" id="t_mirror">آئینہ دیکھنے کی دعا</div>
+                <div class="arabic">اللَّهُمَّ أَنْتَ حَسَّنْتَ خَلْقِي، فَحَسِّنْ خُلُقِي</div>
+                <div class="urdu">اے اللہ! تو نے میری صورت اچھی بنائی ہے، پس میری سیرت (اخلاق) بھی اچھی بنا دے۔</div>
+                <div class="english">O Allah, You have made my physical shape beautiful, so beautify my character too.</div>
+                <div class="bangla">হে আল্লাহ! আপনি আমার দৈহিক গঠন সুন্দর করেছেন, সুতরাং আমার চরিত্রও সুন্দর করে দিন।</div>
+                <span class="ref">(Ibn Hibban)</span>
+            </div>
+
+            <div class="card" id="card11">
+                <div class="section-title" id="t_vehicle">سواری کی دعا</div>
+                <div class="arabic">بِسْمِ اللَّهِ، الْحَمْدُ لِلَّهِ<br>سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ، وَإِنَّا إِلَى رَبِّنَا لَمُنْقَلِبُونَ</div>
+                <div class="urdu">اللہ کے نام سے، تمام تعریفیں اللہ کے لیے ہیں۔ پاک ہے وہ ذات جس نے اس (سواری) کو ہمارے تابع کر دیا حالانکہ ہم اسے قابو کرنے والے نہ تھے، اور بیشک ہمیں اپنے رب ہی کی طرف لوٹ کر جانا ہے۔</div>
+                <div class="english">In the name of Allah, praise is to Allah. Glory is to Him Who has provided this for us though we could never have had it by our efforts. Surely, unto our Lord we are returning.</div>
+                <div class="bangla">আল্লাহর নামে, সমস্ত প্রশংসা আল্লাহর। পবিত্র সেই সত্তা যিনি এটিকে আমাদের বশীভূত করে দিয়েছেন, অথচ আমরা একে নিয়ন্ত্রণ করতে সক্ষম ছিলাম না। আর নিশ্চয়ই আমরা আমাদের রবের কাছেই ফিরে যাব।</div>
+                <span class="ref">(Abu Dawud: 2602)</span>
+            </div>
+
+            <div class="card" id="card12">
+                <div class="section-title" id="t_distress">پریشانی اور بے چینی کے وقت</div>
+                <div class="arabic">لَا إِلَهَ إِلَّا اللَّهُ الْعَظِيمُ الْحَلِيمُ، لَا إِلَهَ إِلَّا اللَّهُ رَبُّ الْعَرْشِ الْعَظِيمِ، لَا إِلَهَ إِلَّا اللَّهُ رَبُّ السَّمَاوَاتِ وَرَبُّ الْأَرْضِ وَرَبُّ الْعَرْشِ الْكَرِيمِ</div>
+                <div class="urdu">اللہ کے سوا کوئی سچا معبود نہیں جو عظمت والا اور بردبار ہے، اللہ کے سوا کوئی معبود نہیں جو عرشِ عظیم کا رب ہے، اللہ کے سوا کوئی معبود نہیں جو آسمانوں کا، زمین کا اور عزت والے عرش کا رب ہے۔</div>
+                <div class="english">There is no deity but Allah, the Great, the Tolerant. There is no deity but Allah, Lord of the Magnificent Throne. There is no deity but Allah, Lord of the heavens and the earth, and Lord of the Noble Throne.</div>
+                <div class="bangla">আল্লাহ ছাড়া কোনো সত্য উপাস্য নেই, যিনি মহান ও সহনশীল। আল্লাহ ছাড়া কোনো উপাস্য নেই, যিনি মহান আরশের রব। আল্লাহ ছাড়া কোনো উপাস্য নেই, যিনি আকাশমণ্ডলী, পৃথিবী ও সম্মানিত আরশের রব।</div>
+                <span class="ref">(Bukhari: 6346)</span>
+            </div>
+
+            <div class="card" id="card13">
+                <div class="section-title" id="t_anger">غصہ آنے کی دعا</div>
+                <div class="arabic">أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ</div>
+                <div class="urdu">میں شیطان مردود سے اللہ کی پناہ مانگتا ہوں۔</div>
+                <div class="english">I seek refuge in Allah from Satan the outcast.</div>
+                <div class="bangla">আমি বিতাড়িত শয়তান থেকে আল্লাহর আশ্রয় চাই।</div>
+                <span class="ref">(Bukhari: 6115)</span>
+            </div>
+
+            <div class="card" id="card14">
+                <div class="section-title" id="t_sick">بیمار کی عیادت کے وقت</div>
+                <div class="arabic">لَا بَأْسَ، طَهُورٌ إِنْ شَاءَ اللَّهُ</div>
+                <div class="urdu">کوئی حرج نہیں، (یہ بیماری) گناہوں سے پاک کرنے والی ہے اگر اللہ نے چاہا۔</div>
+                <div class="english">No worry, it is a purification (from sins), if Allah wills.</div>
+                <div class="bangla">কোনো ক্ষতি নেই, যদি আল্লাহ চান তবে এটি (গুনাহ থেকে) পবিত্রকারী হবে।</div>
+                <span class="ref">(Bukhari: 3616)</span>
+            </div>
+
+            <div class="card" id="card15">
+                <div class="section-title" id="t_zabah">جانور ذبح کرنے کی دعا</div>
+                <div class="arabic">بِسْمِ اللَّهِ وَاللَّهُ أَكْبَرُ، اللَّهُمَّ مِنْكَ وَلَكَ</div>
+                <div class="urdu">اللہ کے نام سے، اور اللہ سب سے بڑا ہے۔ اے اللہ! یہ تیری ہی طرف سے ہے اور تیرے ہی لیے ہے۔</div>
+                <div class="english">In the name of Allah, and Allah is the Greatest. O Allah, this is from You and for You.</div>
+                <div class="bangla">আল্লাহর নামে এবং আল্লাহ সর্বশ্রেষ্ঠ। হে আল্লাহ! এটি আপনারই পক্ষ থেকে এবং আপনার জন্যই।</div>
+                <span class="ref">(Muslim, Abu Dawud)</span>
+            </div>
+
+            <div class="card" id="card16">
+                <div class="section-title" id="t_aqeeqah">عقیقہ کی دعا</div>
+                <div class="arabic">بِسْمِ اللَّهِ وَاللَّهُ أَكْبَرُ، اللَّهُمَّ لَكَ وَإِلَيْكَ عَقِيقَةُ فُلَانٍ</div>
+                <div class="urdu">اللہ کے نام سے، اور اللہ سب سے بڑا ہے۔ اے اللہ! یہ تیری رضا کے لیے ہے اور تیری ہی طرف ہے، یہ فلاں (یہاں بچے کا نام لیں) کا عقیقہ ہے۔</div>
+                <div class="english">In the name of Allah, and Allah is the Greatest. O Allah, this is for You and unto You, this is the Aqeeqah of [Name of Child].</div>
+                <div class="bangla">আল্লাহর নামে এবং আল্লাহ সর্বশ্রেষ্ঠ। হে আল্লাহ! এটি আপনার জন্য এবং আপনারই উদ্দেশ্যে, এটি (এখানে বাচ্চার নাম বলুন)-এর আকিকা।</div>
+                <span class="ref">(Sunan Al-Kubra)</span>
+            </div>
+
+            <div class="card" id="card17">
+                <div class="section-title" id="t_affliction">کسی کو مصیبت یا بیماری میں دیکھ کر</div>
+                <div class="arabic">الْحَمْدُ لِلَّهِ الَّذِي عَافَانِي مِمَّا ابْتَلَاكَ بِهِ، وَفَضَّلَنِي عَلَى كَثِيرٍ مِمَّنْ خَلَقَ تَفْضِيلًا</div>
+                <div class="urdu">تمام تعریفیں اس اللہ کے لیے ہیں جس نے مجھے اس مصیبت سے بچایا جس میں تجھے مبتلا کیا، اور مجھے اپنی بہت سی مخلوقات پر بڑی فضیلت بخشی۔</div>
+                <div class="english">Praise is to Allah Who has spared me what He has afflicted you with, and preferred me greatly above much of what He has created.</div>
+                <div class="bangla">সমস্ত প্রশংসা সেই আল্লাহর জন্য যিনি আমাকে এই মুসিবত থেকে বাঁচিয়েছেন যাতে আপনাকে পতিত করেছেন, এবং তাঁর অসংখ্য সৃষ্টির ওপর আমাকে অনেক বেশি মর্যাদা দিয়েছেন।</div>
+                <span class="ref">(Tirmidhi: 3431)</span>
+            </div>
+
+            <div class="card" id="card18">
+                <div class="section-title" id="t_debt">قرض ادا کرتے وقت کی دعا</div>
+                <div class="arabic">بَارَكَ اللَّهُ لَكَ فِي أَهْلِكَ وَمَالِكَ، إِنَّمَا جَزَاءُ السَّلَفِ الْحَمْدُ وَالْأَدَاءُ</div>
+                <div class="urdu">اللہ تیرے اہل و عیال اور تیرے مال میں برکت دے، بیشک قرض کا بدلہ شکریہ اور (وقت پر) ادائیگی ہی ہے۔</div>
+                <div class="english">May Allah bless you in your family and your wealth. Verily, the reward for a loan is praise and repayment.</div>
+                <div class="bangla">আল্লাহ আপনার পরিবার ও সম্পদে বরকত দিন। নিশ্চয়ই ঋণের প্রতিদান হলো প্রশংসা করা এবং তা পরিশোধ করে দেওয়া।</div>
+                <span class="ref">(Ibn Majah: 2424)</span>
+            </div>
+
+            <div class="card" id="card19">
+                <div class="section-title" id="t_rain">بارش کے وقت کی دعا</div>
+                <div class="arabic">اللَّهُمَّ صَيِّبًا نَافِعًا</div>
+                <div class="urdu">اے اللہ! اسے نفع بخشنے والی بارش بنا۔</div>
+                <div class="english">O Allah, bring beneficial rain clouds.</div>
+                <div class="bangla">হে আল্লাহ! একে উপকারী বৃষ্টি বানিয়ে দিন।</div>
+                <span class="ref">(Bukhari: 1032)</span>
+            </div>
+
+            <div class="card" id="card20">
+                <div class="section-title" id="t_sneeze">چھینک آنے پر کیا کہیں؟</div>
+                
+                <div style="background: #e8eaf6; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                    <div class="arabic-clean">الْحَمْدُ لِلَّهِ</div>
+                    <div class="urdu" style="background: none; padding: 0;"><b id="lbl_sneeze_1_ur">چھینکنے والا کہے:</b> سب تعریفیں اللہ کے لیے ہیں۔</div>
+                    <div class="english" style="background: none; padding: 0; margin-bottom: 0;"><b id="lbl_sneeze_1_en">The sneezer says:</b> All praise is to Allah.</div>
+                    <div class="bangla" style="background: none; padding: 0; margin-bottom: 0;"><b id="lbl_sneeze_1_bn">হাঁচিদাতা বলবে:</b> সমস্ত প্রশংসা আল্লাহর জন্য।</div>
+                    
+                    <hr style="border: 0; border-top: 1px dashed #c5cae9; margin: 15px 0;">
+                    
+                    <span id="lbl_reply_sneeze" class="inst-text" style="font-size: 20px; color: #d81b60; display: block; margin-bottom: 5px;">(جواب دینے والا کہے):</span>
+                    <div class="arabic-clean">يَرْحَمُكَ اللَّهُ</div>
+                    <div class="urdu" style="background: none; padding: 0;">اللہ تم پر رحم کرے۔</div>
+                    <div class="english" style="background: none; padding: 0; margin-bottom: 0;">May Allah have mercy upon you.</div>
+                    <div class="bangla" style="background: none; padding: 0; margin-bottom: 0;">আল্লাহ আপনার ওপর রহম করুন।</div>
+                    
+                    <hr style="border: 0; border-top: 1px dashed #c5cae9; margin: 15px 0;">
+                    
+                    <span id="lbl_sneezer_again" class="inst-text" style="font-size: 20px; color: #d81b60; display: block; margin-bottom: 5px;">(چھینکنے والا پھر کہے):</span>
+                    <div class="arabic-clean">يَهْدِيكُمُ اللَّهُ وَيُصْلِحُ بَالَكُمْ</div>
+                    <div class="urdu" style="background: none; padding: 0; margin-bottom: 0;">اللہ تمہیں ہدایت دے اور تمہارا حال درست کرے۔</div>
+                    <div class="english" style="background: none; padding: 0; margin-bottom: 0;">May Allah guide you and rectify your condition.</div>
+                    <div class="bangla" style="background: none; padding: 0; margin-bottom: 0;">আল্লাহ আপনাদের হিদায়াত দিন এবং আপনাদের অবস্থা সংশোধন করুন।</div>
+                </div>
+                
+                <span class="ref">(Bukhari: 6224)</span>
+            </div>
+
+            <a href="azkar_menu.html" class="back-btn" id="btnBack">واپس جائیں</a>
+
+        </div>
+    </div>
+
+    <script>
+        // 🌟 1. Hardware Back Button Fix 🌟
+        window.addEventListener("popstate", function (event) {
+            window.location.href = 'azkar_menu.html';
+        });
+        history.pushState(null, document.title, location.href);
+
+        const uiText = {
+            ur: { 
+                title: "مختلف مواقع کی دعائیں", back: "واپس جائیں", 
+                t_leave_house: "گھر سے نکلنے کی دعا", t_enter_house: "گھر میں داخل ہونے کی دعا", t_enter_masjid: "مسجد میں داخل ہونے کی دعا", t_leave_masjid: "مسجد سے نکلنے کی دعا",
+                t_enter_washroom: "بیت الخلاء جانے کی دعا", t_leave_washroom: "بیت الخلاء سے نکلنے کی دعا", t_before_meal: "کھانا شروع کرنے کی دعا", t_after_meal: "کھانا کھانے کے بعد کی دعا",
+                t_clothes: "کپڑے پہننے کی دعا", t_mirror: "آئینہ دیکھنے کی دعا", t_vehicle: "سواری کی دعا", t_distress: "پریشانی اور بے چینی کے وقت",
+                t_anger: "غصہ آنے کی دعا", t_sick: "بیمار کی عیادت کے وقت", t_zabah: "جانور ذبح کرنے کی دعا", t_aqeeqah: "عقیقہ کی دعا",
+                t_affliction: "کسی کو مصیبت یا بیماری میں دیکھ کر", t_debt: "قرض ادا کرتے وقت کی دعا", t_rain: "بارش کے وقت کی دعا", t_sneeze: "چھینک آنے پر کیا کہیں؟",
+                lbl_forgot_meal: "(بھول جائیں تو یہ پڑھیں):",
+                lbl_sneeze_1_ur: "چھینکنے والا کہے:", lbl_reply_sneeze: "(جواب دینے والا کہے):", lbl_sneezer_again: "(چھینکنے والا پھر کہے):"
+            },
+            ar: { 
+                title: "أدعية المناسبات", back: "رجوع", 
+                t_leave_house: "دعاء الخروج من المنزل", t_enter_house: "دعاء الدخول إلى المنزل", t_enter_masjid: "دعاء دخول المسجد", t_leave_masjid: "دعاء الخروج من المسجد",
+                t_enter_washroom: "دعاء دخول الخلاء", t_leave_washroom: "دعاء الخروج من الخلاء", t_before_meal: "الدعاء قبل الطعام", t_after_meal: "الدعاء بعد الطعام",
+                t_clothes: "دعاء لبس الثوب", t_mirror: "دعاء النظر في المرآة", t_vehicle: "دعاء ركوب الدابة", t_distress: "دعاء الكرب والهم",
+                t_anger: "دعاء الغضب", t_sick: "دعاء عيادة المريض", t_zabah: "دعاء الذبح", t_aqeeqah: "دعاء العقيقة",
+                t_affliction: "دعاء رؤية المبتلى", t_debt: "دعاء قضاء الدين", t_rain: "دعاء نزول المطر", t_sneeze: "ما يقال عند العطاس",
+                lbl_forgot_meal: "(إذا نسي يقول):",
+                lbl_sneeze_1_ur: "يقول العاطس:", lbl_reply_sneeze: "(يقول السامع):", lbl_sneezer_again: "(يقول العاطس مرة أخرى):"
+            },
+            en: { 
+                title: "Daily Occasions", back: "Go Back", 
+                t_leave_house: "Leaving the House", t_enter_house: "Entering the House", t_enter_masjid: "Entering the Mosque", t_leave_masjid: "Leaving the Mosque",
+                t_enter_washroom: "Entering the Restroom", t_leave_washroom: "Leaving the Restroom", t_before_meal: "Before Eating", t_after_meal: "After Eating",
+                t_clothes: "Wearing New Clothes", t_mirror: "Looking in the Mirror", t_vehicle: "Boarding a Vehicle", t_distress: "In Times of Distress",
+                t_anger: "When Angry", t_sick: "Visiting the Sick", t_zabah: "Slaughtering an Animal", t_aqeeqah: "At the time of Aqeeqah",
+                t_affliction: "Seeing Someone in Affliction", t_debt: "When Paying off a Debt", t_rain: "When it Rains", t_sneeze: "What to say when Sneezing",
+                lbl_forgot_meal: "(If forgotten, say):",
+                lbl_sneeze_1_en: "The sneezer says:", lbl_reply_sneeze: "(The listener replies):", lbl_sneezer_again: "(The sneezer responds):"
+            },
+            bn: { 
+                title: "দৈনন্দিন আমল ও দোয়া", back: "ফিরে যান", 
+                t_leave_house: "ঘর থেকে বের হওয়ার দোয়া", t_enter_house: "ঘরে প্রবেশের দোয়া", t_enter_masjid: "মসজিদে প্রবেশের দোয়া", t_leave_masjid: "মসজিদ থেকে বের হওয়ার দোয়া",
+                t_enter_washroom: "টয়লেটে প্রবেশের দোয়া", t_leave_washroom: "টয়লেট থেকে বের হওয়ার দোয়া", t_before_meal: "খাবার শুরুর দোয়া", t_after_meal: "খাবার শেষের দোয়া",
+                t_clothes: "নতুন কাপড় পরার দোয়া", t_mirror: "আয়না দেখার দোয়া", t_vehicle: "বাহনে ওঠার দোয়া", t_distress: "বিপদ ও পেরেশানির দোয়া",
+                t_anger: "রাগ উঠলে পড়ার দোয়া", t_sick: "রোগী দেখার দোয়া", t_zabah: "পশু জবাই করার দোয়া", t_aqeeqah: "আকিকার দোয়া",
+                t_affliction: "বিপদগ্রস্ত ব্যক্তিকে দেখার দোয়া", t_debt: "ঋণ পরিশোধের সময়কার দোয়া", t_rain: "বৃষ্টির সময়কার দোয়া", t_sneeze: "হাঁচি দিলে যা বলতে হয়",
+                lbl_forgot_meal: "(ভুলে গেলে, বলবেন):",
+                lbl_sneeze_1_bn: "হাঁচিদাতা বলবে:", lbl_reply_sneeze: "(শ্রোতা বলবে):", lbl_sneezer_again: "(উত্তরে হাঁচিদাতা বলবে):"
+            }
+        };
+
+        let currentLang = 'ur'; 
+
+        window.onload = function() {
+            currentLang = localStorage.getItem('selectedLang') || 'ur';
+            document.documentElement.lang = currentLang;
+
+            const text = uiText[currentLang];
+            if(text) {
+                document.getElementById('pageTitle').innerText = text.title;
+                document.getElementById('btnBack').innerText = text.back;
+                
+                // Set Section Titles and Dynamic Inner text
+                const ids = ['t_leave_house', 't_enter_house', 't_enter_masjid', 't_leave_masjid', 't_enter_washroom', 't_leave_washroom', 't_before_meal', 't_after_meal', 't_clothes', 't_mirror', 't_vehicle', 't_distress', 't_anger', 't_sick', 't_zabah', 't_aqeeqah', 't_affliction', 't_debt', 't_rain', 't_sneeze', 'lbl_forgot_meal', 'lbl_reply_sneeze', 'lbl_sneezer_again'];
+                ids.forEach(id => {
+                    if(document.getElementById(id)) {
+                        document.getElementById(id).innerText = text[id] || text[id.replace('_ur', '_en').replace('_bn', '_en')];
+                    }
+                });
+
+                // Specific Language Label Fix for Sneezing
+                if(currentLang === 'ur' || currentLang === 'ar') {
+                    if(document.getElementById('lbl_sneeze_1_ur')) document.getElementById('lbl_sneeze_1_ur').innerText = text.lbl_sneeze_1_ur;
+                } else if(currentLang === 'en') {
+                    if(document.getElementById('lbl_sneeze_1_en')) document.getElementById('lbl_sneeze_1_en').innerText = text.lbl_sneeze_1_en;
+                } else if(currentLang === 'bn') {
+                    if(document.getElementById('lbl_sneeze_1_bn')) document.getElementById('lbl_sneeze_1_bn').innerText = text.lbl_sneeze_1_bn;
+                }
+            }
+        };
+    </script>
+
+</body>
+</html>

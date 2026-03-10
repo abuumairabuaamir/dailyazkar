@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Zakat Calculator</title>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Daily Azkar">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+        /* --- FONTS SETUP --- */
+        @font-face { font-family: 'MyUrduFont'; src: url('fonts/jameel.ttf'); }
+        @font-face { font-family: 'Amiri'; src: url('fonts/amiri.ttf'); }
+        @font-face { font-family: 'TiroBangla'; src: url('fonts/tiro.ttf'); }
+
+        :root {
+            /* 🌟 Notch bar ki height fix ki gayi hai 🌟 */
+            --notch-height: calc(max(5px, env(safe-area-inset-top)) + 30px);
+        }
+
+        html, body {
+            height: 100%; width: 100%; margin: 0; padding: 0;
+            overflow: hidden; background-color: #f1f8e9;
+        }
+        html[lang="ur"] body { font-family: 'MyUrduFont', sans-serif; direction: rtl; }
+        html[lang="ar"] body { font-family: 'Amiri', serif; direction: rtl; }
+        html[lang="en"] body { font-family: 'MyUrduFont', sans-serif; direction: ltr; } 
+        html[lang="bn"] body { font-family: 'TiroBangla', serif; direction: ltr; }
+
+        /* 🌟 GLOBAL FIXED NOTCH BAR (Always Visible) 🌟 */
+        .global-notch {
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--notch-height);
+            display: flex; justify-content: space-between; align-items: flex-end;
+            padding: 0 15px 8px 15px; box-sizing: border-box;
+            background-color: #1b5e20; /* Dark Green Theme */
+            color: #e0f2f1; font-size: 13px; z-index: 500;
+            direction: ltr; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .global-notch .ar-text { font-family: 'Amiri', serif; font-size: 16px; color: #ffeb3b; direction: rtl;}
+        .global-notch .en-text { font-family: sans-serif; letter-spacing: 1px; }
+
+        .app-container { 
+            display: flex; flex-direction: column; height: 100%; 
+            max-width: 800px; margin: 0 auto; 
+            padding-top: var(--notch-height); /* Patti ke niche se shuru ho */
+            box-sizing: border-box;
+        }
+
+        .fixed-header {
+            flex: 0 0 auto; width: 100%; padding: 10px; box-sizing: border-box; z-index: 100;
+            background-color: #f1f8e9; 
+        }
+
+        .header-box { 
+            background: #33691e; color: white; padding: 15px; 
+            border-radius: 10px; text-align: center; 
+            font-size: 24px; font-weight: bold; margin-bottom: 5px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+        }
+
+        .scrollable-content {
+            flex: 1; overflow-y: auto; padding: 15px; box-sizing: border-box;
+            padding-bottom: max(80px, env(safe-area-inset-bottom));
+        }
+
+        /* --- CALCULATOR UI STYLES --- */
+        .calc-card { background: #ffffff; padding: 20px; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 20px; border-bottom: 4px solid #33691e; }
+        .calc-section-title { color: #33691e; font-size: 22px; margin-bottom: 15px; font-weight: bold; border-bottom: 2px solid #e8f5e9; padding-bottom: 5px; }
+        
+        label { display: block; font-size: 18px; font-weight: bold; color: #333; margin-bottom: 5px; margin-top: 10px; }
+        input[type="number"], select {
+            width: 100%; padding: 12px; font-size: 18px; border-radius: 8px;
+            border: 1px solid #b0bec5; box-sizing: border-box; background: #f5f5f5;
+            font-family: inherit; margin-bottom: 10px; direction: ltr; /* Keeps input digits in English format visually */
+        }
+        input:focus, select:focus { outline: none; border-color: #33691e; background: #fff; }
+
+        .label-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; margin-top: 10px; }
+        .rate-link { background: #e3f2fd; color: #1976d2; padding: 4px 10px; border-radius: 15px; font-size: 14px; text-decoration: none; font-weight: bold; border: 1px solid #bbdefb; font-family: inherit; }
+        
+        .gold-row, .silver-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; padding: 10px; border-radius: 8px; }
+        .gold-row { background: #f9fbe7; border: 1px solid #e6ee9c; }
+        .silver-row { background: #eceff1; border: 1px solid #cfd8dc; }
+        .gold-row > div, .silver-row > div { flex: 1; }
+
+        .btn-remove { background: #e53935; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; font-family: inherit;}
+        .btn-add { background: #ffca28; color: #33691e; font-weight: bold; border: 2px solid #33691e; padding: 10px; width: 100%; border-radius: 8px; font-size: 18px; cursor: pointer; font-family: inherit; margin-bottom: 10px; }
+        .btn-calc { background: #33691e; color: #ffca28; font-weight: bold; border: none; padding: 15px; width: 100%; border-radius: 30px; font-size: 24px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3); font-family: inherit; margin-top: 10px; }
+        
+        .result-box { background: #e8f5e9; border: 2px solid #4caf50; padding: 15px; border-radius: 10px; text-align: center; margin-top: 15px; }
+        .res-item { font-size: 20px; color: #333; margin-bottom: 10px; }
+        
+        /* 🌟 Yahan Font Family aur Direction Set ki gayi hai 🌟 */
+        .res-val { font-size: 28px; font-weight: bold; color: #33691e; direction: ltr; display: inline-block; font-family: inherit;}
+        .zakat-amount { font-size: 38px; color: #c62828; font-weight: bold; direction: ltr; font-family: inherit; }
+        
+        .back-btn { display: block; background: #546e7a; color: white; text-align: center; padding: 12px; border-radius: 8px; text-decoration: none; margin-top: 20px; font-size: 20px; font-family: inherit; }
+    </style>
+</head>
+<body>
+
+    <div id="globalNotchBar" class="global-notch">
+        <span class="en-text">Daily Azkar</span>
+        <span class="ar-text">الأذكار اليومية</span>
+    </div>
+
+    <div class="app-container">
+
+        <div class="fixed-header">
+            <div class="header-box" id="ui_calc_main_title">زکوٰۃ کیلکولیٹر</div>
+        </div>
+
+        <div class="scrollable-content">
+            
+            <div class="calc-card">
+                <div class="calc-section-title" id="ui_gold_title">سونے کی تفصیلات</div>
+                <div class="label-header">
+                    <label id="lbl_rate">آج 24K سونے کا ریٹ (فی گرام)</label>
+                    <a href="https://www.google.com/search?q=today+24k+gold+rate+1+gram+in+my+city" target="_blank" class="rate-link" id="btn_live_gold">🔍 لائیو ریٹ</a>
+                </div>
+                <input type="number" id="in_rate" placeholder="مثلاً: 25000" min="0" step="0.01">
+
+                <div id="gold_items_container">
+                    <div class="gold-row">
+                        <div>
+                            <label class="lbl_weight">وزن (گرام)</label>
+                            <input type="number" class="g-weight" placeholder="0" min="0" step="0.01">
+                        </div>
+                        <div>
+                            <label class="lbl_karat">کیرٹ</label>
+                            <select class="g-karat">
+                                <option value="24">24K (100%)</option>
+                                <option value="22" selected>22K (91.7%)</option>
+                                <option value="21">21K (87.5%)</option>
+                                <option value="20">20K (83.3%)</option>
+                                <option value="18">18K (75.0%)</option>
+                                <option value="14">14K (58.3%)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-add" id="btn_add_gold" onclick="addGoldRow()">➕ مزید سونا شامل کریں</button>
+            </div>
+
+            <div class="calc-card" style="border-bottom-color: #78909c;">
+                <div class="calc-section-title" style="color: #455a64; border-bottom-color: #cfd8dc;" id="ui_silver_title">چاندی کی تفصیلات</div>
+                
+                <div class="silver-row" style="flex-direction: column; align-items: stretch;">
+                    <div style="display: flex; gap: 10px;">
+                        <div style="flex: 1;">
+                            <label id="lbl_silver_weight">چاندی کا وزن (گرام)</label>
+                            <input type="number" id="in_silver_weight" placeholder="0" min="0" step="0.01">
+                        </div>
+                        <div style="flex: 1;">
+                            <label id="lbl_silver_purity">چاندی کی قسم (Purity)</label>
+                            <select id="in_silver_purity">
+                                <option value="0.999">خالص چاندی (99.9%)</option>
+                                <option value="0.925" selected>سٹرلنگ سلور (92.5%)</option>
+                                <option value="0.900">سکہ چاندی (90.0%)</option>
+                                <option value="0.800">زیورات (80.0%)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="label-header">
+                            <label id="lbl_silver_rate">آج چاندی کا ریٹ (فی گرام)</label>
+                            <a href="https://www.google.com/search?q=today+silver+rate+1+gram+in+my+city" target="_blank" class="rate-link" id="btn_live_silver">🔍 لائیو ریٹ</a>
+                        </div>
+                        <input type="number" id="in_silver_rate" placeholder="مثلاً: 300" min="0" step="0.01">
+                    </div>
+                </div>
+            </div>
+
+            <div class="calc-card">
+                <div class="calc-section-title" id="ui_fin_title">نقد رقم اور قرض کی تفصیل</div>
+                <label id="lbl_cash">نقد رقم / بینک بیلنس / کمیٹی وغیرہ</label>
+                <input type="number" id="in_cash" placeholder="0" min="0">
+                <label id="lbl_debt" style="color:#c62828;">قرض (جو آپ نے دوسروں کو دینا ہے)</label>
+                <input type="number" id="in_debt" placeholder="0" min="0">
+                
+                <button class="btn-calc" id="btn_calc" onclick="calculateZakat()">زکوٰۃ معلوم کریں</button>
+            </div>
+
+            <div class="calc-card" id="result_card" style="display: none;">
+                <div class="calc-section-title" id="ui_res_title">نتیجہ (Results)</div>
+                <div class="res-item">
+                    <span id="txt_pure_gold">کل خالص سونا:</span>
+                    <span class="res-val" id="out_pure_gold">0.00 g</span>
+                </div>
+                <div class="res-item">
+                    <span id="txt_pure_silver">کل خالص چاندی:</span>
+                    <span class="res-val" id="out_pure_silver" style="color: #546e7a;">0.00 g</span>
+                </div>
+                <div class="res-item">
+                    <span id="txt_net_wealth">کل قابلِ زکوٰۃ مالیت:</span>
+                    <div class="res-val" id="out_net_wealth">0.00</div>
+                </div>
+                <div class="res-item" style="font-size: 16px; color: #757575;">
+                    <span id="txt_nisab_applied">نصاب کی حد (Threshold):</span>
+                    <span class="res-val" id="out_nisab_value" style="font-size: 18px; color: #546e7a;">0.00</span>
+                </div>
+                <div class="result-box">
+                    <div style="font-size: 18px; margin-bottom: 5px;" id="txt_status">کیا زکوٰۃ فرض ہے؟</div>
+                    <div id="out_status" style="font-size: 22px; font-weight: bold; margin-bottom: 15px;">-</div>
+                    <div style="font-size: 20px; color: #c62828;" id="txt_zakat_amount">زکوٰۃ کی رقم (2.5%):</div>
+                    <div class="zakat-amount" id="out_zakat">0.00</div>
+                </div>
+            </div>
+
+            <a href="index.html" class="back-btn" id="btnBack">واپس جائیں</a>
+
+        </div>
+    </div>
+
+    <script>
+        // 🌟 1. Hardware Back Button Fix 🌟
+        window.addEventListener("popstate", function (event) {
+            window.location.href = 'index.html';
+        });
+        history.pushState(null, document.title, location.href);
+
+        const uiText = {
+            ur: { 
+                calc_main_title: "زکوٰۃ کیلکولیٹر",
+                gold_title: "سونے کی تفصیلات", silver_title: "چاندی کی تفصیلات",
+                lbl_weight: "وزن (گرام)", lbl_karat: "کیرٹ", btn_add: "➕ مزید سونا شامل کریں", 
+                lbl_silver_weight: "چاندی کا وزن (گرام)", lbl_silver_rate: "آج چاندی کا ریٹ (فی گرام)", lbl_silver_purity: "چاندی کی قسم (Purity)",
+                fin_title: "نقد رقم اور قرض کی تفصیل", lbl_rate: "آج 24K سونے کا ریٹ (فی گرام)", 
+                lbl_cash: "نقد رقم / بینک بیلنس / کمیٹی وغیرہ", lbl_debt: "قرض (جو آپ کو دوسروں کو دینا ہے)", 
+                btn_calc: "زکوٰۃ معلوم کریں", res_title: "نتیجہ (Results)", 
+                txt_pure_gold: "کل خالص سونا:", txt_pure_silver: "کل خالص چاندی:", txt_net_wealth: "کل قابلِ زکوٰۃ مالیت:", txt_nisab_applied: "نصاب کی حد (Nisab Threshold):",
+                txt_status: "کیا زکوٰۃ فرض ہے؟", txt_zakat: "زکوٰۃ کی رقم (2.5%):", 
+                yes: "ہاں (نصاب مکمل ہے) ✅", no: "نہیں (نصاب سے کم ہے) ❌", back: "واپس جائیں", btn_del: "حذف", btn_live: "🔍 لائیو ریٹ",
+                err_rate: "براہ کرم نصاب معلوم کرنے کے لیے آج کے سونے یا چاندی کا ریٹ (قیمت) ضرور درج کریں!"
+            },
+            en: { 
+                calc_main_title: "Zakat Calculator",
+                gold_title: "Gold Details", silver_title: "Silver Details",
+                lbl_weight: "Weight (g)", lbl_karat: "Karat", btn_add: "➕ Add More Gold", 
+                lbl_silver_weight: "Silver Weight (g)", lbl_silver_rate: "Today's Silver Rate", lbl_silver_purity: "Silver Purity",
+                fin_title: "Cash & Debts", lbl_rate: "Today's 24K Gold Rate", 
+                lbl_cash: "Cash / Bank Balance / Savings", lbl_debt: "Debts (To be paid off)", 
+                btn_calc: "Calculate Zakat", res_title: "Results", 
+                txt_pure_gold: "Total Pure Gold:", txt_pure_silver: "Total Pure Silver:", txt_net_wealth: "Total Zakat-Eligible Wealth:", txt_nisab_applied: "Nisab Threshold:",
+                txt_status: "Is Zakat Obligatory?", txt_zakat: "Zakat Amount (2.5%):", 
+                yes: "Yes (Eligible) ✅", no: "No (Below Nisab) ❌", back: "Go Back", btn_del: "Del", btn_live: "🔍 Live Rate",
+                err_rate: "Please enter today's Gold or Silver rate to calculate the Nisab threshold!"
+            },
+            bn: { 
+                calc_main_title: "যাকাত ক্যালকুলেটর",
+                gold_title: "সোনার বিবরণ", silver_title: "রুপার বিবরণ",
+                lbl_weight: "ওজন (গ্রাম)", lbl_karat: "ক্যারেট", btn_add: "➕ আরও সোনা যোগ করুন", 
+                lbl_silver_weight: "রুপার ওজন (গ্রাম)", lbl_silver_rate: "আজকের রুপার দাম", lbl_silver_purity: "রুপার বিশুদ্ধতা",
+                fin_title: "নগদ অর্থ ও ঋণের বিবরণ", lbl_rate: "আজকের 24K সোনার দাম", 
+                lbl_cash: "নগদ অর্থ / ব্যাংক ব্যালেন্স", lbl_debt: "ঋণ (যা পরিশোধ করতে হবে)", 
+                btn_calc: "জাকাত হিসাব করুন", res_title: "ফলাফল", 
+                txt_pure_gold: "মোট খাঁটি সোনা:", txt_pure_silver: "মোট খাঁটি রুপা:", txt_net_wealth: "মোট জাকাতযোগ্য সম্পদ:", txt_nisab_applied: "নিসাব সীমা:",
+                txt_status: "জাকাত কি ফরজ?", txt_zakat: "জাকাতের পরিমাণ (২.৫%):", 
+                yes: "হ্যাঁ (নিসাব পূর্ণ হয়েছে) ✅", no: "না (নিসাবের কম) ❌", back: "ফিরে যান", btn_del: "মুছুন", btn_live: "🔍 লাইভ দাম",
+                err_rate: "দয়া করে নিসাব গণনা করতে আজকের সোনা বা রুপার দাম লিখুন!"
+            },
+            ar: { 
+                calc_main_title: "حاسبة الزكاة",
+                gold_title: "تفاصيل الذهب", silver_title: "تفاصيل الفضة",
+                lbl_weight: "الوزن (جرام)", lbl_karat: "العيار", btn_add: "➕ إضافة المزيد من الذهب", 
+                lbl_silver_weight: "وزن الفضة (جرام)", lbl_silver_rate: "سعر الفضة اليوم", lbl_silver_purity: "عيار الفضة",
+                fin_title: "السيولة النقدية والديون", lbl_rate: "سعر الذهب عيار 24 اليوم", 
+                lbl_cash: "النقد / المدخرات", lbl_debt: "الديون (التي يجب سدادها)", 
+                btn_calc: "احسب الزكاة", res_title: "النتيجة", 
+                txt_pure_gold: "إجمالي الذهب الخالص:", txt_pure_silver: "إجمالي الفضة الخالصة:", txt_net_wealth: "إجمالي الثروة للزكاة:", txt_nisab_applied: "حد النصاب المطبق:",
+                txt_status: "هل تجب الزكاة؟", txt_zakat: "مبلغ الزكاة (2.5%):", 
+                yes: "نعم (بلغ النصاب) ✅", no: "لا (أقل من النصاب) ❌", back: "رجوع", btn_del: "حذف", btn_live: "🔍 السعر المباشر",
+                err_rate: "الرجاء إدخال سعر الذهب أو الفضة اليوم لحساب النصاب!"
+            }
+        };
+
+        const purityChart = { 24: 1.000, 22: 0.917, 21: 0.875, 20: 0.833, 18: 0.750, 15: 0.625, 14: 0.583, 12: 0.500, 10: 0.417, 9: 0.333 };
+        let currentLang = 'ur'; 
+
+        window.onload = function() {
+            currentLang = localStorage.getItem('selectedLang') || 'ur';
+            document.documentElement.lang = currentLang;
+            updateUIText();
+        };
+
+        function updateUIText() {
+            const t = uiText[currentLang];
+            if(!t) return;
+            
+            document.getElementById('ui_calc_main_title').innerText = t.calc_main_title;
+            document.getElementById('ui_gold_title').innerText = t.gold_title;
+            document.getElementById('ui_silver_title').innerText = t.silver_title;
+            document.getElementById('btn_add_gold').innerText = t.btn_add;
+            document.getElementById('ui_fin_title').innerText = t.fin_title;
+            document.getElementById('lbl_rate').innerText = t.lbl_rate;
+            document.getElementById('lbl_silver_weight').innerText = t.lbl_silver_weight;
+            document.getElementById('lbl_silver_rate').innerText = t.lbl_silver_rate;
+            document.getElementById('lbl_silver_purity').innerText = t.lbl_silver_purity;
+            document.getElementById('lbl_cash').innerText = t.lbl_cash;
+            document.getElementById('lbl_debt').innerText = t.lbl_debt;
+            document.getElementById('btn_calc').innerText = t.btn_calc;
+            document.getElementById('ui_res_title').innerText = t.res_title;
+            document.getElementById('txt_pure_gold').innerText = t.txt_pure_gold;
+            document.getElementById('txt_pure_silver').innerText = t.txt_pure_silver;
+            document.getElementById('txt_net_wealth').innerText = t.txt_net_wealth;
+            document.getElementById('txt_nisab_applied').innerText = t.txt_nisab_applied;
+            document.getElementById('txt_status').innerText = t.txt_status;
+            document.getElementById('txt_zakat_amount').innerText = t.txt_zakat;
+            document.getElementById('btnBack').innerText = t.back;
+            document.getElementById('btn_live_gold').innerText = t.btn_live;
+            document.getElementById('btn_live_silver').innerText = t.btn_live;
+
+            document.querySelectorAll('.lbl_weight').forEach(lbl => lbl.innerText = t.lbl_weight);
+            document.querySelectorAll('.lbl_karat').forEach(lbl => lbl.innerText = t.lbl_karat);
+            document.querySelectorAll('.btn-remove').forEach(btn => btn.innerText = t.btn_del);
+
+            const silverPuritySelect = document.getElementById('in_silver_purity');
+            if (currentLang === 'en') {
+                silverPuritySelect.options[0].text = "Fine Silver (99.9%)";
+                silverPuritySelect.options[1].text = "Sterling Silver (92.5%)";
+                silverPuritySelect.options[2].text = "Coin Silver (90.0%)";
+                silverPuritySelect.options[3].text = "Jewelry (80.0%)";
+            } else if (currentLang === 'bn') {
+                silverPuritySelect.options[0].text = "খাঁটি রুপা (৯৯.৯%)";
+                silverPuritySelect.options[1].text = "স্টার্লিং সিলভার (৯২.৫%)";
+                silverPuritySelect.options[2].text = "কয়েন সিলভার (৯০.০%)";
+                silverPuritySelect.options[3].text = "গহনা (৮০.০%)";
+            } else if (currentLang === 'ar') {
+                silverPuritySelect.options[0].text = "فضة خالصة (99.9%)";
+                silverPuritySelect.options[1].text = "فضة إسترليني (92.5%)";
+                silverPuritySelect.options[2].text = "فضة عملات (90.0%)";
+                silverPuritySelect.options[3].text = "مجوهرات (80.0%)";
+            } else {
+                silverPuritySelect.options[0].text = "خالص چاندی (99.9%)";
+                silverPuritySelect.options[1].text = "سٹرلنگ سلور (92.5%)";
+                silverPuritySelect.options[2].text = "سکہ چاندی (90.0%)";
+                silverPuritySelect.options[3].text = "زیورات (80.0%)";
+            }
+        }
+
+        function addGoldRow() {
+            const container = document.getElementById('gold_items_container');
+            const t = uiText[currentLang];
+            const row = document.createElement('div');
+            row.className = 'gold-row';
+            row.innerHTML = `
+                <div>
+                    <label class="lbl_weight">${t.lbl_weight}</label>
+                    <input type="number" class="g-weight" placeholder="0" min="0" step="0.01">
+                </div>
+                <div>
+                    <label class="lbl_karat">${t.lbl_karat}</label>
+                    <select class="g-karat">
+                        <option value="24">24K (100%)</option>
+                        <option value="22" selected>22K (91.7%)</option>
+                        <option value="21">21K (87.5%)</option>
+                        <option value="20">20K (83.3%)</option>
+                        <option value="18">18K (75.0%)</option>
+                        <option value="14">14K (58.3%)</option>
+                    </select>
+                </div>
+                <button class="btn-remove" onclick="this.parentElement.remove()">${t.btn_del}</button>
+            `;
+            container.appendChild(row);
+        }
+
+        function calculateZakat() {
+            const t = uiText[currentLang];
+            
+            let totalPureGold = 0;
+            const rows = document.querySelectorAll('.gold-row');
+            rows.forEach(row => {
+                let weight = parseFloat(row.querySelector('.g-weight').value) || 0;
+                let karat = parseInt(row.querySelector('.g-karat').value) || 24;
+                totalPureGold += (weight * purityChart[karat]);
+            });
+
+            let goldRate = parseFloat(document.getElementById('in_rate').value) || 0;
+            
+            let silverWeightRaw = parseFloat(document.getElementById('in_silver_weight').value) || 0;
+            let silverPurity = parseFloat(document.getElementById('in_silver_purity').value) || 1;
+            let silverRate = parseFloat(document.getElementById('in_silver_rate').value) || 0;
+            
+            let cash = parseFloat(document.getElementById('in_cash').value) || 0;
+            let debt = parseFloat(document.getElementById('in_debt').value) || 0;
+
+            let totalPureSilver = silverWeightRaw * silverPurity;
+
+            let goldValue = totalPureGold * goldRate;
+            let silverValue = totalPureSilver * silverRate;
+            
+            let totalWealth = goldValue + silverValue + cash;
+            let netWealth = totalWealth - debt;
+            if(netWealth < 0) netWealth = 0;
+
+            let goldNisabValue = 85 * goldRate;     
+            let silverNisabValue = 595 * silverRate; 
+            
+            let isEligible = false;
+            let activeNisabValue = 0;
+
+            if (totalPureGold > 0 && totalPureSilver === 0 && cash === 0) {
+                activeNisabValue = goldNisabValue;
+                if (totalPureGold >= 85) isEligible = true;
+            } else if (totalPureSilver > 0 && totalPureGold === 0 && cash === 0) {
+                activeNisabValue = silverNisabValue;
+                if (totalPureSilver >= 595) isEligible = true;
+            } else if (totalWealth > 0) {
+                if (silverNisabValue > 0) {
+                    activeNisabValue = silverNisabValue;
+                } else if (goldNisabValue > 0) {
+                    activeNisabValue = goldNisabValue;
+                }
+
+                if (activeNisabValue === 0) {
+                    alert(t.err_rate);
+                    return;
+                }
+
+                if (netWealth >= activeNisabValue) {
+                    isEligible = true;
+                }
+            }
+
+            document.getElementById('result_card').style.display = 'block';
+            
+            // 🌟 1. 'en-US' lagaya gaya hai taake ginti hamesha English (0,1,2,3..) me aaye.
+            // 🌟 2. Font family style me uper set kar di gayi hai taake Urdu Font apply ho.
+            
+            document.getElementById('out_pure_gold').innerText = totalPureGold.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " g";
+            document.getElementById('out_pure_silver').innerText = totalPureSilver.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " g";
+            document.getElementById('out_net_wealth').innerText = netWealth.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('out_nisab_value').innerText = activeNisabValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+            const statusEl = document.getElementById('out_status');
+            const zakatEl = document.getElementById('out_zakat');
+
+            if (isEligible) {
+                statusEl.innerText = t.yes;
+                statusEl.style.color = "#2e7d32";
+                let zakatAmount = netWealth * 0.025; 
+                zakatEl.innerText = zakatAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            } else {
+                statusEl.innerText = t.no;
+                statusEl.style.color = "#c62828";
+                zakatEl.innerText = "0.00";
+            }
+
+            setTimeout(() => { document.getElementById('result_card').scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 200);
+        }
+    </script>
+</body>
+</html>

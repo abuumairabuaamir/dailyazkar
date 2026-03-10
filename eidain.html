@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Eidain ke Masayel</title>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Daily Azkar">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+        /* --- FONTS --- */
+        @font-face { font-family: 'MyUrduFont'; src: url('fonts/jameel.ttf'); }
+        @font-face { font-family: 'Amiri'; src: url('fonts/amiri.ttf'); }
+        @font-face { font-family: 'TiroBangla'; src: url('fonts/tiro.ttf'); }
+
+        :root {
+            /* 🌟 Notch bar ki height fix ki gayi hai 🌟 */
+            --notch-height: calc(max(5px, env(safe-area-inset-top)) + 30px);
+        }
+
+        html, body {
+            height: 100%; width: 100%; margin: 0; padding: 0;
+            overflow: hidden; 
+            background-color: #e3f2fd;
+        }
+
+        /* --- DYNAMIC FONT & DIRECTION --- */
+        html[lang="ur"] body { font-family: 'MyUrduFont', sans-serif; direction: rtl; }
+        html[lang="ar"] body { font-family: 'Amiri', serif; direction: rtl; }
+        html[lang="en"] body { font-family: 'MyUrduFont', sans-serif; direction: ltr; } 
+        html[lang="bn"] body { font-family: 'TiroBangla', serif; direction: ltr; }
+
+        .lang-ur, .lang-en, .lang-bn, .lang-ar { display: none !important; }
+        html[lang="ur"] .lang-ur { display: block !important; }
+        html[lang="en"] .lang-en { display: block !important; }
+        html[lang="bn"] .lang-bn { display: block !important; }
+        html[lang="ar"] .lang-ar { display: block !important; }
+
+        /* 🌟 GLOBAL FIXED NOTCH BAR (Always Visible) 🌟 */
+        .global-notch {
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--notch-height);
+            display: flex; justify-content: space-between; align-items: flex-end;
+            padding: 0 15px 8px 15px; box-sizing: border-box;
+            background-color: #004d40; color: #e0f2f1; font-size: 13px; z-index: 500;
+            direction: ltr; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .global-notch .ar-text { font-family: 'Amiri', serif; font-size: 16px; color: #ffeb3b; direction: rtl;}
+        .global-notch .en-text { font-family: sans-serif; letter-spacing: 1px; }
+
+        /* --- MAIN CONTAINER --- */
+        .app-container { 
+            display: flex; flex-direction: column; height: 100%; width: 100%; 
+            max-width: 800px; margin: 0 auto; 
+            padding-top: var(--notch-height); /* Patti ke niche se shuru ho */
+            box-sizing: border-box;
+        }
+
+        .fixed-header {
+            flex: 0 0 auto; width: 100%; padding: 10px; box-sizing: border-box; z-index: 100;
+        }
+
+        .header-box { 
+            background: #00695c; color: white; padding: 15px; 
+            border-radius: 10px; text-align: center; font-size: 24px; font-weight: bold; 
+            border-bottom: 4px solid #004d40; box-shadow: 0 4px 6px rgba(0,0,0,0.2); 
+            width: 100%; box-sizing: border-box; margin: 0;
+        }
+
+        .scrollable-content {
+            flex: 1; overflow-y: auto; width: 100%; padding: 15px; box-sizing: border-box;
+            padding-bottom: max(50px, env(safe-area-inset-bottom));
+            -webkit-overflow-scrolling: touch; scrollbar-width: none;
+        }
+        .scrollable-content::-webkit-scrollbar { display: none; }
+
+        .card { 
+            background: white; padding: 15px; border-radius: 10px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; 
+            border-right: 5px solid #00695c; 
+        }
+        html[lang="en"] .card, html[lang="bn"] .card { border-right: none; border-left: 5px solid #00695c; }
+
+        h3 { color: #00695c; border-bottom: 1px dashed #b2dfdb; padding-bottom: 5px; margin-top: 0; font-size: 22px; font-weight: bold; }
+        p, li { font-size: 18px; line-height: 1.6; color: #333; margin-bottom: 8px; }
+        ul { padding-inline-start: 25px; margin: 5px 0; }
+        
+        .arabic-text { 
+            font-family: 'Amiri', serif; font-size: 22px; color: #004d40; 
+            background: #e0f2f1; padding: 10px; border-radius: 8px; 
+            margin: 8px 0; text-align: center; line-height: 1.6; 
+            border: 1px solid #b2dfdb; font-weight: normal; direction: rtl; 
+        }
+        
+        .trans { font-size: 17px; color: #424242; text-align: center; display: block; margin-bottom: 5px; background: #fafafa; padding: 8px; border-radius: 5px; border: 1px solid #eee; line-height: 1.5; }
+        .ref { font-size: 14px; color: #757575; display: block; margin-top: 5px; direction: ltr; text-align: center; font-family: sans-serif; font-weight: bold;}
+        .back-btn { display: block; background: #00695c; color: white; text-align: center; padding: 12px; border-radius: 8px; text-decoration: none; margin-top: 20px; font-size: 18px; font-family: inherit;}
+        hr { border:0; border-top:1px dashed #ccc; margin:15px 0; }
+
+    </style>
+</head>
+<body>
+
+    <div id="globalNotchBar" class="global-notch">
+        <span class="en-text">Daily Azkar</span>
+        <span class="ar-text">الأذكار اليومية</span>
+    </div>
+
+    <div class="app-container">
+
+        <div class="fixed-header">
+            <div class="header-box" id="pageTitle">احکام و مسائلِ عیدین</div>
+        </div>
+
+        <div class="scrollable-content">
+
+            <div class="card">
+                <h3 class="lang-ur">🌟 عید کے دن کی مسنون عبادات</h3>
+                <h3 class="lang-en">🌟 Sunnahs of Eid Day</h3>
+                <h3 class="lang-ar">🌟 سنن وآداب يوم العيد</h3>
+                <h3 class="lang-bn">🌟 ঈদের দিনের সুন্নাতসমূহ</h3>
+                
+                <p class="lang-ur"><b>1. عید الفطر سے پہلے طاق کھجوریں کھانا:</b></p>
+                <p class="lang-en"><b>1. Eating odd number of dates before Eid al-Fitr:</b></p>
+                <p class="lang-ar"><b>1. أكل تمرات وتراً قبل الخروج لعيد الفطر:</b></p>
+                <p class="lang-bn"><b>১. ঈদুল ফিতরের আগে বেজোড় সংখ্যক খেজুর খাওয়া:</b></p>
+                
+                <div class="arabic-text">«كَانَ رَسُولُ اللَّهِ ﷺ لاَ يَغْدُو يَوْمَ الْفِطْرِ حَتَّى يَأْكُلَ تَمَرَاتٍ، وَيَأْكُلُهُنَّ وِتْرًا»</div>
+                <span class="trans lang-ur">رسول اللہ ﷺ عید الفطر کے دن اس وقت تک نہیں نکلتے تھے جب تک کھجوریں نہ کھا لیں، اور آپ ﷺ انہیں طاق (1, 3, 5) عدد میں کھاتے تھے۔</span>
+                <span class="trans lang-en">The Messenger of Allah ﷺ would not leave on the day of Fitr until he had eaten some dates, and he would eat an odd number.</span>
+                <span class="trans lang-bn">রাসূল ﷺ ঈদুল ফিতরের দিন বেজোড় সংখ্যক খেজুর না খেয়ে ঈদগাহের উদ্দেশ্যে বের হতেন না।</span>
+                <span class="ref">(Sahih Bukhari: 953)</span>
+                
+                <hr>
+
+                <p class="lang-ur"><b>2. راستہ تبدیل کرنا:</b></p>
+                <p class="lang-en"><b>2. Changing the route:</b></p>
+                <p class="lang-ar"><b>2. مخالفة الطريق:</b></p>
+                <p class="lang-bn"><b>২. রাস্তা পরিবর্তন করা:</b></p>
+
+                <div class="arabic-text">«كَانَ النَّبِيُّ ﷺ إِذَا كَانَ يَوْمُ عِيدٍ خَالَفَ الطَّرِيقَ»</div>
+                <span class="trans lang-ur">نبی ﷺ جب عید کا دن ہوتا تو (آنے اور جانے کا) راستہ تبدیل فرماتے۔</span>
+                <span class="trans lang-en">On the day of Eid, the Prophet ﷺ would change his route (return by a different route).</span>
+                <span class="trans lang-bn">ঈদের দিন নবী ﷺ (যাওয়া এবং আসার) রাস্তা পরিবর্তন করতেন।</span>
+                <span class="ref">(Sahih Bukhari: 986)</span>
+            </div>
+
+            <div class="card">
+                <h3 class="lang-ur">🌾 صدقۃ الفطر (نمازِ عید سے پہلے)</h3>
+                <h3 class="lang-en">🌾 Sadaqat al-Fitr (Before Eid Prayer)</h3>
+                <h3 class="lang-ar">🌾 زكاة الفطر</h3>
+                <h3 class="lang-bn">🌾 সদকাতুল ফিতর (নামাজের আগে)</h3>
+
+                <p class="lang-ur">نمازِ عید الفطر کے لیے نکلنے سے پہلے "صدقۃ الفطر" ادا کرنا فرض ہے۔ یہ غریبوں کے لیے کھانا اور روزے دار کے لیے بے ہودہ باتوں سے پاکی کا ذریعہ ہے۔ اس کی مقدار ایک 'صاع' (تقریباً 2.5 سے 3 کلو) اناج (کھجور، جَو، گندم، چاول وغیرہ) ہے۔</p>
+                <p class="lang-en">It is obligatory to pay Sadaqat al-Fitr before leaving for the Eid al-Fitr prayer. It is one 'Sa' (approx 2.5 - 3 kg) of staple food (dates, wheat, rice, etc.) acting as food for the poor and purification for the fasting person.</p>
+                <p class="lang-ar">يجب إخراج زكاة الفطر قبل صلاة العيد، وهي صاع من طعام، طهرة للصائم وطعمة للمساكين.</p>
+                <p class="lang-bn">ঈদুল ফিতরের নামাজের জন্য বের হওয়ার আগে সদকাতুল ফিতর আদায় করা ফরজ। এর পরিমাণ হলো এক সা' (প্রায় ২.৫ থেকে ৩ কেজি) খাদ্যদ্রব্য (খেজুর, গম, চাল ইত্যাদি)।</p>
+
+                <div class="arabic-text">«فَرَضَ رَسُولُ اللَّهِ ﷺ زَكَاةَ الْفِطْرِ طُهْرَةً لِلصَّائِمِ مِنَ اللَّغْوِ وَالرَّفَثِ، وَطُعْمَةً لِلْمَسَاكِينِ، مَنْ أَدَّاهَا قَبْلَ الصَّلاَةِ فَهِيَ زَكَاةٌ مَقْبُولَةٌ، وَمَنْ أَدَّاهَا بَعْدَ الصَّلاَةِ فَهِيَ صَدَقَةٌ مِنَ الصَّدَقَاتِ»</div>
+                <span class="trans lang-ur">جس نے اسے نماز سے پہلے ادا کر دیا تو یہ مقبول زکوٰۃ (فطرانہ) ہے، اور جس نے اسے نماز کے بعد ادا کیا تو وہ عام صدقات میں سے ایک صدقہ ہے۔</span>
+                <span class="trans lang-en">Whoever pays it before the prayer, it is an accepted Zakat (Fitr), and whoever pays it after the prayer, it is just an ordinary charity.</span>
+                <span class="trans lang-bn">যে ব্যক্তি নামাজের আগে তা আদায় করবে তা মকবুল ফিতরা হিসেবে গণ্য হবে, আর যে নামাজের পর আদায় করবে তা সাধারণ সদকা হিসেবে গণ্য হবে।</span>
+                <span class="ref">(Abu Dawud: 1609 - Sahih Albani)</span>
+            </div>
+
+            <div class="card">
+                <h3 class="lang-ur">🕌 نمازِ عید کا طریقہ</h3>
+                <h3 class="lang-en">🕌 Method of Eid Prayer</h3>
+                <h3 class="lang-ar">🕌 صفة صلاة العيد</h3>
+                <h3 class="lang-bn">🕌 ঈদের নামাজের নিয়ম</h3>
+
+                <ul class="lang-ur">
+                    <li>عید کی نماز کے لیے <b>نہ اذان ہے اور نہ اقامت</b>۔</li>
+                    <li>نمازِ عید کی دو رکعتیں ہیں۔ پہلی رکعت میں تکبیر تحریمہ کے بعد اور سورۃ الفاتحہ سے پہلے <b>7 زائد تکبیریں</b> کہی جائیں گی۔</li>
+                    <li>دوسری رکعت میں سجدے سے اٹھنے کی تکبیر کے بعد اور سورۃ الفاتحہ سے پہلے <b>5 زائد تکبیریں</b> کہی جائیں گی۔</li>
+                    <li>عید کا خطبہ نماز کے بعد دیا جائے گا۔</li>
+                </ul>
+
+                <ul class="lang-en">
+                    <li>There is <b>no Adhan and no Iqamah</b> for Eid prayer.</li>
+                    <li>It consists of 2 Rakat. In the 1st Rakat, say <b>7 extra Takbeers</b> before reciting Surah Al-Fatihah.</li>
+                    <li>In the 2nd Rakat, say <b>5 extra Takbeers</b> before reciting Surah Al-Fatihah.</li>
+                    <li>The Khutbah is delivered *after* the prayer.</li>
+                </ul>
+
+                <ul class="lang-ar">
+                    <li>ليس لصلاة العيد <b>أذان ولا إقامة</b>.</li>
+                    <li>صلاة العيد ركعتان: يُكبر في الأولى <b>سبع تكبيرات</b> زوائد قبل القراءة، وفي الثانية <b>خمس تكبيرات</b> قبل القراءة.</li>
+                    <li>الخطبة تكون بعد الصلاة.</li>
+                </ul>
+
+                <ul class="lang-bn">
+                    <li>ঈদের নামাজের জন্য <b>কোনো আজান ও ইকামাত নেই</b>।</li>
+                    <li>ঈদের নামাজ দুই রাকাত। প্রথম রাকাতে তাকবীরে তাহরীমার পর এবং সূরা ফাতিহার আগে <b>৭টি অতিরিক্ত তাকবীর</b> বলতে হবে।</li>
+                    <li>দ্বিতীয় রাকাতে সিজদা থেকে ওঠার তাকবীরের পর এবং সূরা ফাতিহার আগে <b>৫টি অতিরিক্ত তাকবীর</b> বলতে হবে।</li>
+                    <li>খুতবা নামাজের পর হবে।</li>
+                </ul>
+
+                <div class="arabic-text">«أَنَّ رَسُولَ اللَّهِ ﷺ كَبَّرَ فِي الْعِيدَيْنِ يَوْمَ الْفِطْرِ وَيَوْمَ الْأَضْحَى سَبْعًا وَخَمْسًا، فِي الْأُولَى سَبْعًا، وَفِي الْآخِرَةِ خَمْسًا، سِوَى تَكْبِيرَةِ الصَّلَاةِ»</div>
+                <span class="trans lang-ur">بیشک رسول اللہ ﷺ نے عید الفطر اور عید الاضحیٰ میں سات اور پانچ تکبیریں کہیں: پہلی (رکعت) میں سات اور دوسری میں پانچ، یہ نماز کی (عام) تکبیروں کے علاوہ تھیں۔</span>
+                <span class="trans lang-en">The Messenger of Allah ﷺ said seven and five Takbirs in the Eid prayers: seven in the first Rakah and five in the second Rakah, besides the usual Takbirs of prayer.</span>
+                <span class="trans lang-bn">রাসূল ﷺ ঈদুল ফিতর ও ঈদুল আজহায় সাত ও পাঁচ তাকবীর বলতেন: প্রথম রাকাতে সাতটি এবং দ্বিতীয় রাকাতে পাঁচটি, এগুলো নামাজের সাধারণ তাকবীর ছাড়া।</span>
+                <span class="ref">(Abu Dawud: 1151 - Sahih Albani)</span>
+            </div>
+
+            <div class="card">
+                <h3 class="lang-ur">🗣 تکبیراتِ تشریق</h3>
+                <h3 class="lang-en">🗣 Takbeer-e-Tashreeq</h3>
+                <h3 class="lang-ar">🗣 تكبيرات التشريق</h3>
+                <h3 class="lang-bn">🗣 তাকবীরে তাশরিক</h3>
+
+                <p class="lang-ur">عید الاضحیٰ میں 9 ذوالحجہ کی فجر سے 13 ذوالحجہ کی عصر تک ہر فرض نماز کے بعد یہ تکبیر پڑھنا مسنون ہے:</p>
+                <p class="lang-en">It is Sunnah to recite this Takbeer after every obligatory prayer from Fajr of 9th Dhul Hijjah until Asr of 13th Dhul Hijjah:</p>
+                <p class="lang-ar">يُسن التكبير المقيد عقب الصلوات المكتوبة من فجر يوم عرفة (9 ذي الحجة) إلى عصر آخر أيام التشريق (13 ذي الحجة):</p>
+                <p class="lang-bn">ঈদুল আজহায় ৯ জিলহজ ফজর থেকে ১৩ জিলহজ আসর পর্যন্ত প্রত্যেক ফরজ নামাজের পর এই তাকবীর পড়া সুন্নাত:</p>
+
+                <div class="arabic-text">اللَّهُ أَكْبَرُ، اللَّهُ أَكْبَرُ، لاَ إِلَهَ إِلاَّ اللَّهُ، وَاللَّهُ أَكْبَرُ، اللَّهُ أَكْبَرُ، وَلِلَّهِ الْحَمْدُ</div>
+                <span class="ref">(Musannaf Ibn Abi Shaybah, Irwa al-Ghalil: 650)</span>
+            </div>
+
+            <div class="card">
+                <h3 class="lang-ur">🐐 احکامِ قربانی اور عمر کی شرط</h3>
+                <h3 class="lang-en">🐐 Qurbani Animal & Age Rulings</h3>
+                <h3 class="lang-ar">🐐 أحكام الأضحية وأسنانها</h3>
+                <h3 class="lang-bn">🐐 কোরবানির যোগ্য প্রাণী ও বয়স</h3>
+
+                <p class="lang-ur">قربانی صرف "بہیْمۃ الانعام" (اونٹ، گائے، بھیڑ، بکری) کی جائز ہے۔</p>
+                <ul class="lang-ur">
+                    <li><b>اونٹ:</b> 5 سال کا ہو۔</li>
+                    <li><b>گائے/بھینس:</b> 2 سال کی ہو۔</li>
+                    <li><b>بکری/بکرا:</b> 1 سال کا ہو۔</li>
+                    <li><b>بھیڑ/دنبہ:</b> اگر 1 سال کا نہ ملے تو 6 مہینے کے دنبے (جذعہ) کی قربانی بھی جائز ہے۔</li>
+                </ul>
+
+                <p class="lang-en">Qurbani is only valid for cattle (Camel, Cow, Sheep, Goat).</p>
+                <ul class="lang-en">
+                    <li><b>Camel:</b> 5 years old.</li>
+                    <li><b>Cow:</b> 2 years old.</li>
+                    <li><b>Goat:</b> 1 year old.</li>
+                    <li><b>Sheep:</b> If a 1-year-old is not found, a 6-month-old sheep (Jadh'ah) is permissible.</li>
+                </ul>
+
+                <ul class="lang-ar">
+                    <li><b>الإبل:</b> ما أتم خمس سنين.</li>
+                    <li><b>البقر:</b> ما أتم سنتين.</li>
+                    <li><b>الماعز:</b> ما أتم سنة.</li>
+                    <li><b>الضأن:</b> الجذعة، وهو ما أتم ستة أشهر.</li>
+                </ul>
+
+                <ul class="lang-bn">
+                    <li><b>উট:</b> ৫ বছর।</li>
+                    <li><b>গরু/মহিষ:</b> ২ বছর।</li>
+                    <li><b>ছাগল:</b> ১ বছর।</li>
+                    <li><b>ভেড়া/দুম্বা:</b> ১ বছরের না পাওয়া গেলে ৬ মাসের ভেড়াও জায়েজ।</li>
+                </ul>
+
+                <div class="arabic-text">«لَا تَذْبَحُوا إِلَّا مُسِنَّةً، إِلَّا أَنْ يَعْسُرَ عَلَيْكُمْ، فَتَذْبَحُوا جَذَعَةً مِنَ الضَّأْنِ»</div>
+                <span class="trans lang-ur">صرف 'مُسِنَّہ' (دو دانتا / مطلوبہ عمر کا) جانور ذبح کرو، الا یہ کہ تم پر مشکل ہو جائے تو پھر بھیڑ کا چھ ماہ کا بچہ (جذعہ) ذبح کر لو۔</span>
+                <span class="trans lang-en">Do not slaughter anything but a 'Musinnah' (adult animal of proper age), unless it is difficult for you, then slaughter a six-month-old sheep.</span>
+                <span class="trans lang-bn">তোমরা 'মুসিন্নাহ' ছাড়া জবাই করো না, তবে যদি কষ্টকর হয় তাহলে ৬ মাসের ভেড়া (জাযাআহ) জবাই করতে পারো।</span>
+                <span class="ref">(Sahih Muslim: 1963)</span>
+
+                <hr>
+
+                <p class="lang-ur"><b>جانور کے عیوب (جن کی قربانی جائز نہیں):</b></p>
+                <p class="lang-en"><b>Defects (Animals not allowed for sacrifice):</b></p>
+                <p class="lang-ar"><b>العيوب المانعة من الإجزاء:</b></p>
+                <p class="lang-bn"><b>প্রাণীর ত্রুটি (যাদের কোরবানি জায়েজ নয়):</b></p>
+
+                <div class="arabic-text">«أَرْبَعٌ لَا تَجُوزُ فِي الضَّحَايَا: الْعَوْرَاءُ بَيِّنٌ عَوَرُهَا، وَالْمَرِيضَةُ بَيِّنٌ مَرَضُهَا، وَالْعَرْجَاءُ بَيِّنٌ ظَلْعُهَا، وَالْكَسِيرَةُ الَّتِي لَا تُنْقِي»</div>
+                <span class="trans lang-ur">چار قسم کے جانوروں کی قربانی جائز نہیں: واضح کانا، واضح بیمار، واضح لنگڑا، اور اتنا کمزور جس کی ہڈیوں میں گودا نہ ہو۔</span>
+                <span class="trans lang-en">Four are not allowed for sacrifice: The obviously one-eyed, the obviously sick, the obviously lame, and the emaciated animal with no marrow.</span>
+                <span class="trans lang-bn">চারটি প্রাণীর কোরবানি জায়েজ নয়: স্পষ্ট কানা, স্পষ্ট অসুস্থ, স্পষ্ট খোঁড়া এবং অত্যন্ত দুর্বল প্রাণী।</span>
+                <span class="ref">(Abu Dawud: 2802 - Sahih Albani)</span>
+            </div>
+
+            <div class="card">
+                <h3 class="lang-ur">🔪 جانور ذبح کرنے کا مسنون طریقہ</h3>
+                <h3 class="lang-en">🔪 Sunnah Method of Slaughtering</h3>
+                <h3 class="lang-ar">🔪 صفة ذبح الأضحية</h3>
+                <h3 class="lang-bn">🔪 কোরবানি জবাই করার সুন্নাত নিয়ম</h3>
+
+                <ul class="lang-ur">
+                    <li>چھری کو خوب تیز کریں تاکہ جانور کو تکلیف نہ ہو۔</li>
+                    <li>جانور کو اس کے <b>بائیں پہلو (Left Side)</b> پر قبلہ رُخ لٹائیں۔</li>
+                    <li>دایاں پاؤں جانور کی گردن کے پاس پہلو پر رکھیں اور ذبح کرتے وقت یہ دعا پڑھیں:</li>
+                </ul>
+
+                <ul class="lang-en">
+                    <li>Sharpen the knife well so the animal does not suffer.</li>
+                    <li>Lay the animal on its <b>left side</b> facing the Qiblah.</li>
+                    <li>Place your right foot on its side and say the following while slaughtering:</li>
+                </ul>
+
+                <ul class="lang-ar">
+                    <li>تحديد الشفرة لإراحة الذبيحة.</li>
+                    <li>إضجاع الذبيحة على <b>شقها الأيسر</b> موجهة للقبلة.</li>
+                    <li>أن يضع رجله على صفحة عنقها ويقول عند الذبح:</li>
+                </ul>
+
+                <ul class="lang-bn">
+                    <li>ছুরি খুব ধারালো করুন যেন প্রাণীর কষ্ট না হয়।</li>
+                    <li>প্রাণীকে তার <b>বাম কাতে (Left Side)</b> কিবলামুখী করে শোয়াবেন।</li>
+                    <li>ডান পা প্রাণীর ঘাড়ের কাছে রেখে জবাইয়ের সময় এই দোয়া পড়বেন:</li>
+                </ul>
+
+                <div class="arabic-text" style="font-size: 26px; font-weight: bold; color: #d32f2f;">بِسْمِ اللَّهِ وَاللَّهُ أَكْبَرُ، اللَّهُمَّ مِنْكَ وَلَكَ</div>
+                <span class="trans lang-ur">ترجمہ: اللہ کے نام سے، اور اللہ سب سے بڑا ہے۔ اے اللہ! یہ تیری طرف سے ہی عطا ہوا اور تیرے ہی لیے ہے۔</span>
+                <span class="trans lang-en">Translation: In the name of Allah, and Allah is the Greatest. O Allah! This is from You and for You.</span>
+                <span class="trans lang-bn">অর্থ: আল্লাহর নামে এবং আল্লাহ সর্বশ্রেষ্ঠ। হে আল্লাহ! এটি তোমার পক্ষ থেকেই এবং তোমারই জন্য।</span>
+                
+                <hr style="border-top:1px solid #eee;">
+                
+                <div class="arabic-text">«ضَحَّى النَّبِيُّ ﷺ بِكَبْشَيْنِ أَمْلَحَيْنِ أَقْرَنَيْنِ، ذَبَحَهُمَا بِيَدِهِ، وَسَمَّى وَكَبَّرَ، وَوَضَعَ رِجْلَهُ عَلَى صِفَاحِهِمَا»</div>
+                <span class="trans lang-ur">نبی ﷺ نے دو چتکبرے سینگوں والے مینڈھوں کی قربانی کی۔ آپ ﷺ نے انہیں اپنے ہاتھ سے ذبح کیا، بسم اللہ پڑھی، تکبیر کہی، اور اپنا پاؤں ان کے پہلو پر رکھا۔</span>
+                <span class="trans lang-en">The Prophet ﷺ sacrificed two horned rams. He slaughtered them with his own hand, said Bismillah and Allahu Akbar, and placed his foot on their sides.</span>
+                <span class="ref">(Sahih Bukhari: 5565)</span>
+            </div>
+
+            <a href="index.html" class="back-btn" id="btnBack">واپس جائیں</a>
+
+        </div>
+    </div>
+
+    <script>
+        const uiText = {
+            ur: { page_title: "احکام و مسائلِ عیدین", back: "واپس جائیں" },
+            en: { page_title: "Rulings of Eidain", back: "Go Back" },
+            ar: { page_title: "أحكام العيدين", back: "رجوع" },
+            bn: { page_title: "দুই ঈদের মাসায়েল", back: "ফিরে যান" }
+        };
+
+        window.onload = function() {
+            let currentLang = localStorage.getItem('selectedLang') || 'ur';
+            document.documentElement.lang = currentLang;
+            
+            if(uiText[currentLang]) {
+                document.getElementById('pageTitle').innerText = uiText[currentLang].page_title;
+                document.getElementById('btnBack').innerText = uiText[currentLang].back;
+            }
+        };
+    </script>
+
+</body>
+</html>

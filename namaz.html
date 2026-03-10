@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Method of Salah</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Daily Azkar">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+        /* --- 1. FONTS --- */
+        @font-face { font-family: 'MyUrduFont'; src: url('fonts/jameel.ttf'); }
+        @font-face { font-family: 'Amiri'; src: url('fonts/amiri.ttf'); }
+        @font-face { font-family: 'TiroBangla'; src: url('fonts/tiro.ttf'); }
+        
+        :root {
+            /* 🌟 Notch bar ki height fix ki gayi hai 🌟 */
+            --notch-height: calc(max(5px, env(safe-area-inset-top)) + 30px);
+        }
+
+        /* --- 2. MAIN LAYOUT SETTINGS --- */
+        html, body {
+            height: 100%; width: 100%; margin: 0; padding: 0;
+            overflow: hidden; 
+            background-color: #e0f7fa;
+        }
+
+        /* --- DYNAMIC FONT & DIRECTION --- */
+        html[lang="ur"] body { font-family: 'MyUrduFont', sans-serif; direction: rtl; }
+        html[lang="ar"] body { font-family: 'Amiri', serif; direction: rtl; }
+        html[lang="en"] body { font-family: 'MyUrduFont', sans-serif; direction: ltr; } 
+        html[lang="bn"] body { font-family: 'TiroBangla', serif; direction: ltr; }
+
+        /* --- 3. SHOW/HIDE LOGIC --- */
+        .lang-ur, .lang-en, .lang-bn, .lang-ar { display: none !important; }
+        html[lang="ur"] .lang-ur { display: block !important; }
+        html[lang="en"] .lang-en { display: block !important; }
+        html[lang="bn"] .lang-bn { display: block !important; }
+        html[lang="ar"] .lang-ar { display: block !important; }
+
+        /* 🌟 GLOBAL FIXED NOTCH BAR (Always Visible) 🌟 */
+        .global-notch {
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--notch-height);
+            display: flex; justify-content: space-between; align-items: flex-end;
+            padding: 0 15px 8px 15px; box-sizing: border-box;
+            background-color: #004d40; /* Dark Sea Green Theme */
+            color: #e0f2f1; font-size: 13px; z-index: 500;
+            direction: ltr; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .global-notch .ar-text { font-family: 'Amiri', serif; font-size: 16px; color: #ffeb3b; direction: rtl;}
+        .global-notch .en-text { font-family: sans-serif; letter-spacing: 1px; }
+
+        /* --- APP CONTAINER --- */
+        .app-container {
+            display: flex; flex-direction: column;
+            height: 100%; width: 100%;
+            max-width: 800px; margin: 0 auto;
+            padding-top: var(--notch-height); /* Patti ke niche se shuru ho */
+            box-sizing: border-box;
+        }
+
+        /* --- FIXED HEADER --- */
+        .fixed-header {
+            flex: 0 0 auto; width: 100%; 
+            padding: 10px; box-sizing: border-box; z-index: 100;
+            background-color: #e0f7fa; 
+        }
+
+        .header-box { 
+            background: #006064; color: white; padding: 15px; 
+            border-radius: 10px; text-align: center; 
+            font-size: 22px; font-weight: bold; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2); 
+            border: 1px solid #004d40;
+            width: 100%; box-sizing: border-box; margin: 0; margin-bottom: 10px;
+        }
+
+        /* --- SCROLLABLE CONTENT --- */
+        .scrollable-content {
+            flex: 1; overflow-y: auto; width: 100%;
+            padding: 15px; box-sizing: border-box;
+            padding-bottom: max(80px, env(safe-area-inset-bottom));
+            -webkit-overflow-scrolling: touch; 
+            scrollbar-width: none; -ms-overflow-style: none;
+        }
+        .scrollable-content::-webkit-scrollbar { display: none; }
+
+        /* --- CARD STYLES --- */
+        .card { 
+            background: white; padding: 20px; border-radius: 15px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 25px; 
+            border-right: 6px solid #006064; transition: background 0.5s;
+        }
+        html[lang="en"] .card, html[lang="bn"] .card { border-right: none; border-left: 6px solid #006064; }
+        
+        .section-title { color: #006064; font-size: 20px; margin-bottom: 10px; border-bottom: 1px dashed #b2dfdb; padding-bottom: 5px; font-weight: bold; }
+        
+        .instruction { background: #e0f2f1; color: #004d40; padding: 10px; border-radius: 5px; font-size: 16px; margin-bottom: 10px; line-height: 1.6; }
+        .instruction ul { padding-inline-start: 25px; margin: 5px 0; }
+        
+        .note { font-size: 15px; color: #d32f2f; background: #ffebee; padding: 8px; border-radius: 5px; margin-top: 5px; margin-bottom: 10px; border: 1px solid #ffcdd2; font-weight: normal; }
+
+        .arabic { font-family: 'Amiri', serif; font-size: 22px; color: #006064; line-height: 1.8; margin-bottom: 12px; font-weight: normal; text-align: center; background: #f0f4c3; padding: 12px; border-radius: 8px; direction: rtl; }
+        
+        .translation { font-size: 17px; color: #333; margin-bottom: 15px; line-height: 1.6; }
+        
+        .ref { font-size: 13px; color: #757575; display: block; margin-top: 5px; text-align: left; direction: ltr; font-family: sans-serif; }
+
+        /* 🌟 NEW: IN-BETWEEN BUTTON STYLE 🌟 */
+        .azkar-link-btn {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            background: linear-gradient(135deg, #00838F, #006064); color: white;
+            padding: 15px; border-radius: 12px; text-decoration: none;
+            font-size: 20px; font-family: inherit; font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2); margin-bottom: 25px;
+            transition: transform 0.1s; border: 2px solid #004D40;
+        }
+        .azkar-link-btn:active { transform: scale(0.97); }
+
+        .back-btn { display: block; background: #006064; color: white; text-align: center; padding: 12px; border-radius: 8px; text-decoration: none; margin-top: 30px; font-size: 18px; font-family: inherit;}
+        
+        hr { border:0; border-top:1px dashed #ccc; margin:10px 0; }
+    </style>
+</head>
+<body>
+
+    <div id="globalNotchBar" class="global-notch">
+        <span class="en-text">Daily Azkar</span>
+        <span class="ar-text">الأذكار اليومية</span>
+    </div>
+
+    <div class="app-container">
+
+        <div class="fixed-header">
+            <div class="header-box" id="pageTitle">نمازِ نبوی ﷺ (البانیؒ)</div>
+        </div>
+
+        <div class="scrollable-content">
+
+            <div class="card">
+                <div class="section-title">
+                    <span class="lang-ur">1. نیت اور تکبیر تحریمہ</span>
+                    <span class="lang-en">1. Intention (Niyyah) & Takbeer</span>
+                    <span class="lang-bn">১. নিয়ত ও তাকবিরে তাহরিما</span>
+                    <span class="lang-ar">1. النية وتكبيرة الإحرام</span>
+                </div>
+                
+                <div class="instruction lang-ur">
+                    <ul>
+                        <li><b>نیت:</b> نیت دل کے ارادے کا نام ہے۔ زبان سے "نیت کرتا ہوں میں..." کہنا بدعت ہے۔</li>
+                        <li><b>رفع الیدین:</b> دونوں ہاتھوں کو کندھوں یا کانوں تک اٹھائیں اور <b>اَللّٰهُ أَكْبَر</b> کہیں۔</li>
+                        <li><b>نظر:</b> سجدے والی جگہ پر رکھیں۔</li>
+                    </ul>
+                </div>
+                <div class="instruction lang-en">
+                    <ul>
+                        <li><b>Intention:</b> Niyyah is the resolve of the heart. Saying it aloud is an innovation (Bid'ah).</li>
+                        <li><b>Raf' al-Yadayn:</b> Raise both hands to the shoulders or ears and say <b>Allahu Akbar</b>.</li>
+                        <li><b>Sight:</b> Keep your eyes fixed on the place of prostration.</li>
+                    </ul>
+                </div>
+                <div class="instruction lang-bn">
+                    <ul>
+                        <li><b>নিয়ত:</b> নিয়ত হলো অন্তরের সংকল্প। মুখে উচ্চারণ করে নিয়ত করা বিদআত।</li>
+                        <li><b>রফে ইয়াদাইন:</b> উভয় হাত কাঁধ বা কান পর্যন্ত তুলুন এবং <b>আল্লাহু আকবার</b> বলুন।</li>
+                        <li><b>দৃষ্টি:</b> সিজদার স্থানে দৃষ্টি নিবদ্ধ রাখুন।</li>
+                    </ul>
+                </div>
+                <div class="instruction lang-ar">
+                    <ul>
+                        <li><b>النية:</b> النية محلها القلب. والتلفظ بها بدعة.</li>
+                        <li><b>رفع اليدين:</b> يرفع يديه حذو منكبيه أو إلى فروع أذنيه ويقول: <b>الله أكبر</b>.</li>
+                        <li><b>النظر:</b> يكون النظر إلى موضع السجود.</li>
+                    </ul>
+                </div>
+
+                <div class="note lang-ur">شیخ البانیؒ کے مطابق ہاتھ اٹھاتے وقت انگلیاں نارمل کھلی ہوں (نہ بہت ملی ہوئی، نہ بہت پھیلی ہوئی)۔</div>
+                <div class="note lang-en">Note (Albani): When raising hands, fingers should be normally spaced (not too tightly closed, nor too spread apart).</div>
+                <div class="note lang-bn">বিঃদ্রঃ (আলবানী): হাত তোলার সময় আঙুলগুলো স্বাভাবিক ফাঁকা থাকবে (খুব শক্ত করে মেলানো নয়, আবার খুব ছড়ানোও নয়)।</div>
+                <div class="note lang-ar">ملاحظة (الألباني): عند رفع اليدين تكون الأصابع ممدودة ومستقبلة القبلة (غير مضمومة ولا مفرجة).</div>
+            </div>
+
+            <div class="card">
+                <div class="section-title">
+                    <span class="lang-ur">2. قیام اور ہاتھ باندھنا</span>
+                    <span class="lang-en">2. Standing & Folding Hands</span>
+                    <span class="lang-bn">২. কিয়াম ও হাত বাঁধা</span>
+                    <span class="lang-ar">2. القيام ووضع اليدين</span>
+                </div>
+                
+                <div class="instruction lang-ur">دائیں ہاتھ کو بائیں ہاتھ کی ہتھیلی، کلائی اور بازو پر رکھیں اور انہیں <b>"سینے پر"</b> باندھیں۔</div>
+                <div class="instruction lang-en">Place the right hand over the back of the left hand, wrist, and forearm, and fold them <b>"on the chest"</b>.</div>
+                <div class="instruction lang-bn">ডান হাতটি বাম হাতের তালুর পিঠ, কব্জি এবং বাহুর ওপর রাখুন এবং সেগুলো <b>"বুকের ওপর"</b> বাঁধুন।</div>
+                <div class="instruction lang-ar">يضع يده اليمنى على ظهر كفه اليسرى والرسغ والساعد، ويضعهما <b>"على صدره"</b>.</div>
+
+                <div class="note lang-ur">اہم: شیخ البانیؒ نے ثابت کیا ہے کہ ہاتھ "سینے پر" باندھنا ہی صحیح حدیث سے ثابت ہے۔ (صحیح ابن خزیمہ)</div>
+                <div class="note lang-en">Important: Shaykh Albani proved that folding hands "on the chest" is what is established from authentic Hadith. (Sahih Ibn Khuzaymah)</div>
+                <div class="note lang-bn">গুরুত্বপূর্ণ: শায়েখ আলবানী প্রমাণ করেছেন যে হাত "বুকের ওপর" বাঁধাই সহিহ হাদিস দ্বারা প্রমাণিত। (সহিহ ইবনে খুজায়মা)</div>
+                <div class="note lang-ar">هام: أثبت الشيخ الألباني أن وضع اليدين "على الصدر" هو الثابت في السنة الصحيحة. (صحيح ابن خزيمة)</div>
+            </div>
+
+            <div class="card">
+                <div class="section-title">
+                    <span class="lang-ur">3. دعائے استفتاح (ثنا)</span>
+                    <span class="lang-en">3. Opening Supplication (Sana)</span>
+                    <span class="lang-bn">৩. সানা (প্রারম্ভিক দোয়া)</span>
+                    <span class="lang-ar">3. دعاء الاستفتاح</span>
+                </div>
+                
+                <div class="instruction lang-ur">نبی ﷺ فرض نمازوں میں اکثر یہ دعا پڑھتے تھے:</div>
+                <div class="instruction lang-en">The Prophet ﷺ mostly recited this supplication in obligatory prayers:</div>
+                <div class="instruction lang-bn">নবী ﷺ ফরজ নামাজে বেশিরভাগ সময় এই দোয়া পড়তেন:</div>
+                <div class="instruction lang-ar">كان النبي ﷺ يقرأ هذا الدعاء غالباً في الصلوات المفروضة:</div>
+                
+                <div class="arabic">اللَّهُمَّ بَاعِدْ بَيْنِي وَبَيْنَ خَطَايَايَ كَمَا بَاعَدْتَ بَيْنَ الْمَشْرِقِ وَالْمَغْرِبِ، اللَّهُمَّ نَقِّنِي مِنْ خَطَايَايَ كَمَا يُنَقَّى الثَّوْبُ الْأَبْيَضُ مِنَ الدَّنَسِ، اللَّهُمَّ اغْسِلْنِي مِنْ خَطَايَايَ بِالثَّلْجِ وَالْمَاءِ وَالْبَرَدِ</div>
+                
+                <div class="translation lang-ur">اے اللہ! میرے اور میرے گناہوں کے درمیان اتنی دوری کر دے جتنی تو نے مشرق اور مغرب کے درمیان دوری کی ہے۔ اے اللہ! مجھے گناہوں سے اس طرح پاک کر دے جیسے سفید کپڑا میل کچیل سے پاک کیا جاتا ہے۔ اے اللہ! مجھے میرے گناہوں سے برف، پانی اور اولوں کے ساتھ دھو دے۔</div>
+                <div class="translation lang-en">O Allah, set me apart from my sins (faults) as You have set apart the East from the West. O Allah, clean me from sins as a white garment is cleaned of dirt. O Allah, wash off my sins with water, snow, and hail.</div>
+                <div class="translation lang-bn">হে আল্লাহ! আমার এবং আমার গুনাহসমূহের মাঝে এমন দূরত্ব সৃষ্টি করে দিন, যেমন দূরত্ব আপনি পূর্ব ও পশ্চিমের মাঝে সৃষ্টি করেছেন। হে আল্লাহ! আপনি আমাকে গুনাহ থেকে এমনভাবে পরিষ্কার করুন, যেমন সাদা কাপড় ময়লা থেকে পরিষ্কার করা হয়। হে আল্লাহ! আপনি আমাকে আমার গুনাহ থেকে বরফ, পানি ও শিলাবৃষ্টি দিয়ে ধুয়ে দিন।</div>
+                <div class="translation lang-ar">اللهم باعد بيني وبين خطاياي كما باعدت بين المشرق والمغرب، اللهم نقني من خطاياي كما ينقى الثوب الأبيض من الدنس، اللهم اغسلني من خطاياي بالثلج والماء والبرد.</div>
+                
+                <span class="ref">(Bukhari: 744, Muslim: 598)</span>
+            </div>
+
+            <div class="card">
+                <div class="section-title">
+                    <span class="lang-ur">4. سورۃ الفاتحہ اور قرات</span>
+                    <span class="lang-en">4. Surah Al-Fatiha & Recitation</span>
+                    <span class="lang-bn">৪. সূরা ফাতিহা ও কিরাত</span>
+                    <span class="lang-ar">4. الفاتحة والقراءة</span>
+                </div>
+                
+                <div class="instruction lang-ur">تعوذ (شیطان سے پناہ):</div>
+                <div class="instruction lang-en">Ta'awwudh (Seeking Refuge):</div>
+                <div class="instruction lang-bn">তা'আওউজ (শয়তান থেকে আশ্রয়):</div>
+                <div class="instruction lang-ar">الاستعاذة:</div>
+                <div class="arabic">أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ</div>
+                
+                <hr>
+
+                <div class="instruction lang-ur">تسمیہ (بسم اللہ):</div>
+                <div class="instruction lang-en">Tasmiyah (Bismillah):</div>
+                <div class="instruction lang-bn">তাসমিয়াহ (বিসমিল্লাহ):</div>
+                <div class="instruction lang-ar">البسملة:</div>
+                <div class="arabic">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+
+                <hr>
+
+                <div class="instruction lang-ur">سورۃ الفاتحہ (لازمی):</div>
+                <div class="instruction lang-en">Surah Al-Fatiha (Obligatory):</div>
+                <div class="instruction lang-bn">সূরা ফাতিহা (বাধ্যতামূলক):</div>
+                <div class="instruction lang-ar">سورة الفاتحة (ركن):</div>
+                <div class="arabic">الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ ۝ الرَّحْمَٰنِ الرَّحِيمِ ۝ مَالِكِ يَوْمِ الدِّينِ ۝ إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ ۝ اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ ۝ صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ۝</div>
+                
+                <hr>
+                
+                <div class="instruction lang-ur">اس کے بعد قرآن میں سے کوئی سورت یا کچھ آیات پڑھیں۔</div>
+                <div class="instruction lang-en">After that, recite any Surah or verses from the Quran.</div>
+                <div class="instruction lang-bn">এরপর কোরআন থেকে কোনো সূরা বা কয়েকটি আয়াত পড়ুন।</div>
+                <div class="instruction lang-ar">بعد ذلك، يقرأ سورة أو آيات من القرآن الكريم.</div>
+            </div>
+
+            <div class="card">
+                <div class="section-title">
+                    <span class="lang-ur">5. رکوع</span>
+                    <span class="lang-en">5. Bowing (Ruku)</span>
+                    <span class="lang-bn">৫. রুকু</span>
+                    <span class="lang-ar">5. الركوع</span>
+                </div>
+                
+                <div class="instruction lang-ur">
+                    <ul>
+                        <li><b>رفع الیدین:</b> رکوع میں جاتے وقت دوبارہ کندھوں تک ہاتھ اٹھائیں۔</li>
+                        <li>کمر کو بالکل سیدھا رکھیں اور ہاتھوں سے گھٹنوں کو مضبوطی سے پکڑیں۔</li>
+                        <li>کم از کم 3 بار یہ تسبیح پڑھیں:</li>
+                    </ul>
+                </div>
+                <div class="instruction lang-en">
+                    <ul>
+                        <li><b>Raf' al-Yadayn:</b> Raise hands to the shoulders before bowing.</li>
+                        <li>Keep the back perfectly straight and hold the knees firmly with the hands.</li>
+                        <li>Recite this minimum 3 times:</li>
+                    </ul>
+                </div>
+                <div class="instruction lang-bn">
+                    <ul>
+                        <li><b>রফে ইয়াদাইন:</b> রুকুতে যাওয়ার আগে আবার হাত কাঁধ পর্যন্ত তুলুন।</li>
+                        <li>পিঠ একদম সোজা রাখুন এবং হাত দিয়ে হাঁটু শক্তভাবে ধরুন।</li>
+                        <li>অন্তত ৩ বার এই তাসবিহ পড়ুন:</li>
+                    </ul>
+                </div>
+                <div class="instruction lang-ar">
+                    <ul>
+                        <li><b>رفع اليدين:</b> يرفع يديه حذو منكبيه عند الركوع.</li>
+                        <li>يسوي ظهره مستوياً، ويقبض بيديه على ركبتيه مفرجاً بين أصابعه.</li>
+                        <li>يقول (3 مرات على الأقل):</li>
+                    </ul>
+                </div>
+
+                <div class="arabic">سُبْحَانَ رَبِّيَ الْعَظِيمِ</div>
+                
+                <div class="translation lang-ur">پاک ہے میرا رب جو بہت عظمت والا ہے۔</div>
+                <div class="translation lang-en">Glory to my Lord the Exalted.</div>
+                <div class="translation lang-bn">পবিত্র আমার রব, যিনি মহান।</div>
+                <div class="translation lang-ar">سبحان ربي العظيم.</div>
+            </div>
+
+            <div class="card">
+                <div class="section-title">
+                    <span class="lang-ur">6. قومہ (رکوع سے اٹھنا)</span>
+                    <span class="lang-en">6. Rising from Ruku (Qawmah)</span>
+                    <span class="lang-bn">৬. কওমা (রুকু থেকে ওঠা)</span>
+                    <span class="lang-ar">6. الرفع من الركوع (القومَة)</span>
+                </div>
+                
+                <div class="instruction lang-ur">رکوع سے سر اٹھاتے وقت بھی رفع الیدین کریں اور کہیں:</div>
+                <div class="instruction lang-en">Raise your hands (Raf' al-Yadayn) while rising from Ruku and say:</div>
+                <div class="instruction lang-bn">রুকু থেকে মাথা তোলার সময়ও রফে ইয়াদাইন করুন এবং বলুন:</div>
+                <div class="instruction lang-ar">يرفع يديه عند الرفع من الركوع ويقول:</div>
+                
+                <div class="arabic">سَمِعَ اللَّهُ لِمَنْ حَمِدَهُ</div>
+                
+                <div class="translation lang-ur">اللہ نے اس کی سن لی جس نے اس کی تعریف کی۔</div>
+                <div class="translation lang-en">Allah hears those who praise Him.</div>
+                <div class="translation lang-bn">আল্লাহ তার কথা শুনেছেন, যে তার প্রশংসা করেছে।</div>
+                <div class="translation lang-ar">سمع الله لمن حمده.</div>
+
+                <div class="instruction lang-ur">جب سیدھے کھڑے ہو جائیں تو کہیں:</div>
+                <div class="instruction lang-en">When standing fully upright, say:</div>
+                <div class="instruction lang-bn">যখন সোজা হয়ে দাঁড়াবেন তখন বলুন:</div>
+                <div class="instruction lang-ar">فإذا استوى قائماً قال:</div>
+                
+                <div class="arabic">رَبَّنَا وَلَكَ الْحَمْدُ</div>
+                <div class="translation lang-ur">اے ہمارے رب! اور تیرے ہی لیے تمام تعریف ہے۔</div>
+                <div class="translation lang-en">Our Lord, and to You belongs all praise.</div>
+                <div class="translation lang-bn">হে আমাদের রব! আপনার জন্যই সমস্ত প্রশংসা।</div>
+                <div class="translation lang-ar">ربنا ولك الحمد.</div>
+            </div>
+
+            <div class="card">
+                <div class="section-title">
+                    <span class="lang-ur">7. سجدہ</span>
+                    <span class="lang-en">7. Prostration (Sujud)</span>
+                    <span class="lang-bn">৭. সিজদা</span>
+                    <span class="lang-ar">7. السجود</span>
+                </div>
+                
+                <div class="instruction lang-ur">
+                    اللہ اکبر کہہ کر سجدے میں جائیں (رفع الیدین نہیں ہوگا)۔
+                    <ul>
+                        <li><b>7 ہڈیوں پر سجدہ کریں:</b> پیشانی (ناک سمیت)، دونوں ہاتھ، دونوں گھٹنے، دونوں پاؤں کی انگلیاں۔</li>
+                        <li>بازوؤں کو پہلوؤں سے جدا رکھیں اور زمین پر نہ بچھائیں۔</li>
+                    </ul>
+                </div>
+                <div class="instruction lang-en">
+                    Say Allahu Akbar and go down for prostration (No Raf' al-Yadayn here).
+                    <ul>
+                        <li><b>Prostrate on 7 bones:</b> Forehead (including nose), both hands, both knees, and the toes of both feet.</li>
+                        <li>Keep the forearms away from the sides and lifted off the ground.</li>
+                    </ul>
+                </div>
+                <div class="instruction lang-bn">
+                    আল্লাহু আকবার বলে সিজদায় যান (এখানে রফে ইয়াদাইন হবে না)।
+                    <ul>
+                        <li><b>৭ হাড়ের ওপর সিজদা করুন:</b> কপাল (নাকসহ), দুই হাত, দুই হাঁটু, দুই পায়ের আঙুল।</li>
+                        <li>বাহুগুলোকে মাটি থেকে উঁচুতে এবং শরীর থেকে আলাদা রাখুন।</li>
+                    </ul>
+                </div>
+                <div class="instruction lang-ar">
+                    يكبر ويهوي للسجود (بدون رفع اليدين).
+                    <ul>
+                        <li><b>السجود على 7 أعضاء:</b> الجبهة والأنف معاً، واليدان، والركبتان، وأطراف القدمين.</li>
+                        <li>يجافي عضديه عن جنبيه ولا يبسط ذراعيه على الأرض.</li>
+                    </ul>
+                </div>
+
+                <div class="note lang-ur">شیخ البانیؒ کی تحقیق: سجدے میں <b>"دونوں ایڑیوں کو ملا کر"</b> رکھنا چاہیے۔ (صحیح ابن خزیمہ)</div>
+                <div class="note lang-en">Note (Albani): In Sujud, the <b>"two heels should be joined together"</b>. (Sahih Ibn Khuzaymah)</div>
+                <div class="note lang-bn">বিঃদ্রঃ (আলবানী): সিজদার সময় <b>"দুই পায়ের গোড়ালি একসাথে মিলিয়ে"</b> রাখতে হবে। (সহিহ ইবনে খুজায়মা)</div>
+                <div class="note lang-ar">ملاحظة (الألباني): السنة في السجود <b>"رص العقبين (الكعبين) معاً"</b>. (صحيح ابن خزيمة)</div>
+                
+                <div class="arabic">سُبْحَانَ رَبِّيَ الْأَعْلَى</div>
+                <div class="translation lang-ur">پاک ہے میرا رب جو سب سے بلند ہے۔ (3 بار)</div>
+                <div class="translation lang-en">Glory to my Lord the Most High. (3 times)</div>
+                <div class="translation lang-bn">পবিত্র আমার রব, যিনি সর্বোচ্চ। (৩ বার)</div>
+                <div class="translation lang-ar">سبحان ربي الأعلى. (3 مرات)</div>
+            </div>
+
+            <div class="card">
+                <div class="section-title">
+                    <span class="lang-ur">8. جلسہ (دو سجدوں کے درمیان)</span>
+                    <span class="lang-en">8. Sitting between two Sujud (Jalsah)</span>
+                    <span class="lang-bn">৮. জলসা (দুই সিজদার মাঝখানে বসা)</span>
+                    <span class="lang-ar">8. الجلسة بين السجدتين</span>
+                </div>
+                
+                <div class="instruction lang-ur">بایاں پاؤں بچھا کر اس پر بیٹھیں اور دایاں پاؤں کھڑا رکھیں۔ یہ دعا پڑھیں:</div>
+                <div class="instruction lang-en">Sit on your left foot while keeping the right foot upright. Recite:</div>
+                <div class="instruction lang-bn">বাম পা বিছিয়ে তার ওপর বসুন এবং ডান পা খাড়া রাখুন। এই দোয়াটি পড়ুন:</div>
+                <div class="instruction lang-ar">يفرش رجله اليسرى ويجلس عليها وينصب رجله اليمنى. ويقول:</div>
+                
+                <div class="arabic">اللَّهُمَّ اغْفِرْ لِي، وَارْحَمْنِي، وَاهْدِنِي، وَاجْبُرْنِي، وَعَافِنِي، وَارْزُقْنِي، وَارْفَعْنِي</div>
+                
+                <div class="translation lang-ur">اے اللہ! مجھے بخش دے، مجھ پر رحم فرما، مجھے ہدایت دے، میرے نقصان کو پورا کر (مجھے جوڑ دے)، مجھے عافیت دے، مجھے رزق دے اور میرا درجہ بلند فرما۔</div>
+                <div class="translation lang-en">O Allah, forgive me, have mercy on me, guide me, support me, protect me, provide for me and elevate me.</div>
+                <div class="translation lang-bn">হে আল্লাহ! আমাকে ক্ষমা করুন, আমার প্রতি রহম করুন, আমাকে হেদায়াত দিন, আমার ক্ষতি পূরণ করুন, আমাকে নিরাপত্তা দিন, আমাকে রিজিক দিন এবং আমার মর্যাদা বৃদ্ধি করুন।</div>
+                <div class="translation lang-ar">اللهم اغفر لي وارحمني واهدني واجبرني وعافني وارزقني وارفعني.</div>
+                <span class="ref">(Abu Dawud: 850, Ibn Majah: 898)</span>
+            </div>
+
+            <div class="card">
+                <div class="section-title">
+                    <span class="lang-ur">9. تشہد اور انگلی کا اشارہ</span>
+                    <span class="lang-en">9. Tashahhud & Pointing the Finger</span>
+                    <span class="lang-bn">৯. তাশাহহুদ ও আঙুল দিয়ে ইশারা</span>
+                    <span class="lang-ar">9. التشهد والإشارة بالإصبع</span>
+                </div>
+                
+                <div class="instruction lang-ur">بایاں ہاتھ بائیں گھٹنے پر اور دایاں ہاتھ دائیں گھٹنے پر رکھیں۔</div>
+                <div class="instruction lang-en">Place the left hand on the left knee and the right hand on the right knee.</div>
+                <div class="instruction lang-bn">বাম হাত বাম হাঁটুর ওপর এবং ডান হাত ডান হাঁটুর ওপর রাখুন।</div>
+                <div class="instruction lang-ar">يضع يده اليسرى على ركبته اليسرى، ويده اليمنى على ركبته اليمنى.</div>
+                
+                <div class="note lang-ur">شیخ البانیؒ کی تحقیق: تشہد میں شہادت کی انگلی سے اشارہ کریں اور اسے <b>"مسلسل حرکت"</b> دیتے رہیں اور دعا مانگتے رہیں۔ نظر انگلی پر رکھیں۔</div>
+                <div class="note lang-en">Note (Albani): In Tashahhud, point the index finger and move it <b>"continuously"</b> while supplicating. Keep your eyes on the finger.</div>
+                <div class="note lang-bn">বিঃদ্রঃ (আলবানী): তাশাহহুদে শাহাদাত আঙুল দিয়ে ইশারা করুন এবং দোয়া পড়ার সময় আঙুলটি <b>"ক্রমাগত নাড়তে থাকুন"</b>। দৃষ্টি আঙুলের দিকে রাখুন।</div>
+                <div class="note lang-ar">ملاحظة (الألباني): يشير بسبابته و<b>"يحركها باستمرار"</b> يدعو بها من أول التشهد إلى آخره، ويرمي ببصره إليها.</div>
+                
+                <div class="arabic">التَّحِيَّاتُ لِلَّهِ وَالصَّلَوَاتُ وَالطَّيِّبَاتُ، السَّلَامُ عَلَيْكَ أَيُّهَا النَّبِيُّ وَرَحْمَةُ اللَّهِ وَبَرَكَاتُهُ، السَّلَامُ عَلَيْنَا وَعَلَى عِبَادِ اللَّهِ الصَّالِحِينَ، أَشْهَدُ أَنْ لَا إِلَهَ إِلَّا اللَّهُ وَأَشْهَدُ أَنَّ مُحَمَّدًا عَبْدُهُ وَرَسُولُهُ</div>
+                
+                <div class="translation lang-ur">تمام زبانی، بدنی اور مالی عبادتیں اللہ ہی کے لیے ہیں، سلام ہو آپ پر اے نبی ﷺ اور اللہ کی رحمتیں اور اس کی برکتیں، سلام ہو ہم پر اور اللہ کے نیک بندوں پر۔ میں گواہی دیتا ہوں کہ اللہ کے سوا کوئی معبود نہیں اور میں گواہی دیتا ہوں کہ محمد ﷺ اس کے بندے اور رسول ہیں۔</div>
+                <div class="translation lang-en">All greetings of humility are for Allah, and all prayers and goodness. Peace be upon you, O Prophet, and the mercy of Allah and His blessings. Peace be upon us and upon the righteous slaves of Allah. I bear witness that there is none worthy of worship but Allah, and I bear witness that Muhammad is His slave and His Messenger.</div>
+                <div class="translation lang-bn">যাবতীয় সম্মান, উপাসনা ও পবিত্রতা আল্লাহর জন্যই। হে নবী! আপনার ওপর শান্তি, আল্লাহর রহমত ও বরকত বর্ষিত হোক। আমাদের ওপর এবং আল্লাহর নেক বান্দাদের ওপর শান্তি বর্ষিত হোক। আমি সাক্ষ্য দিচ্ছি যে, আল্লাহ ছাড়া কোনো মাবুদ নেই এবং আমি আরও সাক্ষ্য দিচ্ছি যে, মুহাম্মদ ﷺ তাঁর বান্দা ও রাসূল।</div>
+                <div class="translation lang-ar">التحيات لله والصلوات والطيبات، السلام عليك أيها النبي ورحمة الله وبركاته، السلام علينا وعلى عباد الله الصالحين، أشهد أن لا إله إلا الله وأشهد أن محمداً عبده ورسوله.</div>
+            </div>
+
+            <div class="card">
+                <div class="section-title">
+                    <span class="lang-ur">10. درودِ ابراہیمی</span>
+                    <span class="lang-en">10. Durood-e-Ibrahimi</span>
+                    <span class="lang-bn">১০. দরুদে ইব্রাহিমী</span>
+                    <span class="lang-ar">10. الصلاة الإبراهيمية</span>
+                </div>
+                
+                <div class="arabic">اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ، وَعَلَى آلِ مُحَمَّدٍ، كَمَا صَلَّيْتَ عَلَى إِبْرَاهِيمَ وَعَلَى آلِ إِبْرَاهِيمَ، إِنَّكَ حَمِيدٌ مَجِيدٌ<br>اللَّهُمَّ بَارِكْ عَلَى مُحَمَّدٍ، وَعَلَى آلِ مُحَمَّدٍ، كَمَا بَارَكْتَ عَلَى إِبْرَاهِيمَ وَعَلَى آلِ إِبْرَاهِيمَ، إِنَّكَ حَمِيدٌ مَجِيدٌ</div>
+                
+                <div class="translation lang-ur">اے اللہ! رحمت نازل فرما محمد ﷺ پر اور محمد ﷺ کی آل پر، جس طرح تو نے رحمت نازل فرمائی ابراہیم ؑ پر اور ابراہیم ؑ کی آل پر، بیشک تو تعریف کے لائق اور بزرگی والا ہے۔ اے اللہ! برکت نازل فرما محمد ﷺ پر اور محمد ﷺ کی آل پر، جس طرح تو نے برکت نازل فرمائی ابراہیم ؑ پر اور ابراہیم ؑ کی آل پر، بیشک تو تعریف کے لائق اور بزرگی والا ہے۔</div>
+                <div class="translation lang-en">O Allah, send prayers upon Muhammad and upon the family of Muhammad, as You sent prayers upon Ibrahim and upon the family of Ibrahim; You are indeed Worthy of Praise, Full of Glory. O Allah, send blessings upon Muhammad and upon the family of Muhammad, as You sent blessings upon Ibrahim and upon the family of Ibrahim; You are indeed Worthy of Praise, Full of Glory.</div>
+                <div class="translation lang-bn">হে আল্লাহ! আপনি মুহাম্মদ ﷺ এবং তাঁর পরিবারের ওপর রহমত বর্ষণ করুন, যেমন আপনি ইব্রাহিম (আ.) এবং তাঁর পরিবারের ওপর রহমত বর্ষণ করেছিলেন। নিশ্চয়ই আপনি প্রশংসিত ও সম্মানিত। হে আল্লাহ! আপনি মুহাম্মদ ﷺ এবং তাঁর পরিবারের ওপর বরকত নাযিল করুন, যেমন আপনি ইব্রাহিম (আ.) এবং তাঁর পরিবারের ওপর বরকত নাযিল করেছিলেন। নিশ্চয়ই আপনি প্রশংসিত ও সম্মানিত।</div>
+                <div class="translation lang-ar">اللهم صل على محمد وعلى آل محمد كما صليت على إبراهيم وعلى آل إبراهيم إنك حميد مجيد، اللهم بارك على محمد وعلى آل محمد كما باركت على إبراهيم وعلى آل إبراهيم إنك حميد مجيد.</div>
+            </div>
+
+            <div class="card">
+                <div class="section-title">
+                    <span class="lang-ur">11. سلام سے پہلے کی دعا</span>
+                    <span class="lang-en">11. Supplication before Salam</span>
+                    <span class="lang-bn">১১. সালাম ফেরানোর আগের দোয়া</span>
+                    <span class="lang-ar">11. الدعاء قبل السلام</span>
+                </div>
+                
+                <div class="arabic">اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنْ عَذَابِ جَهَنَّمَ، وَمِنْ عَذَابِ الْقَبْرِ، وَمِنْ فِتْنَةِ الْمَحْيَا وَالْمَمَاتِ، وَمِنْ شَرِّ فِتْنَةِ الْمَسِيحِ الدَّجَّالِ</div>
+                
+                <div class="translation lang-ur">اے اللہ! میں تیری پناہ مانگتا ہوں جہنم کے عذاب سے، قبر کے عذاب سے، زندگی اور موت کے فتنے سے اور مسیح دجال کے فتنے کے شر سے۔</div>
+                <div class="translation lang-en">O Allah, I seek refuge in You from the punishment of Hellfire, from the punishment of the grave, from the trials of life and death, and from the evil of the trial of the False Messiah (Dajjal).</div>
+                <div class="translation lang-bn">হে আল্লাহ! আমি আপনার কাছে আশ্রয় চাই জাহান্নামের আযাব থেকে, কবরের আযাব থেকে, জীবন ও মৃত্যুর ফিতনা থেকে এবং দাজ্জালের ফিতনার অনিষ্ট থেকে।</div>
+                <div class="translation lang-ar">اللهم إني أعوذ بك من عذاب جهنم، ومن عذاب القبر، ومن فتنة المحيا والممات، ومن شر فتنة المسيح الدجال.</div>
+                
+                <span class="ref">(Muslim: 588)</span>
+            </div>
+
+            <div class="card">
+                <div class="section-title">
+                    <span class="lang-ur">12. سلام (نماز کا اختتام)</span>
+                    <span class="lang-en">12. Salam (Concluding the Prayer)</span>
+                    <span class="lang-bn">১২. সালাম (নামাজ শেষ করা)</span>
+                    <span class="lang-ar">12. التسليم</span>
+                </div>
+                
+                <div class="instruction lang-ur">پہلے دائیں طرف چہرہ پھیریں، پھر بائیں طرف اور کہیں:</div>
+                <div class="instruction lang-en">Turn your face to the right, then to the left, saying:</div>
+                <div class="instruction lang-bn">প্রথমে ডান দিকে, এরপর বাম দিকে চেহারা ঘুরিয়ে বলুন:</div>
+                <div class="instruction lang-ar">يلتفت عن يمينه ثم عن يساره قائلاً:</div>
+                
+                <div class="arabic">السَّلَامُ عَلَيْكُمْ وَرَحْمَةُ اللَّهِ</div>
+                
+                <div class="translation lang-ur">تم پر سلامتی ہو اور اللہ کی رحمت ہو۔</div>
+                <div class="translation lang-en">Peace be upon you and the mercy of Allah.</div>
+                <div class="translation lang-bn">আপনাদের ওপর শান্তি ও আল্লাহর রহমত বর্ষিত হোক।</div>
+                <div class="translation lang-ar">السلام عليكم ورحمة الله.</div>
+            </div>
+
+            <a href="salah.html" class="azkar-link-btn" id="btn_goto_azkar">
+                <span>📖</span> <span class="lang-ur">نماز کے بعد کے اذکار پڑھیں</span>
+                <span class="lang-en">Read Azkar after Salah</span>
+                <span class="lang-bn">নামাজের পরের আজকার পড়ুন</span>
+                <span class="lang-ar">اقرأ الأذكار بعد الصلاة</span>
+            </a>
+
+            <div class="card">
+                <div class="section-title">
+                    <span class="lang-ur">13. نمازِ وتر کا مسنون طریقہ</span>
+                    <span class="lang-en">13. Sunnah Method of Witr</span>
+                    <span class="lang-bn">১৩. বিতর নামাজের সুন্নত পদ্ধতি</span>
+                    <span class="lang-ar">13. صفة صلاة الوتر</span>
+                </div>
+                
+                <div class="instruction lang-ur">
+                    شیخ البانیؒ کے نزدیک وتر پڑھنے کا افضل طریقہ یہ ہے کہ مغرب سے مشابہت نہ ہو:
+                    <ul>
+                        <li>3 رکعت اکٹھی پڑھیں لیکن <b>درمیان میں تشہد نہ بیٹھیں</b>، صرف آخری رکعت میں بیٹھیں۔</li>
+                        <li>یا 2 رکعت پڑھ کر سلام پھیر دیں، پھر 1 رکعت الگ پڑھیں۔</li>
+                    </ul>
+                </div>
+                <div class="instruction lang-en">
+                    According to Shaykh Albani, the best way to pray Witr is to ensure it does not resemble Maghrib:
+                    <ul>
+                        <li>Pray 3 rak'ahs continuously <b>without sitting for Tashahhud in the middle</b>, sitting only in the last rak'ah.</li>
+                        <li>Or pray 2 rak'ahs, say salam, and then pray 1 separate rak'ah.</li>
+                    </ul>
+                </div>
+                <div class="instruction lang-bn">
+                    শায়েখ আলবানীর মতে, মাগরিবের মতো না পড়ে বিতর পড়ার উত্তম পদ্ধতি হলো:
+                    <ul>
+                        <li>মাঝখানে তাশাহহুদে <b>না বসে</b> একাধারে ৩ রাকাত পড়া এবং কেবল শেষ রাকাতে বসা।</li>
+                        <li>অথবা ২ রাকাত পড়ে সালাম ফেরানো, এরপর আলাদাভাবে ১ রাকাত পড়া।</li>
+                    </ul>
+                </div>
+                <div class="instruction lang-ar">
+                    صفة الوتر عند الشيخ الألباني لكي لا تشبه صلاة المغرب:
+                    <ul>
+                        <li>أن يصلي 3 ركعات متصلة <b>لا يجلس فيها للتشهد الأوسط</b> بل يجلس في آخرها فقط.</li>
+                        <li>أو يصلي ركعتين ويسلم، ثم يصلي ركعة واحدة ويسلم.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="section-title">
+                    <span class="lang-ur">14. دعائے قنوت (وتر)</span>
+                    <span class="lang-en">14. Dua Qunut (Witr)</span>
+                    <span class="lang-bn">১৪. দোয়া কুনুত (বিতর)</span>
+                    <span class="lang-ar">14. دعاء القنوت (في الوتر)</span>
+                </div>
+                
+                <div class="instruction lang-ur">
+                    وتر کی آخری رکعت میں قرات مکمل کرنے کے بعد <b>رکوع سے پہلے</b> یہ دعا پڑھیں۔<br>
+                    <span style="color: #d32f2f; font-weight: bold;">(نوٹ: دعا کے دوران ہاتھ نہ اٹھائیں، بلکہ بدستور سینے پر بندھے رکھیں)۔</span>
+                </div>
+                <div class="instruction lang-en">
+                    In the last rak'ah of Witr, after finishing recitation and <b>before bowing (Ruku)</b>, recite this dua.<br>
+                    <span style="color: #d32f2f; font-weight: bold;">(Note: Do not raise hands; keep them folded on the chest).</span>
+                </div>
+                <div class="instruction lang-bn">
+                    বিতরের শেষ রাকাতে কিরাত পড়ার পর <b>রুকুতে যাওয়ার আগে</b> এই দোয়া পড়ুন।<br>
+                    <span style="color: #d32f2f; font-weight: bold;">(বিঃদ্রঃ: হাত তুলবেন না; হাত বুকের ওপরই বাঁধা থাকবে)।</span>
+                </div>
+                <div class="instruction lang-ar">
+                    يُقرأ هذا الدعاء في الركعة الأخيرة من الوتر <b>قبل الركوع</b>.<br>
+                    <span style="color: #d32f2f; font-weight: bold;">(ملاحظة: لا ترفع اليدين في الدعاء، بل تبقى مقبوضة على الصدر).</span>
+                </div>
+                
+                <div class="arabic">اللَّهُمَّ اهْدِنِي فِيمَنْ هَدَيْتَ، وَعَافِنِي فِيمَنْ عَافَيْتَ، وَتَوَلَّنِي فِيمَنْ تَوَلَّيْتَ، وَبَارِكْ لِي فِيمَا أَعْطَيْتَ، وَقِنِي شَرَّ مَا قَضَيْتَ، فَإِنَّكَ تَقْضِي وَلَا يُقْضَى عَلَيْكَ، إِنَّهُ لَا يَذِلُّ مَنْ وَالَيْتَ، [وَلَا يَعِزُّ مَنْ عَادَيْتَ]، تَبَارَكْتَ رَبَّنَا وَتَعَالَيْتَ</div>
+                
+                <div class="translation lang-ur">اے اللہ! مجھے ہدایت دے ان لوگوں میں جنہیں تو نے ہدایت دی، اور مجھے عافیت دے ان لوگوں میں جنہیں تو نے عافیت دی، اور میرا کارساز بن جا ان لوگوں میں جن کا تو کارساز بنا، اور میرے لیے برکت ڈال اس چیز میں جو تو نے عطا کی، اور مجھے اس چیز کے شر سے بچا جس کا تو نے فیصلہ کیا، بیشک تو ہی فیصلہ کرتا ہے اور تیرے خلاف فیصلہ نہیں کیا جا سکتا، یقیناً وہ ذلیل نہیں ہوتا جسے تو دوست رکھے، [اور وہ عزت نہیں پاتا جس سے تو دشمنی رکھے]، اے ہمارے رب! تو بابرکت ہے اور بلند ہے۔</div>
+                <div class="translation lang-en">O Allah, guide me with those whom You have guided, and grant me well-being with those whom You have granted well-being, and take me to Your care with those whom You have taken to Your care, and bless me in what You have given, and protect me from the evil of what You have decreed. Verily, You command and are not commanded, and none whom You have committed to Your care shall be humiliated [and none whom You have taken as an enemy shall taste glory]. You are Blessed, our Lord, and Exalted.</div>
+                <div class="translation lang-bn">হে আল্লাহ! যাদের আপনি হেদায়েত দিয়েছেন, আমাকে তাদের অন্তর্ভুক্ত করে হেদায়েত দিন। যাদের আপনি নিরাপত্তা দিয়েছেন, আমাকে তাদের অন্তর্ভুক্ত করে নিরাপত্তা দিন। যাদের দায়িত্ব আপনি নিয়েছেন, আমাকে তাদের অন্তর্ভুক্ত করে আমার দায়িত্ব নিন। আপনি আমাকে যা দিয়েছেন, তাতে বরকত দিন। এবং আপনি যা ফয়সালা করেছেন তার অনিষ্ট থেকে আমাকে রক্ষা করুন। নিশ্চয়ই আপনিই ফয়সালাকারী, আপনার বিরুদ্ধে কোনো ফয়সালা করা যায় না। আপনি যার অভিভাবক হয়েছেন, সে কখনো লাঞ্ছিত হতে পারে না। [এবং আপনি যার শত্রু হয়েছেন, সে কখনো সম্মানিত হতে পারে না]। হে আমাদের রব! আপনি বরকতময় এবং সুমহান।</div>
+                <div class="translation lang-ar">اللهم اهدني فيمن هديت، وعافني فيمن عافيت، وتولني فيمن توليت، وبارك لي فيما أعطيت، وقني شر ما قضيت، فإنك تقضي ولا يقضى عليك، إنه لا يذل من واليت، [ولا يعز من عاديت]، تباركت ربنا وتعاليت.</div>
+                
+                <span class="ref">(Sunan Abi Dawud: 1425)</span>
+            </div>
+
+            <div class="card">
+                <div class="section-title">
+                    <span class="lang-ur">15. قنوتِ وتر اور قنوتِ نازلہ میں فرق</span>
+                    <span class="lang-en">15. Difference b/w Qunut Witr & Nazilah</span>
+                    <span class="lang-bn">১৫. কুনুতে বিতর ও কুনুতে নাযেলার পার্থক্য</span>
+                    <span class="lang-ar">15. الفرق بين قنوت الوتر وقنوت النوازل</span>
+                </div>
+                
+                <div class="lang-ur">
+                    <div class="instruction">ان دونوں میں 5 بنیادی فرق ہیں:</div>
+                    <ul style="font-size: 16px; line-height: 1.8; color: #333;">
+                        <li><b>1. وقت:</b> قنوتِ وتر ایک مستقل سنت ہے، جبکہ قنوتِ نازلہ صرف مسلمانوں پر مصیبت یا جنگ کے وقت پڑھی جاتی ہے۔</li><hr>
+                        <li><b>2. جگہ:</b> قنوتِ وتر رکوع سے پہلے، جبکہ قنوتِ نازلہ رکوع کے بعد پڑھی جاتی ہے۔</li><hr>
+                        <li><b>3. ہاتھ اٹھانا:</b> قنوتِ وتر میں ہاتھ نہیں اٹھائے جاتے (سینے پر بندھے رہتے ہیں)، جبکہ قنوتِ نازلہ میں ہاتھ اٹھا کر دعا کی جاتی ہے۔</li><hr>
+                        <li><b>4. نماز:</b> قنوتِ وتر صرف نمازِ وتر میں، جبکہ قنوتِ نازلہ پانچوں فرض نمازوں میں پڑھی جا سکتی ہے۔</li><hr>
+                        <li><b>5. الفاظ:</b> قنوتِ وتر کے الفاظ مخصوص ہیں، جبکہ قنوتِ نازلہ میں حالات کے مطابق دعا کی جاتی ہے۔</li>
+                    </ul>
+                </div>
+                
+                <div class="lang-en">
+                    <div class="instruction">There are 5 main differences between the two:</div>
+                    <ul style="font-size: 15px; line-height: 1.8; color: #333;">
+                        <li><b>1. Timing:</b> Qunut Witr is a regular Sunnah, while Nazilah is only during calamities/war.</li><hr>
+                        <li><b>2. Position:</b> Qunut Witr is before Ruku, Nazilah is after Ruku.</li><hr>
+                        <li><b>3. Hands:</b> In Qunut Witr, hands are kept folded on the chest. In Nazilah, hands are raised for dua.</li><hr>
+                        <li><b>4. Prayer:</b> Qunut Witr is only in Witr prayer, Nazilah can be recited in all five obligatory prayers.</li><hr>
+                        <li><b>5. Words:</b> Qunut Witr has specific words, while Nazilah words depend on the situation.</li>
+                    </ul>
+                </div>
+
+                <div class="lang-bn">
+                    <div class="instruction">এ দুটির মধ্যে ৫টি মূল পার্থক্য রয়েছে:</div>
+                    <ul style="font-size: 15px; line-height: 1.8; color: #333;">
+                        <li><b>১. সময়:</b> কুনুতে বিতর হলো নিয়মিত সুন্নত, আর কুনুতে নাযেলা কেবল বিপদ বা যুদ্ধের সময় পড়া হয়।</li><hr>
+                        <li><b>২. স্থান:</b> কুনুতে বিতর রুকুর আগে, আর কুনুতে নাযেলা রুকুর পরে পড়া হয়।</li><hr>
+                        <li><b>৩. হাত তোলা:</b> কুনুতে বিতরে হাত তোলা হয় না (বুকের ওপর বাঁধা থাকে), আর নাযেলায় হাত তুলে দোয়া করা হয়।</li><hr>
+                        <li><b>৪. নামাজ:</b> কুনুতে বিতর কেবল বিতর নামাজে, আর নাযেলা পাঁচ ওয়াক্ত ফরজ নামাজেই পড়া যায়।</li><hr>
+                        <li><b>৫. শব্দ:</b> কুনুতে বিতরের নির্দিষ্ট শব্দ রয়েছে, আর নাযেলায় পরিস্থিতি অনুযায়ী দোয়া করা হয়।</li>
+                    </ul>
+                </div>
+
+                <div class="lang-ar">
+                    <div class="instruction">بينهما 5 فروق أساسية:</div>
+                    <ul style="font-size: 16px; line-height: 1.8; color: #333;">
+                        <li><b>1. الوقت:</b> قنوت الوتر سنة راتبة، وقنوت النوازل يشرع عند نزول نازلة أو مصيبة بالمسلمين.</li><hr>
+                        <li><b>2. المحل:</b> قنوت الوتر قبل الركوع، وقنوت النوازل بعد الركوع.</li><hr>
+                        <li><b>3. رفع اليدين:</b> في قنوت الوتر لا ترفع اليدين (تبقى مقبوضة)، أما النوازل فترفع فيها اليدان.</li><hr>
+                        <li><b>4. الصلاة:</b> قنوت الوتر في الوتر فقط، وقنوت النوازل في الصلوات الخمس المكتوبة.</li><hr>
+                        <li><b>5. الصيغة:</b> دعاء الوتر مخصوص ومحفوظ، ودعاء النوازل بحسب النازلة.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="section-title">
+                    <span class="lang-ur">16. وتر کے بعد کے اذکار</span>
+                    <span class="lang-en">16. Azkar after Witr</span>
+                    <span class="lang-bn">১৬. বিতরের পরের আজকার</span>
+                    <span class="lang-ar">16. الذكر بعد الوتر</span>
+                </div>
+                
+                <div class="instruction lang-ur">سلام پھیرنے کے بعد 3 مرتبہ کہیں:</div>
+                <div class="instruction lang-en">After finishing the prayer, say 3 times:</div>
+                <div class="instruction lang-bn">সালাম ফেরানোর পর ৩ বার বলুন:</div>
+                <div class="instruction lang-ar">يقول بعد السلام من الوتر 3 مرات:</div>
+                
+                <div class="arabic">سُبْحَانَ الْمَلِكِ الْقُدُّوسِ</div>
+                
+                <div class="translation lang-ur">پاک ہے وہ بادشاہ جو نہایت پاکیزہ ہے۔</div>
+                <div class="translation lang-en">Glory be to the Sovereign, the Most Holy.</div>
+                <div class="translation lang-bn">পবিত্র সেই অধিপতি, যিনি অতি পবিত্র।</div>
+                <div class="translation lang-ar">سبحان الملك القدوس.</div>
+                
+                <div class="instruction lang-ur">تیسری مرتبہ آواز کو تھوڑا کھینچیں اور بلند کریں۔</div>
+                <div class="instruction lang-en">Prolong and raise your voice on the third time.</div>
+                <div class="instruction lang-bn">তৃতীয় বার আওয়াজ একটু দীর্ঘ ও উঁচু করুন।</div>
+                <div class="instruction lang-ar">يمد صوته بها في الثالثة ويرفعه.</div>
+                
+                <span class="ref">(Nasai: 1699)</span>
+            </div>
+
+            <a href="index.html" class="back-btn" id="btnBack">واپس جائیں</a>
+
+        </div>
+    </div>
+
+    <script>
+        // 🌟 1. Hardware Back Button Fix 🌟
+        window.addEventListener("popstate", function (event) {
+            window.location.href = 'index.html';
+        });
+        history.pushState(null, document.title, location.href);
+
+        const uiText = {
+            ur: { page_title: "نمازِ نبوی ﷺ (البانیؒ)", back: "واپس جائیں" },
+            en: { page_title: "Prophet's Prayer ﷺ (Albani)", back: "Go Back" },
+            bn: { page_title: "নবীর সালাত ﷺ (আলবানী)", back: "ফিরে যান" },
+            ar: { page_title: "صفة صلاة النبي ﷺ (الألباني)", back: "رجوع" }
+        };
+
+        window.onload = function() {
+            let currentLang = localStorage.getItem('selectedLang') || 'ur';
+            document.documentElement.lang = currentLang;
+            
+            if(uiText[currentLang]) {
+                document.getElementById('pageTitle').innerText = uiText[currentLang].page_title;
+                document.getElementById('btnBack').innerText = uiText[currentLang].back;
+            }
+        };
+    </script>
+
+</body>
+</html>

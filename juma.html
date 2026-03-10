@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Jumu'ah Deeds</title>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Daily Azkar">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+        /* --- 1. FONTS --- */
+        @font-face { font-family: 'MyUrduFont'; src: url('fonts/jameel.ttf'); }
+        @font-face { font-family: 'Amiri'; src: url('fonts/amiri.ttf'); }
+        @font-face { font-family: 'TiroBangla'; src: url('fonts/tiro.ttf'); }
+        
+        :root {
+            /* 🌟 Notch bar ki height fix ki gayi hai 🌟 */
+            --notch-height: calc(max(5px, env(safe-area-inset-top)) + 30px);
+        }
+
+        /* --- 2. MAIN LAYOUT SETTINGS --- */
+        html, body {
+            height: 100%; width: 100%; margin: 0; padding: 0;
+            overflow: hidden; 
+            background-color: #f3e5f5; /* Light Purple/Pink Background */
+        }
+
+        /* --- DYNAMIC FONT & DIRECTION --- */
+        html[lang="ur"] body { font-family: 'MyUrduFont', sans-serif; direction: rtl; }
+        html[lang="ar"] body { font-family: 'Amiri', serif; direction: rtl; }
+        html[lang="en"] body { font-family: 'MyUrduFont', sans-serif; direction: ltr; } 
+        html[lang="bn"] body { font-family: 'TiroBangla', serif; direction: ltr; }
+
+        /* --- 3. SHOW/HIDE LOGIC --- */
+        .urdu, .english, .bangla { display: none !important; }
+        html[lang="ur"] .urdu { display: block !important; }
+        html[lang="en"] .english { display: block !important; }
+        html[lang="bn"] .bangla { display: block !important; }
+        html[lang="ar"] .lang-ar { display: block !important; }
+
+        /* 🌟 GLOBAL FIXED NOTCH BAR 🌟 */
+        .global-notch {
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--notch-height);
+            display: flex; justify-content: space-between; align-items: flex-end;
+            padding: 0 15px 8px 15px; box-sizing: border-box;
+            background-color: #4a148c; /* Dark Purple Theme */
+            color: #e0f2f1; font-size: 13px; z-index: 500;
+            direction: ltr; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .global-notch .ar-text { font-family: 'Amiri', serif; font-size: 16px; color: #ffeb3b; direction: rtl;}
+        .global-notch .en-text { font-family: sans-serif; letter-spacing: 1px; }
+
+        /* --- APP CONTAINER --- */
+        .app-container {
+            display: flex; flex-direction: column;
+            height: 100%; width: 100%;
+            max-width: 800px; margin: 0 auto;
+            padding-top: var(--notch-height);
+            box-sizing: border-box;
+        }
+
+        /* --- FIXED HEADER --- */
+        .fixed-header {
+            flex: 0 0 auto; width: 100%; 
+            padding: 10px; box-sizing: border-box; z-index: 100;
+            background-color: #f3e5f5;
+        }
+
+        .header-box { 
+            background: #7b1fa2; color: white; padding: 15px; 
+            border-radius: 10px; text-align: center; 
+            font-size: 26px; font-weight: bold; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3); 
+            border: 1px solid #4a148c;
+            width: 100%; box-sizing: border-box; margin: 0; margin-bottom: 10px;
+        }
+
+        /* --- SCROLLABLE CONTENT --- */
+        .scrollable-content {
+            flex: 1; overflow-y: auto; width: 100%;
+            padding: 15px; box-sizing: border-box;
+            padding-bottom: max(80px, env(safe-area-inset-bottom));
+            -webkit-overflow-scrolling: touch; 
+            scrollbar-width: none; -ms-overflow-style: none;
+        }
+        .scrollable-content::-webkit-scrollbar { display: none; }
+
+        /* --- CARD STYLES --- */
+        .card { 
+            background: #ffffff; padding: 20px; border-radius: 15px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 25px; 
+            text-align: center; border-bottom: 5px solid #7b1fa2; 
+            transition: background 0.5s;
+        }
+        
+        .arabic { 
+            font-family: 'Amiri', serif; 
+            font-size: 22px; 
+            font-weight: normal; 
+            color: #4a148c; 
+            line-height: 1.8; margin-bottom: 12px; 
+            background: #f3e5f5; padding: 12px; border-radius: 8px; 
+            direction: rtl; 
+        }
+
+        .urdu { font-family: 'MyUrduFont'; font-size: 20px; color: #212121; margin-bottom: 8px; line-height: 1.6; direction: rtl; }
+        .english { font-family: 'MyUrduFont', sans-serif; font-size: 20px; color: #424242; margin-bottom: 15px; direction: ltr; line-height: 1.5; background: #f5f5f5; padding: 10px; border-radius: 5px; }
+        .bangla { font-family: 'TiroBangla', serif; font-size: 18px; color: #212121; margin-bottom: 15px; direction: ltr; line-height: 1.6; background: #f3e5f5; padding: 10px; border-radius: 5px; }
+
+        .ref { font-size: 13px; color: #757575; display: block; margin-bottom: 15px; font-family: sans-serif; }
+
+        /* Counter Button */
+        .counter-btn { 
+            font-family: inherit;
+            background: #e1bee7; color: #4a148c; border: 2px solid #7b1fa2; 
+            padding: 10px 40px; border-radius: 30px; font-size: 20px; 
+            cursor: pointer; user-select: none; width: 80%; font-weight: bold;
+            transition: all 0.2s; -webkit-tap-highlight-color: transparent;
+            padding-top: 5px; margin-bottom: 10px;
+        }
+        .counter-btn:active { transform: scale(0.95); }
+        .completed { background-color: #c8e6c9 !important; border-color: #2e7d32 !important; color: #1b5e20 !important; }
+
+        /* Custom Read Full Button */
+        .read-full-btn {
+            display: block; width: 90%; margin: 10px auto;
+            font-family: inherit;
+            background: #7b1fa2; color: white; border: none;
+            padding: 12px; border-radius: 8px; font-size: 20px;
+            text-decoration: none; box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+        }
+        .read-full-btn:hover { background: #4a148c; }
+        
+        .section-title { color: #d81b60; font-size: 22px; margin-bottom: 10px; text-decoration: underline; font-weight: bold; }
+        
+        /* Language specific instruction box */
+        .instruction-box { background: #fff3e0; color: #e65100; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
+        html[lang="ur"] .instruction-box { font-size: 20px; }
+        html[lang="en"] .instruction-box { font-size: 18px; font-family: 'MyUrduFont', sans-serif; }
+        html[lang="bn"] .instruction-box { font-size: 16px; font-family: 'TiroBangla', serif; }
+
+        /* 🌟 Sunnah List Styles & Custom SVGs 🌟 */
+        .sunnah-list { font-size: 20px; line-height: 1.8; color: #333; list-style-type: none; padding: 10px; background: #fafafa; border-radius: 8px; border: 1px dashed #7b1fa2; margin-bottom: 15px; }
+        .sunnah-list li { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .inline-icon { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; }
+        
+        html[lang="en"] .sunnah-list { font-family: 'MyUrduFont', sans-serif; text-align: left; }
+        html[lang="bn"] .sunnah-list { font-family: 'TiroBangla', serif; font-size: 18px; text-align: left; }
+        html[lang="ur"] .sunnah-list, html[lang="ar"] .sunnah-list { text-align: right; }
+
+        .back-btn { display: block; background: #7b1fa2; color: white; text-align: center; padding: 12px; border-radius: 8px; text-decoration: none; margin-top: 30px; font-size: 20px; font-family: inherit; }
+    </style>
+</head>
+<body>
+
+    <div id="globalNotchBar" class="global-notch">
+        <span class="en-text">Daily Azkar</span>
+        <span class="ar-text">الأذكار اليومية</span>
+    </div>
+
+    <div class="app-container">
+
+        <div class="fixed-header">
+            <div class="header-box" id="pageTitle">جمعہ کے اذکار و اعمال</div>
+        </div>
+
+        <div class="scrollable-content">
+
+            <div class="card" id="card1">
+                <div class="section-title" id="title_sunnah">جمعہ کی تیاری (سنن)</div>
+                
+                <div class="urdu">
+                    <div class="instruction-box">نبی ﷺ نے جمعہ کے دن ان اعمال کا اہتمام فرمایا ہے:</div>
+                    <ul class="sunnah-list">
+                        <li><span class="inline-icon">🚿</span> غسل کرنا</li>
+                        <li><span class="inline-icon">👕</span> صاف ستھرے کپڑے پہننا</li>
+                        <li>
+                            <span class="inline-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="#fbc02d" stroke="#5d4037" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M10 2h4v3h-4z" fill="#cfd8dc" stroke="#455a64"></path>
+                                    <path d="M11 5h2v3h-2z" fill="#ffca28"></path>
+                                    <path d="M7 8h10s2 1 2 5v7s0 2-2 2H7s-2 0-2-2v-7s0-5 2-5z" fill="#ffecb3"></path>
+                                    <path d="M8 12h8v8H8z" fill="#ffb300" stroke="none"></path>
+                                </svg>
+                            </span> عطر (خوشبو) لگانا
+                        </li>
+                        <li>
+                            <span class="inline-icon">
+                                <svg width="26" height="26" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <g transform="rotate(45 12 12)">
+                                        <rect x="10" y="7" width="4" height="13" rx="1" fill="#795548" stroke="#4E342E" stroke-width="1"/>
+                                        <path d="M10 7h4v-3h-4z" fill="#D7CCC8" stroke="#4E342E" stroke-width="1"/>
+                                        <path d="M10 4V2 M11.3 4V1 M12.7 4V1 M14 4V2" stroke="#D7CCC8" stroke-width="1.2" stroke-linecap="round"/>
+                                        <line x1="11" y1="9" x2="11" y2="18" stroke="#4E342E" stroke-width="0.5"/>
+                                        <line x1="13" y1="11" x2="13" y2="16" stroke="#4E342E" stroke-width="0.5"/>
+                                    </g>
+                                </svg>
+                            </span> مسواک کرنا
+                        </li>
+                        <li><span class="inline-icon">🕌</span> مسجد جلدی جانا</li>
+                    </ul>
+                </div>
+
+                <div class="english">
+                    <div class="instruction-box">The Prophet ﷺ encouraged these deeds on Friday:</div>
+                    <ul class="sunnah-list">
+                        <li><span class="inline-icon">🚿</span> Take a bath (Ghusl)</li>
+                        <li><span class="inline-icon">👕</span> Wear clean clothes</li>
+                        <li>
+                            <span class="inline-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="#fbc02d" stroke="#5d4037" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M10 2h4v3h-4z" fill="#cfd8dc" stroke="#455a64"></path>
+                                    <path d="M11 5h2v3h-2z" fill="#ffca28"></path>
+                                    <path d="M7 8h10s2 1 2 5v7s0 2-2 2H7s-2 0-2-2v-7s0-5 2-5z" fill="#ffecb3"></path>
+                                    <path d="M8 12h8v8H8z" fill="#ffb300" stroke="none"></path>
+                                </svg>
+                            </span> Apply perfume (Attar)
+                        </li>
+                        <li>
+                            <span class="inline-icon">
+                                <svg width="26" height="26" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <g transform="rotate(45 12 12)">
+                                        <rect x="10" y="7" width="4" height="13" rx="1" fill="#795548" stroke="#4E342E" stroke-width="1"/>
+                                        <path d="M10 7h4v-3h-4z" fill="#D7CCC8" stroke="#4E342E" stroke-width="1"/>
+                                        <path d="M10 4V2 M11.3 4V1 M12.7 4V1 M14 4V2" stroke="#D7CCC8" stroke-width="1.2" stroke-linecap="round"/>
+                                        <line x1="11" y1="9" x2="11" y2="18" stroke="#4E342E" stroke-width="0.5"/>
+                                        <line x1="13" y1="11" x2="13" y2="16" stroke="#4E342E" stroke-width="0.5"/>
+                                    </g>
+                                </svg>
+                            </span> Use Miswak
+                        </li>
+                        <li><span class="inline-icon">🕌</span> Go to the mosque early</li>
+                    </ul>
+                </div>
+
+                <div class="bangla">
+                    <div class="instruction-box">নবী সাল্লাল্লাহু আলাইহি ওয়াসাল্লাম জুমার দিন এই আমলগুলোর প্রতি উৎসাহ দিয়েছেন:</div>
+                    <ul class="sunnah-list">
+                        <li><span class="inline-icon">🚿</span> গোসল করা</li>
+                        <li><span class="inline-icon">👕</span> পরিষ্কার কাপড় পরা</li>
+                        <li>
+                            <span class="inline-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="#fbc02d" stroke="#5d4037" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M10 2h4v3h-4z" fill="#cfd8dc" stroke="#455a64"></path>
+                                    <path d="M11 5h2v3h-2z" fill="#ffca28"></path>
+                                    <path d="M7 8h10s2 1 2 5v7s0 2-2 2H7s-2 0-2-2v-7s0-5 2-5z" fill="#ffecb3"></path>
+                                    <path d="M8 12h8v8H8z" fill="#ffb300" stroke="none"></path>
+                                </svg>
+                            </span> সুগন্ধি (আতর) লাগানো
+                        </li>
+                        <li>
+                            <span class="inline-icon">
+                                <svg width="26" height="26" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <g transform="rotate(45 12 12)">
+                                        <rect x="10" y="7" width="4" height="13" rx="1" fill="#795548" stroke="#4E342E" stroke-width="1"/>
+                                        <path d="M10 7h4v-3h-4z" fill="#D7CCC8" stroke="#4E342E" stroke-width="1"/>
+                                        <path d="M10 4V2 M11.3 4V1 M12.7 4V1 M14 4V2" stroke="#D7CCC8" stroke-width="1.2" stroke-linecap="round"/>
+                                        <line x1="11" y1="9" x2="11" y2="18" stroke="#4E342E" stroke-width="0.5"/>
+                                        <line x1="13" y1="11" x2="13" y2="16" stroke="#4E342E" stroke-width="0.5"/>
+                                    </g>
+                                </svg>
+                            </span> মেসওয়াক করা
+                        </li>
+                        <li><span class="inline-icon">🕌</span> দ্রুত মসজিদে যাওয়া</li>
+                    </ul>
+                </div>
+                
+                <div class="arabic">مَنِ اغْتَسَلَ يَوْمَ الْجُمُعَةِ، وَتَطَهَّرَ بِمَا اسْتَطَاعَ مِنْ طُهْرٍ، وَادَّهَنَ مِنْ دُهْنِهِ، أَوْ مَسَّ مِنْ طِيبِ بَيْتِهِ، ثُمَّ خَرَجَ فَلَمْ يُفَرِّقْ بَيْنَ اثْنَيْنِ، ثُمَّ صَلَّى مَا كُتِبَ لَهُ، ثُمَّ أَنْصَتَ إِذَا تَكَلَّمَ الإِمَامُ، غُفِرَ لَهُ مَا بَيْنَهُ وَبَيْنَ الْجُمُعَةِ الأُخْرَى</div>
+                
+                <div class="urdu">ترجمہ: جو شخص جمعہ کے دن غسل کرے، اور جتنی پاکی حاصل کر سکتا ہو کرے، اور (اپنے بالوں میں) تیل لگائے، یا اپنے گھر کی خوشبو استعمال کرے، پھر (نماز کے لیے) نکلے اور (مسجد میں) دو آدمیوں کے درمیان تفریق نہ کرے (یعنی جگہ بنانے کے لیے انہیں ہٹائے نہیں)، پھر جتنی (نفل) نماز مقدر میں ہو پڑھے، پھر جب امام (خطبہ کے لیے) بات کرے تو خاموش رہے، تو اس کے اس جمعہ اور دوسرے جمعہ کے درمیان کے (چھوٹے) گناہ بخش دیے جاتے ہیں۔</div>
+                
+                <div class="english">The Prophet ﷺ said: "Whoever takes a bath on Friday, purifies himself as much as he can, then uses his (hair) oil or perfumes himself with the scent of his house, then proceeds (for the Jumua prayer) and does not separate two persons sitting together (in the mosque), then prays as much as (Allah has) written for him and then remains silent while the Imam is delivering the Khutba, his sins in-between the present and the last Friday would be forgiven."</div>
+
+                <div class="bangla">নবী সাল্লাল্লাহু আলাইহি ওয়াসাল্লাম বলেছেন: "যে ব্যক্তি জুমার দিন গোসল করে, যথাসম্ভব পবিত্রতা অর্জন করে, নিজের (চুলের) তেল ব্যবহার করে বা নিজের ঘরের সুগন্ধি লাগায়, এরপর (জুমার জন্য) বের হয় এবং (মসজিদে বসা) দুজনের মাঝে ফাঁক না করে, তারপর তার তাকদিরে যত নফল নামাজ আছে তা আদায় করে এবং ইমাম যখন খুতবা দেন তখন চুপ থাকে, তার এই জুমা থেকে পরবর্তী জুমার মধ্যবর্তী (সগিরা) গুনাহসমূহ ক্ষমা করে দেওয়া হয়।"</div>
+                
+                <span class="ref">(Bukhari: 883)</span>
+                
+                <button class="counter-btn" id="btn_ready" onclick="updateCount(this, 1, 'card2')">تیاری مکمل ✅</button>
+            </div>
+
+            <div class="card" id="card2">
+                <div class="section-title" id="title_kahf">سورۃ الکہف کی تلاوت</div>
+                
+                <div class="urdu">
+                    <div class="instruction-box">رسول اللہ ﷺ نے فرمایا: "جو شخص جمعہ کے دن سورۃ الکہف پڑھتا ہے، اس کے لیے دو جمعوں کے درمیان ایک نور روشن ہو جاتا ہے۔"</div>
+                </div>
+                <div class="english">
+                    <div class="instruction-box">The Prophet ﷺ said: "Whoever reads Surah Al-Kahf on Friday, he will have a light that will shine from him from one Friday to the next."</div>
+                </div>
+                <div class="bangla">
+                    <div class="instruction-box">রাসূলুল্লাহ সাল্লাল্লাহু আলাইহি ওয়াসাল্লাম বলেছেন: "যে ব্যক্তি জুমার দিন সূরা আল-কাহফ পাঠ করে, তার জন্য দুই জুমার মধ্যবর্তী সময়টুকু একটি নূর দ্বারা আলোকিত হয়ে যায়।"</div>
+                </div>
+                
+                <a href="kahf_full.html" class="read-full-btn" id="btn_read_kahf">📖 مکمل سورۃ الکہف پڑھیں</a>
+                <br>
+                
+                <span class="ref">(Mustadrak Hakim: 3392 - Sahih)</span>
+                <button class="counter-btn" id="btn_read_done" onclick="updateCount(this, 1, 'card3')">پڑھ لیا ✅</button>
+            </div>
+
+            <div class="card" id="card3">
+                <div class="section-title" id="title_durood">درود شریف کی کثرت</div>
+                
+                <div class="instruction-box urdu">جمعہ کے دن مجھ پر کثرت سے درود بھیجو۔</div>
+                <div class="instruction-box english">Send abundant blessings upon me on Friday.</div>
+                <div class="instruction-box bangla">জুমার দিন আমার ওপর বেশি বেশি দরুদ পাঠ করো।</div>
+                
+                <div class="arabic">اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ، وَعَلَى آلِ مُحَمَّدٍ، كَمَا صَلَّيْتَ عَلَى إِبْرَاهِيمَ وَعَلَى آلِ إِبْرَاهِيمَ، إِنَّكَ حَمِيدٌ مَجِيدٌ<br>اللَّهُمَّ بَارِكْ عَلَى مُحَمَّدٍ، وَعَلَى آلِ مُحَمَّدٍ، كَمَا بَارَكْتَ عَلَى إِبْرَاهِيمَ وَعَلَى آلِ إِبْرَاهِيمَ، إِنَّكَ حَمِيدٌ مَجِيدٌ</div>
+                
+                <div class="urdu">ترجمہ: اے اللہ! رحمت نازل فرما محمد ﷺ پر اور محمد ﷺ کی آل پر، جس طرح تو نے رحمت نازل فرمائی ابراہیم ؑ پر اور ابراہیم ؑ کی آل پر، بیشک تو تعریف کے لائق اور بزرگی والا ہے۔ اے اللہ! برکت نازل فرما محمد ﷺ پر اور محمد ﷺ کی آل پر، جس طرح تو نے برکت نازل فرمائی ابراہیم ؑ پر اور ابراہیم ؑ کی آل پر، بیشک تو تعریف کے لائق اور بزرگی والا ہے۔</div>
+                
+                <div class="english">O Allah, send prayers upon Muhammad and upon the family of Muhammad, as You sent prayers upon Ibrahim and upon the family of Ibrahim; You are indeed Worthy of Praise, Full of Glory. O Allah, send blessings upon Muhammad and upon the family of Muhammad, as You sent blessings upon Ibrahim and upon the family of Ibrahim; You are indeed Worthy of Praise, Full of Glory.</div>
+
+                <div class="bangla">হে আল্লাহ! আপনি মুহাম্মাদ (সা.) ও তাঁর বংশধরের ওপর রহমত বর্ষণ করুন, যেমন আপনি ইবরাহীম (আ.) ও তাঁর বংশধরের ওপর রহমত বর্ষণ করেছিলেন। নিশ্চয়ই আপনি প্রশংসিত ও সম্মানিত। হে আল্লাহ! আপনি মুহাম্মাদ (সা.) ও তাঁর বংশধরের ওপর বরকত বর্ষণ করুন, যেমন আপনি ইবরাহীম (আ.) ও তাঁর বংশধরের ওপর বরকত বর্ষণ করেছিলেন। নিশ্চয়ই আপনি প্রশংসিত ও সম্মানিত।</div>
+                
+                <span class="ref">(Bukhari: 3370)</span>
+                <button class="counter-btn" onclick="updateCount(this, 100, 'card4')">0 / 100</button>
+            </div>
+
+            <div class="card" id="card4">
+                <div class="section-title" id="title_dua">قبولیت کی گھڑی (دعا)</div>
+                
+                <div class="instruction-box urdu">عصر سے مغرب کا وقت</div>
+                <div class="instruction-box english">Time between Asr and Maghrib</div>
+                <div class="instruction-box bangla">আসর থেকে মাগরিব পর্যন্ত সময়</div>
+                
+                <div class="urdu">رسول اللہ ﷺ نے فرمایا: "جمعہ کے دن ایک گھڑی ایسی ہے کہ جس میں کوئی مسلمان بندہ کھڑا ہو کر نماز پڑھے اور اللہ سے کچھ مانگے تو اللہ اسے ضرور عطا فرماتا ہے۔" (علماء کے نزدیک راجح قول یہ ہے کہ یہ گھڑی عصر کے بعد مغرب سے پہلے ہے)۔</div>
+                <div class="english">The Prophet ﷺ said: "There is an hour on Friday when no Muslim servant stands praying and asking Allah for something, but Allah will grant it to him." (Most scholars say it is after Asr till Maghrib).</div>
+                <div class="bangla">রাসূলুল্লাহ সাল্লাল্লাহু আলাইহি ওয়াসাল্লাম বলেছেন: "জুমার দিন এমন একটি মুহূর্ত রয়েছে, কোনো মুসলিম বান্দা যদি ওই সময়ে আল্লাহর কাছে কিছু চায়, আল্লাহ তাকে তা অবশ্যই দান করেন।" (অধিকাংশ আলেমের মতে এই সময়টি হলো আসরের পর থেকে মাগরিব পর্যন্ত)।</div>
+                
+                <span class="ref">(Bukhari: 935)</span>
+                <button class="counter-btn" id="btn_dua_done" onclick="updateCount(this, 1, 'end')">دعا مانگ لی ✅</button>
+            </div>
+
+            <a href="index.html" class="back-btn" id="btnBack">واپس جائیں</a>
+
+        </div>
+    </div>
+
+    <script>
+        // 🌟 1. Hardware Back Button Fix 🌟
+        window.addEventListener("popstate", function (event) {
+            window.location.href = 'index.html';
+        });
+        history.pushState(null, document.title, location.href);
+
+        const uiText = {
+            ur: { 
+                title: "جمعہ کے اذکار و اعمال", btn_count: "گنتی: ", btn_done: "مکمل ✅", back: "واپس جائیں", 
+                msg_done: "ماشاءاللہ! جمعہ کے اذکار و اعمال مکمل ہوئے۔ اللہ قبول فرمائے! 🤲", 
+                title_sunnah: "جمعہ کی تیاری (سنن)", title_kahf: "سورۃ الکہف کی تلاوت", 
+                title_durood: "درود شریف کی کثرت", title_dua: "قبولیت کی گھڑی (دعا)",
+                btn_kahf: "📖 مکمل سورۃ الکہف پڑھیں", btn_ready: "تیاری مکمل ✅", btn_read: "پڑھ لیا ✅", btn_dua: "دعا مانگ لی ✅"
+            },
+            ar: { 
+                title: "أعمال وأذكار يوم الجمعة", btn_count: "العدد: ", btn_done: "تم ✅", back: "رجوع", 
+                msg_done: "ما شاء الله! تقبل الله طاعتكم وجمعتكم مباركة. 🤲", 
+                title_sunnah: "سنن يوم الجمعة", title_kahf: "قراءة سورة الكهف", 
+                title_durood: "كثرة الصلاة على النبي", title_dua: "ساعة الاستجابة (الدعاء)",
+                btn_kahf: "📖 قراءة سورة الكهف", btn_ready: "أتممت الاستعداد ✅", btn_read: "قرأت ✅", btn_dua: "دعوت الله ✅"
+            },
+            en: { 
+                title: "Friday Azkar & Deeds", btn_count: "Count: ", btn_done: "Done ✅", back: "Go Back", 
+                msg_done: "MashaAllah! Friday deeds completed. May Allah accept! 🤲", 
+                title_sunnah: "Preparation for Friday", title_kahf: "Recitation of Surah Al-Kahf", 
+                title_durood: "Abundant Durood Shareef", title_dua: "The Hour of Acceptance (Dua)",
+                btn_kahf: "📖 Read Complete Surah Al-Kahf", btn_ready: "Preparation Done ✅", btn_read: "Read ✅", btn_dua: "Supplicated ✅"
+            },
+            bn: { 
+                title: "জুমুআর আজকার ও আমল", btn_count: "গণনা: ", btn_done: "সম্পন্ন ✅", back: "ফিরে যান", 
+                msg_done: "মাশাআল্লাহ! জুমুআর আমল সম্পন্ন হয়েছে। আল্লাহ কবুল করুন! 🤲", 
+                title_sunnah: "জুমুআর প্রস্তুতি (সুন্নত)", title_kahf: "সূরা আল-কাহফ তিলাওয়াত", 
+                title_durood: "অধিক পরিমাণে দরুদ পাঠ", title_dua: "কবুলিয়াতের সময় (দোয়া)",
+                btn_kahf: "📖 সম্পূর্ণ সূরা আল-কাহফ পড়ুন", btn_ready: "প্রস্তুতি সম্পন্ন ✅", btn_read: "পড়েছি ✅", btn_dua: "দোয়া করেছি ✅"
+            }
+        };
+
+        let currentLang = 'ur'; 
+
+        window.onload = function() {
+            currentLang = localStorage.getItem('selectedLang') || 'ur';
+            document.documentElement.lang = currentLang;
+
+            const text = uiText[currentLang];
+            if(text) {
+                document.getElementById('pageTitle').innerText = text.title;
+                document.getElementById('btnBack').innerText = text.back;
+                
+                if(document.getElementById('title_sunnah')) document.getElementById('title_sunnah').innerText = text.title_sunnah;
+                if(document.getElementById('title_kahf')) document.getElementById('title_kahf').innerText = text.title_kahf;
+                if(document.getElementById('title_durood')) document.getElementById('title_durood').innerText = text.title_durood;
+                if(document.getElementById('title_dua')) document.getElementById('title_dua').innerText = text.title_dua;
+
+                if(document.getElementById('btn_read_kahf')) document.getElementById('btn_read_kahf').innerText = text.btn_kahf;
+                if(document.getElementById('btn_ready')) document.getElementById('btn_ready').innerText = text.btn_ready;
+                if(document.getElementById('btn_read_done')) document.getElementById('btn_read_done').innerText = text.btn_read;
+                if(document.getElementById('btn_dua_done')) document.getElementById('btn_dua_done').innerText = text.btn_dua;
+            }
+
+            let btns = document.querySelectorAll('.counter-btn');
+            btns.forEach(btn => {
+                if(btn.id !== 'btn_ready' && btn.id !== 'btn_read_done' && btn.id !== 'btn_dua_done') {
+                    let parts = btn.innerText.split('/');
+                    if(parts.length > 1) {
+                        btn.innerText = text.btn_count + parts[0].trim() + " / " + parts[1].trim();
+                    }
+                }
+            });
+        };
+
+        function updateCount(btn, max, nextCardId) {
+            let textData = uiText[currentLang];
+
+            if (btn.id === 'btn_ready' || btn.id === 'btn_read_done' || btn.id === 'btn_dua_done' || btn.innerText.includes('✅')) {
+                btn.style.backgroundColor = "#c8e6c9";
+                btn.style.color = "#1b5e20";
+                btn.style.borderColor = "#2e7d32";
+                btn.parentElement.classList.add('completed');
+                autoScroll(nextCardId, textData);
+                return;
+            }
+
+            let currentText = btn.innerText; 
+            let parts = currentText.split('/'); 
+            let current = parseInt(parts[0].replace(/\D/g, '')); 
+            
+            if (current < max) {
+                current++;
+                btn.innerText = textData.btn_count + current + " / " + max;
+                
+                if (current == max) {
+                    btn.style.backgroundColor = "#c8e6c9";
+                    btn.style.color = "#1b5e20";
+                    btn.style.borderColor = "#2e7d32";
+                    btn.innerText = textData.btn_done;
+                    
+                    let card = btn.parentElement;
+                    card.classList.add('completed');
+                    autoScroll(nextCardId, textData);
+                }
+            }
+        }
+
+        function autoScroll(nextCardId, textData) {
+            if(nextCardId === 'end') {
+                setTimeout(() => {
+                    alert(textData.msg_done);
+                }, 200);
+                return;
+            }
+            setTimeout(() => {
+                let nextCard = document.getElementById(nextCardId);
+                if(nextCard) {
+                    nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 400);
+        }
+    </script>
+
+</body>
+</html>

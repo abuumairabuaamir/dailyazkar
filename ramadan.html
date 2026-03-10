@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Ramadan Rules</title>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Daily Azkar">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+        /* --- 1. FONTS --- */
+        @font-face { font-family: 'MyUrduFont'; src: url('fonts/jameel.ttf'); }
+        @font-face { font-family: 'Amiri'; src: url('fonts/amiri.ttf'); }
+        @font-face { font-family: 'TiroBangla'; src: url('fonts/tiro.ttf'); }
+
+        :root {
+            /* 🌟 Notch bar ki height fix ki gayi hai 🌟 */
+            --notch-height: calc(max(5px, env(safe-area-inset-top)) + 30px);
+        }
+
+        /* --- 2. MAIN LAYOUT SETTINGS --- */
+        html, body {
+            height: 100%; width: 100%; margin: 0; padding: 0;
+            overflow: hidden; 
+            background-color: #e0f2f1;
+        }
+
+        /* --- DYNAMIC FONT & DIRECTION --- */
+        html[lang="ur"] body { font-family: 'MyUrduFont', sans-serif; direction: rtl; }
+        html[lang="ar"] body { font-family: 'Amiri', serif; direction: rtl; }
+        html[lang="en"] body { font-family: 'MyUrduFont', sans-serif; direction: ltr; } 
+        html[lang="bn"] body { font-family: 'TiroBangla', serif; direction: ltr; }
+
+        /* --- 3. SHOW/HIDE LOGIC --- */
+        .lang-ur, .lang-en, .lang-bn, .lang-ar { display: none !important; }
+        html[lang="ur"] .lang-ur { display: block !important; }
+        html[lang="en"] .lang-en { display: block !important; }
+        html[lang="bn"] .lang-bn { display: block !important; }
+        html[lang="ar"] .lang-ar { display: block !important; }
+
+        /* 🌟 GLOBAL FIXED NOTCH BAR (Always Visible) 🌟 */
+        .global-notch {
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--notch-height);
+            display: flex; justify-content: space-between; align-items: flex-end;
+            padding: 0 15px 8px 15px; box-sizing: border-box;
+            background-color: #004d40; /* Dark Teal Theme */
+            color: #e0f2f1; font-size: 13px; z-index: 500;
+            direction: ltr; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .global-notch .ar-text { font-family: 'Amiri', serif; font-size: 16px; color: #ffeb3b; direction: rtl;}
+        .global-notch .en-text { font-family: sans-serif; letter-spacing: 1px; }
+
+        /* --- 4. APP CONTAINER --- */
+        .app-container {
+            display: flex; flex-direction: column;
+            height: 100%; width: 100%;
+            max-width: 800px; margin: 0 auto;
+            padding-top: var(--notch-height); /* Patti ke niche se shuru ho */
+            box-sizing: border-box;
+        }
+
+        /* --- 5. FIXED HEADER --- */
+        .fixed-header {
+            flex: 0 0 auto; width: 100%; 
+            padding: 10px; box-sizing: border-box; z-index: 100;
+            background-color: #e0f2f1; 
+        }
+
+        .header-box { 
+            background: #00695c; color: white; padding: 15px; 
+            border-radius: 10px; text-align: center; 
+            font-size: 24px; font-weight: bold; 
+            border-bottom: 4px solid #004d40;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2); 
+            width: 100%; box-sizing: border-box; margin: 0; margin-bottom: 10px;
+        }
+
+        /* --- 6. SCROLLABLE CONTENT --- */
+        .scrollable-content {
+            flex: 1; overflow-y: auto; width: 100%;
+            padding: 15px; box-sizing: border-box;
+            padding-bottom: max(80px, env(safe-area-inset-bottom));
+            -webkit-overflow-scrolling: touch; 
+            scrollbar-width: none; -ms-overflow-style: none;
+        }
+        .scrollable-content::-webkit-scrollbar { display: none; }
+
+        /* --- CARD STYLES --- */
+        .card { 
+            background: white; padding: 15px; border-radius: 10px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 15px; 
+            border-right: 5px solid #00695c; 
+        }
+        html[lang="en"] .card, html[lang="bn"] .card { border-right: none; border-left: 5px solid #00695c; }
+        
+        h3 { color: #004d40; border-bottom: 1px dashed #b2dfdb; padding-bottom: 5px; margin-top: 0; font-size: 20px; font-weight: bold; }
+        p, li { font-size: 17px; line-height: 1.6; color: #333; margin-bottom: 5px; }
+        ul { padding-inline-start: 25px; margin: 5px 0; }
+        
+        .arabic-text { font-family: 'Amiri', serif; font-size: 22px; color: #00796b; background: #f0f4c3; padding: 10px; border-radius: 8px; margin: 8px 0; text-align: center; line-height: 1.6; border: 1px solid #dce775; font-weight: normal; direction: rtl; }
+        
+        .trans { font-size: 17px; color: #424242; text-align: center; display: block; margin-bottom: 5px; background: #fafafa; padding: 8px; border-radius: 5px; line-height: 1.5; }
+        
+        .ref { font-size: 13px; color: #757575; display: block; margin-top: 5px; text-align: left; direction: ltr; font-family: sans-serif; }
+        
+        .back-btn { display: block; background: #004d40; color: white; text-align: center; padding: 12px; border-radius: 8px; text-decoration: none; margin-top: 20px; font-size: 18px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); font-family: inherit; }
+
+        hr { border:0; border-top:1px dashed #ccc; margin:10px 0; }
+
+        /* Dynamic Card Colors */
+        .card-gold { border-right-color: #fbc02d; }
+        .card-red { border-right-color: #d32f2f; }
+        html[lang="en"] .card-gold, html[lang="bn"] .card-gold { border-right: none; border-left: 5px solid #fbc02d; }
+        html[lang="en"] .card-red, html[lang="bn"] .card-red { border-right: none; border-left: 5px solid #d32f2f; }
+
+    </style>
+</head>
+<body>
+
+    <div id="globalNotchBar" class="global-notch">
+        <span class="en-text">Daily Azkar</span>
+        <span class="ar-text">الأذكار اليومية</span>
+    </div>
+
+    <div class="app-container">
+
+        <div class="fixed-header">
+            <div class="header-box" id="pageTitle">احکامِ رمضان (بمطابق شیخ البانیؒ)</div>
+        </div>
+
+        <div class="scrollable-content">
+
+            <div class="card">
+                <h3 class="lang-ur">1. نیا چاند دیکھنے کی دعا</h3>
+                <h3 class="lang-en">1. Supplication upon seeing the New Moon</h3>
+                <h3 class="lang-bn">১. নতুন চাঁদ দেখার দোয়া</h3>
+                <h3 class="lang-ar">1. دعاء رؤية الهلال</h3>
+                
+                <div class="arabic-text">اللَّهُمَّ أَهِلَّهُ عَلَيْنَا بِالْأَمْنِ وَالْإِيمَانِ، وَالسَّلَامَةِ وَالْإِسْلَامِ، رَبِّي وَرَبُّكَ اللَّهُ، هِلَالُ رُشْدٍ وَخَيْرٍ</div>
+                
+                <span class="trans lang-ur">اے اللہ! اس چاند کو ہم پر امن و ایمان، سلامتی اور اسلام کے ساتھ طلوع فرما۔ (اے چاند!) میرا اور تیرا رب اللہ ہے۔ یہ چاند ہدایت اور بھلائی والا ہو۔</span>
+                <span class="trans lang-en">O Allah, let this moon appear on us with security and faith; with safety and Islam. (O moon!) Your Lord and my Lord is Allah. May this be a moon of guidance and goodness.</span>
+                <span class="trans lang-bn">হে আল্লাহ! এই চাঁদকে আমাদের ওপর নিরাপত্তা, ঈমান, শান্তি ও ইসলামের সাথে উদিত করুন। (হে চাঁদ!) আমার ও তোমার রব আল্লাহ। এটি হিদায়াত ও কল্যাণের চাঁদ হোক।</span>
+                
+                <span class="ref">(Tirmidhi: 3451)</span>
+            </div>
+
+            <div class="card">
+                <h3 class="lang-ur">2. نیت کا مسئلہ</h3>
+                <h3 class="lang-en">2. The Issue of Intention (Niyyah)</h3>
+                <h3 class="lang-bn">২. রোজার নিয়ত</h3>
+                <h3 class="lang-ar">2. مسألة النية</h3>
+                
+                <p class="lang-ur">فرض روزے کے لیے فجر سے پہلے نیت (دل کا ارادہ) ضروری ہے۔ زبان سے الفاظ کہنا بدعت ہے۔</p>
+                <p class="lang-en">For an obligatory fast, intention (resolve in the heart) before Fajr is necessary. Saying words aloud is an innovation (Bid'ah).</p>
+                <p class="lang-bn">ফরজ রোজার জন্য ফজরের আগে নিয়ত (অন্তরের সংকল্প) করা জরুরি। মুখে উচ্চারণ করে নিয়ত করা বিদআত。</p>
+                <p class="lang-ar">النية (القصد بالقلب) قبل الفجر شرط لصيام الفرض. والتلفظ بها بدعة.</p>
+
+                <div class="arabic-text">إِنَّمَا الْأَعْمَالُ بِالنِّيَّاتِ</div>
+                
+                <span class="trans lang-ur">بیشک اعمال کا دارومدار نیتوں پر ہے۔</span>
+                <span class="trans lang-en">Indeed, actions are based upon intentions.</span>
+                <span class="trans lang-bn">নিশ্চয়ই সমস্ত আমল নিয়তের ওপর নির্ভরশীল।</span>
+                
+                <span class="ref">(Bukhari: 1)</span>
+            </div>
+
+            <div class="card">
+                <h3 class="lang-ur">3. سحری کی برکت</h3>
+                <h3 class="lang-en">3. The Blessing of Suhoor</h3>
+                <h3 class="lang-bn">৩. সাহরির বরকত</h3>
+                <h3 class="lang-ar">3. بركة السحور</h3>
+                
+                <p class="lang-ur">سحری کھانا باعثِ برکت ہے، چاہے ایک گھونٹ پانی ہی پی لیں۔</p>
+                <p class="lang-en">Having Suhoor brings blessings, even if it is just a sip of water.</p>
+                <p class="lang-bn">সাহরি খাওয়া বরকতের কারণ, এমনকি এক ঢোঁক পানি পান করলেও।</p>
+                <p class="lang-ar">أكلة السحر بركة، ولو أن يتجرع أحدكم جرعة من ماء.</p>
+
+                <div class="arabic-text">تَسَحَّرُوا فَإِنَّ فِي السَّحُورِ بَرَكَةً</div>
+                
+                <span class="trans lang-ur">سحری کھایا کرو، کیونکہ سحری میں برکت ہے۔</span>
+                <span class="trans lang-en">Take Suhoor, for indeed in Suhoor is blessing.</span>
+                <span class="trans lang-bn">তোমরা সাহরি খাও, কারণ সাহরিতে বরকত রয়েছে।</span>
+                
+                <span class="ref">(Bukhari: 1923)</span>
+            </div>
+
+            <div class="card">
+                <h3 class="lang-ur">4. افطار میں جلدی</h3>
+                <h3 class="lang-en">4. Hastening the Iftar</h3>
+                <h3 class="lang-bn">৪. ইফতারে তাড়াহুড়ো করা</h3>
+                <h3 class="lang-ar">4. تعجيل الفطر</h3>
+                
+                <p class="lang-ur">سورج غروب ہوتے ہی افطار میں جلدی کرنا دین کے غلبے کی علامت ہے۔</p>
+                <p class="lang-en">Hastening to break the fast as soon as the sun sets is a sign of the dominance of religion.</p>
+                <p class="lang-bn">সূর্য ডোবার সাথে সাথে ইফতার করা দ্বীন বিজয়ী থাকার আলামত।</p>
+                <p class="lang-ar">تعجيل الفطر بمجرد غروب الشمس من علامات ظهور الدين.</p>
+
+                <div class="arabic-text">لا يَزَالُ النَّاسُ بِخَيْرٍ مَا عَجَّلُوا الْفِطْرَ</div>
+                
+                <span class="trans lang-ur">لوگ اس وقت تک خیر پر رہیں گے جب تک افطار میں جلدی کرتے رہیں گے۔</span>
+                <span class="trans lang-en">The people will remain upon goodness as long as they hasten to break their fast.</span>
+                <span class="trans lang-bn">মানুষ ততদিন কল্যাণের ওপর থাকবে, যতদিন তারা দ্রুত ইফতার করবে।</span>
+                
+                <span class="ref">(Bukhari: 1957)</span>
+            </div>
+
+            <div class="card">
+                <h3 class="lang-ur">5. افطار کے وقت کی مستند دعا</h3>
+                <h3 class="lang-en">5. Authentic Dua for Iftar</h3>
+                <h3 class="lang-bn">৫. ইফতারের সহিহ দোয়া</h3>
+                <h3 class="lang-ar">5. الدعاء الصحيح عند الإفطار</h3>
+                
+                <p class="lang-ur" style="color: #c62828;">نوٹ: (اللہم انی لک صمت...) والی دعا سندا ضعیف (کمزور) ہے۔ صحیح اور مستند دعا درج ذیل ہے:</p>
+                <p class="lang-en" style="color: #c62828;">Note: The common dua (Allahumma inni laka sumtu...) is considered weak in hadith chain. The authentic dua is:</p>
+                <p class="lang-bn" style="color: #c62828;">বিঃদ্রঃ: প্রচলিত দোয়া (আল্লাহুম্মা ইন্নি লাকা সুমতু...) হাদিসের সনদে দুর্বল। সহিহ দোয়াটি নিচে দেওয়া হলো:</p>
+                <p class="lang-ar" style="color: #c62828;">ملاحظة: حديث (اللهم إني لك صمت...) ضعيف الإسناد، والدعاء الصحيح الثابت هو:</p>
+                
+                <div class="arabic-text">ذَهَبَ الظَّمَأُ، وَابْتَلَّتِ الْعُرُوقُ، وَثَبَتَ الْأَجْرُ إِنْ شَاءَ اللَّهُ</div>
+                
+                <span class="trans lang-ur">پیاس بجھ گئی، رگیں تر ہو گئیں، اور اگر اللہ نے چاہا تو ثواب پکا ہو گیا۔</span>
+                <span class="trans lang-en">The thirst has gone, the veins are moistened, and the reward is confirmed, if Allah wills.</span>
+                <span class="trans lang-bn">পিপাসা মিটেছে, শিরা-উপশিরা সিক্ত হয়েছে এবং আল্লাহ চাইলে সওয়াব নিশ্চিত হয়েছে।</span>
+                
+                <span class="ref">(Abu Dawud: 2357 - Sahih by Albani)</span>
+            </div>
+
+            <div class="card">
+                <h3 class="lang-ur">6. قیام رمضان (تراویح)</h3>
+                <h3 class="lang-en">6. Night Prayers (Taraweeh)</h3>
+                <h3 class="lang-bn">৬. কিয়ামুল লাইল (তারাবিহ)</h3>
+                <h3 class="lang-ar">6. قيام رمضان (التراويح)</h3>
+                
+                <p class="lang-ur">امام کے ساتھ آخر تک قیام کرنے والے کو پوری رات کے قیام کا ثواب ملتا ہے۔</p>
+                <p class="lang-en">Whoever prays with the Imam until he finishes, it is recorded for him as praying the whole night.</p>
+                <p class="lang-bn">ইমামের সাথে নামাজ শেষ করা পর্যন্ত যে ব্যক্তি দাঁড়িয়ে থাকে, তাকে সারা রাত ইবাদত করার সওয়াব দেওয়া হয়।</p>
+                <p class="lang-ar">من قام مع الإمام حتى ينصرف كُتب له قيام ليلة.</p>
+
+                <div class="arabic-text">مَنْ قَامَ رَمَضَانَ إِيمَانًا وَاحْتِسَابًا غُفِرَ لَهُ مَا تَقَدَّمَ مِنْ ذَنْبِهِ</div>
+                
+                <span class="trans lang-ur">جو شخص ایمان اور ثواب کی نیت سے رمضان کا قیام کرے، اس کے پچھلے گناہ معاف کر دیے جاتے ہیں۔</span>
+                <span class="trans lang-en">Whoever establishes prayers during the nights of Ramadan faithfully and seeking reward, his past sins will be forgiven.</span>
+                <span class="trans lang-bn">যে ব্যক্তি ঈমান ও সওয়াবের আশায় রমজানের রাতে নামাজ আদায় করবে, তার পূর্বের সব গুনাহ মাফ করে দেওয়া হবে।</span>
+                
+                <span class="ref">(Bukhari: 37)</span>
+            </div>
+
+            <div class="card card-gold">
+                <h3 style="color: #f57f17;" class="lang-ur">✨ لیلۃ القدر (شبِ قدر)</h3>
+                <h3 style="color: #f57f17;" class="lang-en">✨ Laylatul Qadr (Night of Decree)</h3>
+                <h3 style="color: #f57f17;" class="lang-bn">✨ লাইলাতুল কদর</h3>
+                <h3 style="color: #f57f17;" class="lang-ar">✨ ليلة القدر</h3>
+                
+                <p class="lang-ur">اسے رمضان کے آخری عشرے کی <b>طاق راتوں</b> (21, 23, 25, 27, 29) میں تلاش کریں۔</p>
+                <p class="lang-en">Seek it in the <b>odd nights</b> of the last ten days of Ramadan.</p>
+                <p class="lang-bn">রমজানের শেষ দশ দিনের <b>বিজোড় রাতগুলোতে</b> (২১, ২৩, ২৫, ২৭, ২৯) একে অন্বেষণ করুন।</p>
+                <p class="lang-ar">تحروها في الأوتار من العشر الأواخر من رمضان.</p>
+
+                <div class="arabic-text">تَحَرَّوْا لَيْلَةَ الْقَدْرِ فِي الْوِتْرِ مِنَ الْعَشْرِ الْأَوَاخِرِ مِنْ رَمَضَانَ</div>
+                <span class="ref">(Bukhari: 2017)</span>
+
+                <hr>
+                
+                <p class="lang-ur"><b>اس رات کی مسنون دعا:</b></p>
+                <p class="lang-en"><b>The Sunnah Supplication for this night:</b></p>
+                <p class="lang-bn"><b>এই রাতের মাসনুন দোয়া:</b></p>
+                <p class="lang-ar"><b>دعاء ليلة القدر:</b></p>
+
+                <div class="arabic-text">اللَّهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّي</div>
+                
+                <span class="trans lang-ur">اے اللہ! بیشک تو معاف کرنے والا ہے، معافی کو پسند کرتا ہے، پس مجھے معاف فرما دے۔</span>
+                <span class="trans lang-en">O Allah, You are pardoning and You love to pardon, so pardon me.</span>
+                <span class="trans lang-bn">হে আল্লাহ! নিশ্চয়ই আপনি ক্ষমাশীল, ক্ষমা করতে পছন্দ করেন, সুতরাং আমাকে ক্ষমা করে দিন।</span>
+                
+                <span class="ref">(Tirmidhi: 3513 - Sahih by Albani)</span>
+            </div>
+
+            <div class="card card-red">
+                <h3 style="color: #d32f2f;" class="lang-ur">🚫 روزہ توڑنے والی چیزیں</h3>
+                <h3 style="color: #d32f2f;" class="lang-en">🚫 Things that Invalidate the Fast</h3>
+                <h3 style="color: #d32f2f;" class="lang-bn">🚫 যেসব কারণে রোজা ভেঙে যায়</h3>
+                <h3 style="color: #d32f2f;" class="lang-ar">🚫 مفسدات الصيام</h3>
+                
+                <ul class="lang-ur">
+                    <li><b>1. جان بوجھ کر کھانا پینا:</b><br>
+                        بھول کر کھانے سے روزہ نہیں ٹوٹتا۔ نبی ﷺ نے فرمایا:
+                        <div class="arabic-text">مَنْ نَسِيَ وَهُوَ صَائِمٌ، فَأَكَلَ أَوْ شَرِبَ، فَلْيُتِمَّ صَوْمَهُ، فَإِنَّمَا أَطْعَمَهُ اللهُ وَسَقَاهُ</div>
+                        <span class="trans">ترجمہ: "جو شخص روزے کی حالت میں بھول گیا اور اس نے کھا یا پی لیا، تو وہ اپنا روزہ پورا کرے، کیونکہ اسے اللہ ہی نے کھلایا اور پلایا ہے۔"</span>
+                        <span class="ref">(Bukhari: 6669)</span>
+                    </li>
+                    <li style="margin-top: 15px;"><b>2. قصداً قے (Vomit) کرنا:</b><br>
+                        <div class="arabic-text">مَنْ ذَرَعَهُ الْقَيْءُ فَلَيْسَ عَلَيْهِ قَضَاءٌ، وَمَنِ اسْتَقَاءَ عَمْدًا فَلْيَقْضِ</div>
+                        <span class="trans">ترجمہ: "جسے خود بخود قے آجائے اس پر قضا نہیں، اور جو جان بوجھ کر قے کرے وہ (روزے کی) قضا دے۔"</span>
+                        <span class="ref">(Tirmidhi: 720)</span>
+                    </li>
+                    <li style="margin-top: 15px;"><b>3. جماع (ہم بستری):</b> اس سے روزہ ٹوٹ جاتا ہے اور کفارہ (مسلسل 60 روزے) بھی لازم آتا ہے۔</li>
+                    <li style="margin-top: 15px;"><b>4. حیض و نفاس:</b> خواتین کو مخصوص ایام شروع ہو جائیں تو روزہ ٹوٹ جاتا ہے، بعد میں صرف قضا کرنی ہوگی۔</li>
+                </ul>
+
+                <ul class="lang-en">
+                    <li><b>1. Eating or drinking intentionally:</b><br>
+                        Eating out of forgetfulness does not break the fast. The Prophet ﷺ said:
+                        <div class="arabic-text">مَنْ نَسِيَ وَهُوَ صَائِمٌ، فَأَكَلَ أَوْ شَرِبَ، فَلْيُتِمَّ صَوْمَهُ، فَإِنَّمَا أَطْعَمَهُ اللهُ وَسَقَاهُ</div>
+                        <span class="trans">"Whoever forgets he is fasting and eats or drinks, let him complete his fast, for it is Allah Who has fed him and given him to drink."</span>
+                    </li>
+                    <li style="margin-top: 15px;"><b>2. Vomiting intentionally:</b><br>
+                        "Whoever is overcome by vomiting does not have to make up the fast, but whoever vomits intentionally must make it up." (Tirmidhi)
+                    </li>
+                    <li style="margin-top: 15px;"><b>3. Sexual intercourse:</b> Breaks the fast and requires Kaffarah (fasting 60 consecutive days).</li>
+                    <li style="margin-top: 15px;"><b>4. Menstruation (Haidh) & Postpartum bleeding:</b> Breaks the fast. Women must make up these days later.</li>
+                </ul>
+
+                <ul class="lang-bn">
+                    <li><b>১. ইচ্ছাকৃতভাবে পানাহার করা:</b><br>
+                        ভুলে কিছু খেয়ে ফেললে রোজা ভাঙে না। নবী ﷺ বলেছেন:
+                        <div class="arabic-text">مَنْ نَسِيَ وَهُوَ صَائِمٌ، فَأَكَلَ أَوْ شَرِبَ، فَلْيُتِمَّ صَوْمَهُ، فَإِنَّمَا أَطْعَمَهُ اللهُ وَسَقَاهُ</div>
+                        <span class="trans">"যে ব্যক্তি রোজার অবস্থায় ভুলে পানাহার করে, সে যেন তার রোজা পূর্ণ করে, কারণ আল্লাহই তাকে খাইয়েছেন ও পান করিয়েছেন।"</span>
+                    </li>
+                    <li style="margin-top: 15px;"><b>২. ইচ্ছাকৃত বমি করা:</b><br>
+                        "অনিচ্ছাকৃত বমি হলে রোজা কাজা করতে হবে না, কিন্তু কেউ ইচ্ছাকৃত বমি করলে তাকে রোজা কাজা করতে হবে।" (তিরমিযী)
+                    </li>
+                    <li style="margin-top: 15px;"><b>৩. সহবাস:</b> রোজা ভেঙে যায় এবং কাফফারা (টানা ৬০টি রোজা) আদায় করা ওয়াজিব হয়।</li>
+                    <li style="margin-top: 15px;"><b>৪. হায়েজ ও নিফাস:</b> মহিলাদের বিশেষ দিন শুরু হলে রোজা ভেঙে যায়, পরে এগুলো কাজা করতে হবে।</li>
+                </ul>
+
+                <ul class="lang-ar">
+                    <li><b>1. الأكل أو الشرب عمداً:</b><br>
+                        أما الأكل أو الشرب ناسياً فلا يفسد الصوم. قال النبي ﷺ:
+                        <div class="arabic-text">مَنْ نَسِيَ وَهُوَ صَائِمٌ، فَأَكَلَ أَوْ شَرِبَ، فَلْيُتِمَّ صَوْمَهُ، فَإِنَّمَا أَطْعَمَهُ اللهُ وَسَقَاهُ</div>
+                        <span class="ref">(البخاري: 6669)</span>
+                    </li>
+                    <li style="margin-top: 15px;"><b>2. القيء عمداً:</b><br>
+                        <div class="arabic-text">مَنْ ذَرَعَهُ الْقَيْءُ فَلَيْسَ عَلَيْهِ قَضَاءٌ، وَمَنِ اسْتَقَاءَ عَمْدًا فَلْيَقْضِ</div>
+                        <span class="ref">(الترمذي: 720)</span>
+                    </li>
+                    <li style="margin-top: 15px;"><b>3. الجماع في نهار رمضان:</b> يفسد الصوم ويوجب القضاء والكفارة المغلظة (صيام شهرين متتابعين).</li>
+                    <li style="margin-top: 15px;"><b>4. الحيض والنفاس:</b> خروج دم الحيض أو النفاس يفسد الصوم، ويجب على المرأة قضاء تلك الأيام.</li>
+                </ul>
+
+            </div>
+
+            <a href="index.html" class="back-btn" id="btnBack">واپس جائیں</a>
+
+        </div>
+    </div>
+
+    <script>
+        // 🌟 1. Hardware Back Button Fix 🌟
+        window.addEventListener("popstate", function (event) {
+            window.location.href = 'index.html';
+        });
+        history.pushState(null, document.title, location.href);
+
+        const uiText = {
+            ur: { page_title: "احکامِ رمضان (بمطابق شیخ البانیؒ)", back: "واپس جائیں" },
+            en: { page_title: "Rules of Ramadan (Albani)", back: "Go Back" },
+            bn: { page_title: "রমজানের বিধান (আলবানী)", back: "ফিরে যান" },
+            ar: { page_title: "أحكام رمضان (الألباني)", back: "رجوع" }
+        };
+
+        window.onload = function() {
+            let currentLang = localStorage.getItem('selectedLang') || 'ur';
+            document.documentElement.lang = currentLang;
+            
+            if(uiText[currentLang]) {
+                document.getElementById('pageTitle').innerText = uiText[currentLang].page_title;
+                document.getElementById('btnBack').innerText = uiText[currentLang].back;
+            }
+        };
+    </script>
+
+</body>
+</html>

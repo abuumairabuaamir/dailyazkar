@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Ahkam & Zakat Calculator</title>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Daily Azkar">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+        /* --- 1. FONTS SETUP --- */
+        @font-face { font-family: 'MyUrduFont'; src: url('fonts/jameel.ttf'); }
+        @font-face { font-family: 'Amiri'; src: url('fonts/amiri.ttf'); }
+        @font-face { font-family: 'TiroBangla'; src: url('fonts/tiro.ttf'); }
+
+        :root {
+            /* 🌟 Notch bar ki height fix ki gayi hai 🌟 */
+            --notch-height: calc(max(5px, env(safe-area-inset-top)) + 30px);
+        }
+
+        /* --- 2. MAIN LAYOUT SETTINGS --- */
+        html, body {
+            height: 100%; width: 100%; margin: 0; padding: 0;
+            overflow: hidden; 
+            background-color: #f1f8e9; /* Light Green */
+        }
+
+        /* --- DYNAMIC FONT & DIRECTION --- */
+        html[lang="ur"] body { font-family: 'MyUrduFont', sans-serif; direction: rtl; }
+        html[lang="ar"] body { font-family: 'Amiri', serif; direction: rtl; }
+        html[lang="en"] body { font-family: 'MyUrduFont', sans-serif; direction: ltr; } 
+        html[lang="bn"] body { font-family: 'TiroBangla', serif; direction: ltr; }
+
+        /* --- SHOW/HIDE LOGIC --- */
+        .lang-ur, .lang-en, .lang-bn, .lang-ar { display: none !important; }
+        html[lang="ur"] .lang-ur { display: block !important; }
+        html[lang="en"] .lang-en { display: block !important; }
+        html[lang="bn"] .lang-bn { display: block !important; }
+        html[lang="ar"] .lang-ar { display: block !important; }
+
+        /* 🌟 GLOBAL FIXED NOTCH BAR (Always Visible) 🌟 */
+        .global-notch {
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--notch-height);
+            display: flex; justify-content: space-between; align-items: flex-end;
+            padding: 0 15px 8px 15px; box-sizing: border-box;
+            background-color: #1b5e20; color: #e0f2f1; font-size: 13px; z-index: 500;
+            direction: ltr; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .global-notch .ar-text { font-family: 'Amiri', serif; font-size: 16px; color: #ffeb3b; direction: rtl;}
+        .global-notch .en-text { font-family: sans-serif; letter-spacing: 1px; }
+
+
+        .app-container {
+            display: flex; flex-direction: column; height: 100%; width: 100%;
+            max-width: 800px; margin: 0 auto;
+            padding-top: var(--notch-height); /* Patti ke niche se shuru ho */
+            box-sizing: border-box;
+        }
+
+        .fixed-header {
+            flex: 0 0 auto; width: 100%; 
+            padding: 10px; box-sizing: border-box; z-index: 100;
+            background-color: #f1f8e9;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+        }
+
+        .header-box { 
+            background: #33691e; color: white; padding: 12px; 
+            border-radius: 10px; text-align: center; 
+            font-size: 26px; font-weight: bold; 
+            margin-bottom: 10px;
+        }
+
+        /* Open Calculator Button */
+        .open-calc-btn {
+            background: #c62828; color: white; border: none; text-decoration: none;
+            padding: 12px; width: 100%; border-radius: 8px;
+            font-family: inherit; font-size: 20px; font-weight: bold;
+            cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            box-sizing: border-box;
+        }
+        .open-calc-btn:active { transform: scale(0.98); }
+
+        /* --- SCROLLABLE CONTENT --- */
+        .scrollable-content {
+            flex: 1; overflow-y: auto; width: 100%;
+            padding: 15px; box-sizing: border-box;
+            padding-bottom: max(80px, env(safe-area-inset-bottom));
+            -webkit-overflow-scrolling: touch; 
+            scrollbar-width: none;
+        }
+
+        /* --- CARD STYLES --- */
+        .card { 
+            background: white; padding: 15px; border-radius: 10px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 15px; 
+            border-right: 5px solid #33691e; 
+        }
+        html[lang="en"] .card, html[lang="bn"] .card { border-right: none; border-left: 5px solid #33691e; }
+
+        h3 { color: #1b5e20; border-bottom: 1px solid #dcedc8; padding-bottom: 5px; margin-top: 0; }
+        p, li { font-size: 19px; line-height: 1.7; color: #333; margin-bottom: 5px; }
+        ul { padding-inline-start: 20px; }
+        
+        .arabic-text { font-family: 'Amiri', serif; font-size: 20px; color: #2e7d32; background: #e8f5e9; padding: 8px; border-radius: 6px; text-align: center; margin: 10px 0; border: 1px solid #c8e6c9; direction: rtl; }
+        .ref { font-size: 14px; color: #757575; display: block; margin-top: 5px; font-family: sans-serif; text-align: center;}
+        
+        .alert-box { background: #ffebee; color: #c62828; padding: 10px; border-radius: 5px; border: 1px dashed #ef5350; font-weight: bold; text-align: center; margin-top: 10px; font-size: 18px; }
+
+        .back-btn { display: block; background: #33691e; color: white; text-align: center; padding: 12px; border-radius: 8px; text-decoration: none; margin-top: 20px; font-size: 20px; font-family: inherit; }
+
+        .fiqh-note { background: #fff3e0; padding: 12px; border-radius: 8px; border-right: 4px solid #ff9800; margin-top: 10px; font-size: 18px; }
+        html[lang="en"] .fiqh-note, html[lang="bn"] .fiqh-note { border-right: none; border-left: 4px solid #ff9800; }
+        .fiqh-note b { color: #e65100; }
+    </style>
+</head>
+<body>
+
+    <div id="globalNotchBar" class="global-notch">
+        <span class="en-text">Daily Azkar</span>
+        <span class="ar-text">الأذكار اليومية</span>
+    </div>
+
+    <div class="app-container">
+
+        <div class="fixed-header">
+            <div class="header-box" id="ui_page_title">احکامِ زکوٰۃ و فطرانہ</div>
+            <a href="calculator.html" class="open-calc-btn" id="ui_btn_open_calc">
+                <span>🧮</span> زکوٰۃ کیلکولیٹر کھولیں
+            </a>
+        </div>
+
+        <div class="scrollable-content">
+
+            <div class="card" id="card_zakat">
+                <h3 id="ui_zakat_title">1. زکوٰۃ کا نصاب (حد)</h3>
+                
+                <div class="lang-ur">
+                    <p>زکوٰۃ تب فرض ہوتی ہے جب مال نصاب کو پہنچ جائے اور اس پر <b>ایک قمری سال</b> گزر جائے۔</p>
+                    <ul>
+                        <li><b>سونا:</b> 85 گرام (تقریباً 7.5 تولہ)</li>
+                        <li><b>چاندی:</b> 595 گرام (تقریباً 52.5 تولہ)</li>
+                    </ul>
+                    
+                    <div class="fiqh-note">
+                        <b>نقد رقم (Cash) اور مالِ تجارت کا نصاب:</b><br>
+                        اگر کسی کے پاس نقد رقم یا مالِ تجارت ہو، تو اس کا نصاب سونے اور چاندی میں سے جو بھی اس دور میں <b>سستا</b> ہو، اس کی مالیت کے برابر رکھا جائے گا، تاکہ غریبوں کا زیادہ فائدہ ہو (عام طور پر آج کل چاندی سستی ہے، اس لیے 595 گرام چاندی کی قیمت کے برابر کیش ہونے پر زکوٰۃ فرض ہوگی)۔
+                    </div>
+
+                    <div class="fiqh-note">
+                        <b>کیا سونے، چاندی اور کیش کو ملا کر حساب کیا جائے؟</b><br>
+                        اس مسئلے میں علماء کے درمیان اختلاف ہے:
+                        <ul>
+                            <li><b>جمہور علماء (حنفی، مالکی، حنبلی):</b> ان کے نزدیک سونا، چاندی، کیش اور مالِ تجارت کو آپس میں ملا کر کل مالیت نکالی جائے گی اور اگر وہ چاندی کے نصاب تک پہنچ جائے تو کل مال پر زکوٰۃ فرض ہوگی۔</li>
+                            <li><b>اہل حدیث / سلفی علماء (جیسے علامہ البانی رحمہ اللہ):</b> ان کے نزدیک سونا، چاندی اور کیش الگ الگ جنس ہیں۔ لہٰذا انہیں آپس میں نہیں ملایا جائے گا۔ اگر آپ کے پاس سونا اکیلا 85 گرام تک پہنچ رہا ہے تو اس کی زکوٰۃ دیں گے، اگر چاندی اکیلی 595 گرام ہے تو اس کی دیں گے۔ البتہ کیش (Cash) اور مالِ تجارت کو ایک ساتھ ملا کر حساب کیا جائے گا (اس لیے کیلکولیٹر میں ہم نے سب الگ الگ حساب کرنے کی سہولت دی ہے)۔</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="lang-en">
+                    <p>Zakat becomes obligatory when wealth reaches the Nisab and <b>one lunar year</b> has passed over it.</p>
+                    <ul>
+                        <li><b>Gold:</b> 85 grams</li>
+                        <li><b>Silver:</b> 595 grams</li>
+                    </ul>
+                    <div class="fiqh-note">
+                        <b>Nisab for Cash and Trading Goods:</b><br>
+                        The Nisab for cash is measured according to the cheaper of the two (Gold or Silver) at the current time to benefit the poor (currently, it is usually equal to the value of 595g of silver).
+                    </div>
+                    <div class="fiqh-note">
+                        <b>Should Gold, Silver, and Cash be mixed for calculation?</b><br>
+                        There is a difference of opinion among scholars:
+                        <ul>
+                            <li><b>Majority (Hanafi, Maliki, Hanbali):</b> All assets (gold, silver, cash) are combined. If the total value reaches the Nisab of silver, Zakat is due on the entire amount.</li>
+                            <li><b>Ahl al-Hadith / Salafi Scholars (e.g., Shaykh Albani):</b> Gold and Silver are separate entities and should not be combined. You only pay Zakat on gold if it reaches 85g independently, and on silver if it reaches 595g independently. However, Cash and trading goods are combined. (Our calculator accommodates this approach by allowing separate inputs).</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="lang-bn">
+                    <p>জাকাত তখন ফরজ হয় যখন সম্পদ নিসাবে পৌঁছায় এবং এর ওপর <b>এক চন্দ্র বছর</b> অতিবাহিত হয়।</p>
+                    <ul>
+                        <li><b>সোনা:</b> ৮৫ গ্রাম</li>
+                        <li><b>রুপা:</b> ৫৯৫ গ্রাম</li>
+                    </ul>
+                    <div class="fiqh-note">
+                        <b>নগদ অর্থ এবং ব্যবসার মালের নিসাব:</b><br>
+                        নগদ অর্থের নিসাব বর্তমান সময়ে সোনা বা রুপার মধ্যে যেটি সস্তা (সাধারণত ৫৯৫ গ্রাম রুপার দাম) তার সমতুল্য হলে জাকাত ফরজ হবে, যাতে গরিবদের বেশি উপকার হয়।
+                    </div>
+                    <div class="fiqh-note">
+                        <b>সোনা, রুপা ও নগদ অর্থ কি একসাথে হিসাব করতে হবে?</b><br>
+                        এ বিষয়ে আলেমদের মধ্যে মতভেদ রয়েছে:
+                        <ul>
+                            <li><b>জমহুর উলামা (হানাফী, মালেকী, হাম্বলী):</b> সোনা, রুপা ও নগদ অর্থ একসাথে মিলিয়ে মোট মূল্য যদি রুপার নিসাবে পৌঁছায়, তবে সম্পূর্ণ সম্পদের ওপর জাকাত ফরজ।</li>
+                            <li><b>আহলে হাদিস / সালাফী উলামা (যেমন শায়খ আলবানী):</b> সোনা ও রুপা আলাদা জিনিস, তাই এদেরকে মেলানো যাবে না। সোনা যদি একাই ৮৫ গ্রাম হয় তবে তার জাকাত দিতে হবে, আর রুপা একাই ৫৯৫ গ্রাম হলে তার জাকাত দিতে হবে। তবে নগদ অর্থ ও ব্যবসার মাল একসাথে হিসাব করা হবে।</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="lang-ar">
+                    <p>تجب الزكاة إذا بلغ المال النصاب وحال عليه <b>الحول</b> (عام هجري كامل).</p>
+                    <ul>
+                        <li><b>الذهب:</b> 85 جرام</li>
+                        <li><b>الفضة:</b> 595 جرام</li>
+                    </ul>
+                    <div class="fiqh-note">
+                        <b>نصاب النقد وعروض التجارة:</b><br>
+                        يقدر نصاب النقود بأحظ النصابين للفقراء من الذهب أو الفضة (وهو غالباً قيمة 595 جرام من الفضة في وقتنا الحالي).
+                    </div>
+                    <div class="fiqh-note">
+                        <b>هل يضم الذهب إلى الفضة والنقود لتكميل النصاب؟</b><br>
+                        في المسألة خلاف بين أهل العلم:
+                        <ul>
+                            <li><b>الجمهور:</b> يضم الذهب إلى الفضة والنقود، فإن بلغ المجموع نصاباً وجبت الزكاة.</li>
+                            <li><b>بعض المحققين (كالألباني وغيره من علماء السلف):</b> الذهب والفضة جنسان مختلفان لا يضم أحدهما للآخر. فتجب الزكاة في الذهب إذا بلغ وحده 85 جراماً، وفي الفضة إذا بلغت وحدها 595 جراماً. أما النقود وعروض التجارة فتضم لبعضها.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="arabic-text">«لَيْسَ فِيمَا دُونَ خَمْسِ أَوَاقٍ مِنَ الوَرِقِ صَدَقَةٌ»</div>
+                <span class="ref">(Bukhari: 1447)</span>
+            </div>
+
+            <div class="card" id="card_fitr" style="border-color: #ff9800;">
+                <h3 style="color: #e65100;" id="ui_fitr_title">2. صدقہ فطر (فطرانہ) کی تفصیل</h3>
+                
+                <div class="lang-ur">
+                    <p>ہر مسلمان (مرد، عورت، بچے) پر صدقہ فطر واجب ہے۔</p>
+                    <ul>
+                        <li><b>کب دینا ہے؟</b> عید کی نماز کے لیے نکلنے سے پہلے۔</li>
+                        <li><b>کس کو دینا ہے؟</b> صرف غریب اور مسکین مسلمانوں کو۔</li>
+                        <li><b>کتنا دینا ہے؟</b> فی کس "ایک صاع" (تقریباً 2.5 سے 3 کلو)۔</li>
+                        <li><b>کن چیزوں سے؟</b> خوراک (اناج) سے دینا سنت ہے (مثلاً: کھجور، جَو، کشمش، گندم یا چاول)۔</li>
+                    </ul>
+                    <div class="alert-box">
+                        ⚠ اہم مسئلہ (شیخ البانیؒ):<br>
+                        فطرانہ "پیسوں" (Cash) کی صورت میں دینا سنت کے خلاف ہے۔ اسے "اناج" (راشن) کی صورت میں ہی ادا کرنا چاہیے۔
+                    </div>
+                </div>
+
+                <div class="lang-en">
+                    <p>Sadaqah al-Fitr is obligatory on every Muslim (male, female, child).</p>
+                    <ul>
+                        <li><b>When?</b> Before leaving for the Eid prayer.</li>
+                        <li><b>To whom?</b> Only to the poor and needy Muslims.</li>
+                        <li><b>How much?</b> One Sa' per person (approx. 2.5 to 3 kg).</li>
+                        <li><b>From what?</b> It is Sunnah to give staple food (e.g., Dates, Barley, Rice, Wheat).</li>
+                    </ul>
+                    <div class="alert-box">
+                        ⚠ Important Note (Shaykh Albani):<br>
+                        Giving Fitrana in the form of "Cash" contradicts the Sunnah. It must be given as "Food".
+                    </div>
+                </div>
+
+                <div class="lang-bn">
+                    <p>প্রত্যেক মুসলিমের (পুরুষ, নারী, শিশু) ওপর সদকাতুল ফিতর ফরজ।</p>
+                    <ul>
+                        <li><b>কখন দিতে হবে?</b> ঈদের নামাজের জন্য বের হওয়ার আগে।</li>
+                        <li><b>কাকে দিতে হবে?</b> শুধুমাত্র গরিব ও মিসকীন মুসলিমদের।</li>
+                        <li><b>কতটুকু?</b> মাথাপিছু এক সা' (প্রায় ২.৫ থেকে ৩ কেজি)।</li>
+                        <li><b>কী থেকে?</b> প্রধান খাবার থেকে দেওয়া সুন্নত (যেমন: খেজুর, যব, চাল, গম)।</li>
+                    </ul>
+                    <div class="alert-box">
+                        ⚠ গুরুত্বপূর্ণ বিষয় (শায়েখ আলবানী):<br>
+                        ফিতরা "টাকা" হিসেবে দেওয়া সুন্নতের পরিপন্থী। এটি অবশ্যই "খাবার" হিসেবে দিতে হবে।
+                    </div>
+                </div>
+
+                <div class="lang-ar">
+                    <p>صدقة الفطر واجبة على كل مسلم (ذكر، أنثى، طفل).</p>
+                    <ul>
+                        <li><b>متى؟</b> قبل الخروج لصلاة العيد.</li>
+                        <li><b>لمن؟</b> للفقراء والمساكين فقط.</li>
+                        <li><b>المقدار؟</b> صاع عن كل شخص (حوالي 2.5 إلى 3 كجم).</li>
+                        <li><b>من أي شيء؟</b> من غالب قوت البلد طعاماً (تمر، شعير، أرز، قمح).</li>
+                    </ul>
+                    <div class="alert-box">
+                        ⚠ تنبيه هام (الشيخ الألباني):<br>
+                        إخراج صدقة الفطر "نقداً" خلاف السنة. بل يجب إخراجها "طعاماً".
+                    </div>
+                </div>
+
+                <div class="arabic-text">«فَرَضَ رَسُولُ اللَّهِ ﷺ زَكَاةَ الْفِطْرِ صَاعًا مِنْ تَمْرٍ أَوْ صَاعًا مِنْ شَعِيرٍ»</div>
+                <span class="ref">(Bukhari: 1503)</span>
+            </div>
+
+            <a href="index.html" class="back-btn" id="btnBack">واپس جائیں</a>
+
+        </div>
+    </div>
+
+    <script>
+        const uiText = {
+            ur: { 
+                page_title: "احکامِ زکوٰۃ و فطرانہ", btn_open_calc: " زکوٰۃ کیلکولیٹر کھولیں",
+                zakat_title: "1. زکوٰۃ کا نصاب (حد)", fitr_title: "2. صدقہ فطر (فطرانہ) کی تفصیل",
+                back: "واپس جائیں"
+            },
+            en: { 
+                page_title: "Zakat & Fitr Rules", btn_open_calc: " Open Zakat Calculator",
+                zakat_title: "1. Zakat Nisab (Threshold)", fitr_title: "2. Sadaqah al-Fitr Details",
+                back: "Go Back"
+            },
+            bn: { 
+                page_title: "জাকাত ও ফিতরা", btn_open_calc: " জাকাত ক্যালকুলেটর খুলুন",
+                zakat_title: "১. জাকাতের নিসাব (সীমা)", fitr_title: "২. সদকাতুল ফিতর এর বিবরণ",
+                back: "ফিরে যান"
+            },
+            ar: { 
+                page_title: "أحكام الزكاة والفطر", btn_open_calc: " فتح حاسبة الزكاة",
+                zakat_title: "1. نصاب الزكاة", fitr_title: "2. تفاصيل صدقة الفطر",
+                back: "رجوع"
+            }
+        };
+
+        let currentLang = 'ur'; 
+
+        window.onload = function() {
+            currentLang = localStorage.getItem('selectedLang') || 'ur';
+            document.documentElement.lang = currentLang;
+            updateUIText();
+        };
+
+        function updateUIText() {
+            const t = uiText[currentLang];
+            if(!t) return;
+            
+            document.getElementById('ui_page_title').innerText = t.page_title;
+            document.getElementById('ui_zakat_title').innerText = t.zakat_title;
+            document.getElementById('ui_fitr_title').innerText = t.fitr_title;
+            document.getElementById('ui_btn_open_calc').innerHTML = `<span></span> ${t.btn_open_calc}`;
+            document.getElementById('btnBack').innerText = t.back;
+        }
+    </script>
+</body>
+</html>

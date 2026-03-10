@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>After Salah Azkar</title>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Daily Azkar">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+        /* --- 1. FONTS --- */
+        @font-face { font-family: 'MyUrduFont'; src: url('fonts/jameel.ttf'); }
+        @font-face { font-family: 'Amiri'; src: url('fonts/amiri.ttf'); }
+        @font-face { font-family: 'TiroBangla'; src: url('fonts/tiro.ttf'); }
+        
+        :root {
+            /* 🌟 Notch bar ki height fix ki gayi hai 🌟 */
+            --notch-height: calc(max(5px, env(safe-area-inset-top)) + 30px);
+        }
+
+        /* --- 2. MAIN LAYOUT SETTINGS --- */
+        html, body {
+            height: 100%; width: 100%; margin: 0; padding: 0;
+            overflow: hidden; 
+            background-color: #ffebee; /* Soft Red/Maroon Background */
+        }
+
+        /* --- DYNAMIC FONT & DIRECTION --- */
+        html[lang="ur"] body { font-family: 'MyUrduFont', sans-serif; direction: rtl; }
+        html[lang="ar"] body { font-family: 'Amiri', serif; direction: rtl; }
+        /* ENGLISH IN JAMEEL FONT */
+        html[lang="en"] body { font-family: 'MyUrduFont', sans-serif; direction: ltr; } 
+        /* BANGLA IN TIRO FONT */
+        html[lang="bn"] body { font-family: 'TiroBangla', serif; direction: ltr; }
+
+        /* --- 3. SHOW/HIDE LOGIC (FIXED WITH !IMPORTANT) --- */
+        .urdu, .english, .bangla { display: none !important; }
+        html[lang="ur"] .urdu { display: block !important; }
+        html[lang="en"] .english { display: block !important; }
+        html[lang="bn"] .bangla { display: block !important; }
+
+        /* 🌟 GLOBAL FIXED NOTCH BAR (Always Visible) 🌟 */
+        .global-notch {
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--notch-height);
+            display: flex; justify-content: space-between; align-items: flex-end;
+            padding: 0 15px 8px 15px; box-sizing: border-box;
+            background-color: #b71c1c; /* Dark Maroon Theme */
+            color: #e0f2f1; font-size: 13px; z-index: 500;
+            direction: ltr; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .global-notch .ar-text { font-family: 'Amiri', serif; font-size: 16px; color: #ffeb3b; direction: rtl;}
+        .global-notch .en-text { font-family: sans-serif; letter-spacing: 1px; }
+
+        /* --- APP CONTAINER --- */
+        .app-container {
+            display: flex; flex-direction: column;
+            height: 100%; width: 100%;
+            max-width: 800px; margin: 0 auto;
+            padding-top: var(--notch-height); /* Patti ke niche se shuru ho */
+            box-sizing: border-box;
+        }
+
+        /* --- FIXED HEADER --- */
+        .fixed-header {
+            flex: 0 0 auto; width: 100%; 
+            padding: 10px; box-sizing: border-box; z-index: 100;
+            background-color: #ffebee;
+        }
+
+        .header-box { 
+            background: #c62828; color: white; padding: 15px; 
+            border-radius: 10px; text-align: center; 
+            font-size: 26px; font-weight: bold; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3); 
+            border: 1px solid #b71c1c;
+            width: 100%; box-sizing: border-box; margin: 0; margin-bottom: 10px;
+        }
+
+        /* --- SCROLLABLE CONTENT --- */
+        .scrollable-content {
+            flex: 1; overflow-y: auto; width: 100%;
+            padding: 15px; box-sizing: border-box;
+            padding-bottom: max(80px, env(safe-area-inset-bottom));
+            -webkit-overflow-scrolling: touch; 
+            scrollbar-width: none; -ms-overflow-style: none;
+        }
+        .scrollable-content::-webkit-scrollbar { display: none; }
+
+        /* --- CARD STYLES --- */
+        .card { 
+            background: #ffffff; padding: 20px; border-radius: 15px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 25px; 
+            text-align: center; border-bottom: 5px solid #c62828; 
+            transition: background 0.5s;
+        }
+        
+        .arabic { 
+            font-family: 'Amiri', serif; 
+            font-size: 22px; 
+            font-weight: normal; 
+            color: #b71c1c; 
+            line-height: 1.8; margin-bottom: 12px; 
+            background: #ffcdd2; padding: 12px; border-radius: 8px; 
+            direction: rtl; 
+        }
+
+        .urdu { font-family: 'MyUrduFont'; font-size: 20px; color: #212121; margin-bottom: 8px; line-height: 1.6; direction: rtl; }
+        .english { font-family: 'MyUrduFont', sans-serif; font-size: 20px; color: #424242; margin-bottom: 15px; direction: ltr; line-height: 1.5; background: #f5f5f5; padding: 10px; border-radius: 5px; }
+        .bangla { font-family: 'TiroBangla', serif; font-size: 18px; color: #212121; margin-bottom: 15px; direction: ltr; line-height: 1.6; background: #fbe9e7; padding: 10px; border-radius: 5px; }
+
+        .ref { font-size: 13px; color: #757575; display: block; margin-bottom: 15px; font-family: sans-serif; }
+
+        /* Counter Button */
+        .counter-btn { 
+            font-family: inherit;
+            background: #ffcdd2; color: #b71c1c; border: 2px solid #c62828; 
+            padding: 10px 40px; border-radius: 30px; font-size: 20px; 
+            cursor: pointer; user-select: none; width: 80%; font-weight: bold;
+            transition: all 0.2s; -webkit-tap-highlight-color: transparent;
+            padding-top: 5px; margin-bottom: 10px;
+        }
+        .counter-btn:active { transform: scale(0.95); }
+        .completed { background-color: #c8e6c9 !important; border-color: #2e7d32 !important; color: #1b5e20 !important; }
+        
+        .section-title { color: #b71c1c; font-size: 22px; margin-bottom: 10px; text-decoration: underline; font-weight: bold; }
+        
+        /* Language specific instruction box */
+        .instruction-box { background: #fff3e0; color: #e65100; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
+        html[lang="ur"] .instruction-box { font-size: 20px; }
+        html[lang="en"] .instruction-box { font-size: 18px; font-family: 'MyUrduFont', sans-serif; }
+        html[lang="bn"] .instruction-box { font-size: 16px; font-family: 'TiroBangla', serif; }
+
+        .back-btn { display: block; background: #c62828; color: white; text-align: center; padding: 12px; border-radius: 8px; text-decoration: none; margin-top: 30px; font-size: 20px; font-family: inherit; }
+    </style>
+</head>
+<body>
+
+    <div id="globalNotchBar" class="global-notch">
+        <span class="en-text">Daily Azkar</span>
+        <span class="ar-text">الأذكار اليومية</span>
+    </div>
+
+    <div class="app-container">
+
+        <div class="fixed-header">
+            <div class="header-box" id="pageTitle">نماز کے بعد کے اذکار</div>
+        </div>
+
+        <div class="scrollable-content">
+
+            <div class="card" id="card1">
+                <div class="arabic">أَسْتَغْفِرُ اللَّهَ (ثَلَاثاً) <br><br> اللَّهُمَّ أَنْتَ السَّلَامُ، وَمِنْكَ السَّلَامُ، تَبَارَكْتَ يَا ذَا الْجَلَالِ وَالْإِكْرَامِ</div>
+                <div class="urdu">میں اللہ سے بخشش طلب کرتا ہوں (یہ 3 مرتبہ کہیں)۔<br> اے اللہ! تو ہی سلامتی والا ہے، اور تیری ہی طرف سے سلامتی ہے، تو بڑی برکت والا ہے اے جلال اور عزت والے۔</div>
+                <div class="english">I ask Allah for forgiveness. (Say 3 times).<br> O Allah, You are As-Salam and from You is all peace, blessed are You, O Possessor of majesty and honour.</div>
+                <div class="bangla">আমি আল্লাহর কাছে ক্ষমা চাচ্ছি (তিনবার পড়ুন)।<br> হে আল্লাহ! আপনিই শান্তিদাতা এবং আপনার পক্ষ থেকেই শান্তি আসে। আপনি বরকতময়, হে মর্যাদা ও সম্মানের অধিকারী।</div>
+                <span class="ref">(Muslim: 591)</span>
+                <button class="counter-btn" onclick="updateCount(this, 1, 'card2')">0 / 1</button>
+            </div>
+
+            <div class="card" id="card2">
+                <div class="arabic">لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ، اللَّهُمَّ لَا مَانِعَ لِمَا أَعْطَيْتَ، وَلَا مُعْطِيَ لِمَا مَنَعْتَ، وَلَا يَنْفَعُ ذَا الْجَدِّ مِنْكَ الْجَدُّ</div>
+                <div class="urdu">اللہ کے سوا کوئی سچا معبود نہیں، وہ اکیلا ہے، اس کا کوئی شریک نہیں، اسی کی بادشاہی ہے اور اسی کی تعریف ہے، اور وہ ہر چیز پر قادر ہے۔ اے اللہ! جو تو دے اسے کوئی روکنے والا نہیں، اور جو تو روک لے اسے کوئی دینے والا نہیں، اور کسی مالدار کو اس کا مال تیرے عذاب سے نہیں بچا سکتا۔</div>
+                <div class="english">None has the right to be worshipped but Allah alone, He has no partner, His is the dominion and His is the praise, and He is Able to do all things. O Allah, there is none who can withhold what You give, and none may give what You have withheld, and the might of a mighty person cannot benefit him against You.</div>
+                <div class="bangla">আল্লাহ ছাড়া অন্য কোনো সত্য উপাস্য নেই, তিনি এক, তাঁর কোনো শরীক নেই। রাজত্ব তাঁরই এবং প্রশংসাও তাঁর। তিনি সবকিছুর ওপর ক্ষমতাবান। হে আল্লাহ! আপনি যা প্রদান করেন তা রোধ করার কেউ নেই, আর আপনি যা রোধ করেন তা প্রদান করার কেউ নেই। এবং কোনো সম্পদশালীর সম্পদ আপনার শাস্তি থেকে তাকে রক্ষা করতে পারে না।</div>
+                <span class="ref">(Bukhari: 844)</span>
+                <button class="counter-btn" onclick="updateCount(this, 1, 'card3')">0 / 1</button>
+            </div>
+
+            <div class="card" id="card3">
+                <div class="arabic">لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ، لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ، لَا إِلَهَ إِلَّا اللَّهُ، وَلَا نَعْبُدُ إِلَّا إِيَّاهُ، لَهُ النِّعْمَةُ وَلَهُ الْفَضْلُ وَلَهُ الثَّنَاءُ الْحَسَنُ، لَا إِلَهَ إِلَّا اللَّهُ مُخْلِصِينَ لَهُ الدِّينَ وَلَوْ كَرِهَ الْكَافِرُونَ</div>
+                <div class="urdu">اللہ کے سوا کوئی معبود نہیں، وہ اکیلا ہے، اس کا کوئی شریک نہیں، اسی کے لیے بادشاہت ہے اور اسی کے لیے تعریف ہے، اور وہ ہر چیز پر قادر ہے۔ اللہ کی مدد کے بغیر نہ گناہوں سے بچنے کی طاقت ہے نہ نیکی کرنے کی ہمت۔ اللہ کے سوا کوئی معبود نہیں، ہم صرف اسی کی عبادت کرتے ہیں، اسی کی نعمتیں ہیں، اسی کا فضل ہے اور اسی کے لیے بہترین ثناء ہے۔ اللہ کے سوا کوئی معبود نہیں، ہم اسی کے لیے دین کو خالص کرنے والے ہیں، خواہ کافروں کو برا لگے۔</div>
+                <div class="english">None has the right to be worshipped but Allah alone, He has no partner, His is the dominion and His is the praise, and He is Able to do all things. There is no power and no might except by Allah. None has the right to be worshipped but Allah, and we do not worship except Him. For Him is all favor, grace, and glorious praise. None has the right to be worshipped but Allah, and we are sincere in faith and devotion to Him although the disbelievers detest it.</div>
+                <div class="bangla">আল্লাহ ছাড়া কোনো সত্য মাবুদ নেই, তিনি একক, তাঁর কোনো অংশীদার নেই। রাজত্ব তাঁরই, প্রশংসাও তাঁর, এবং তিনি সবকিছুর ওপর ক্ষমতাবান। আল্লাহর সাহায্য ছাড়া পাপ থেকে বাঁচার এবং নেক কাজ করার কোনো শক্তি নেই। আল্লাহ ছাড়া কোনো উপাস্য নেই, আমরা কেবল তাঁরই ইবাদত করি। সব নেয়ামত তাঁরই, সব অনুগ্রহ তাঁরই এবং উত্তম প্রশংসা তাঁরই প্রাপ্য। আল্লাহ ছাড়া কোনো উপাস্য নেই, আমরা তাঁর জন্যই দ্বীনকে একনিষ্ঠ করি, যদিও কাফিররা তা অপছন্দ করে।</div>
+                <span class="ref">(Muslim: 594)</span>
+                <button class="counter-btn" onclick="updateCount(this, 1, 'card4')">0 / 1</button>
+            </div>
+
+            <div class="card" id="card4">
+                <div class="section-title" id="title_tasbeeh">تسبیح فاطمی</div>
+                <div class="arabic" style="font-size: 40px;">سُبْحَانَ اللَّهِ</div>
+                <div class="urdu">اللہ پاک ہے۔</div>
+                <div class="english">Glory is to Allah.</div>
+                <div class="bangla">আল্লাহ পবিত্র।</div>
+                <button class="counter-btn" onclick="updateCount(this, 33, 'card5')">0 / 33</button>
+            </div>
+
+            <div class="card" id="card5">
+                <div class="arabic" style="font-size: 40px;">الْحَمْدُ لِلَّهِ</div>
+                <div class="urdu">تمام تعریفیں اللہ کے لیے ہیں۔</div>
+                <div class="english">Praise is to Allah.</div>
+                <div class="bangla">সমস্ত প্রশংসা আল্লাহর জন্য।</div>
+                <button class="counter-btn" onclick="updateCount(this, 33, 'card6')">0 / 33</button>
+            </div>
+
+            <div class="card" id="card6">
+                <div class="arabic" style="font-size: 40px;">اللَّهُ أَكْبَرُ</div>
+                <div class="urdu">اللہ سب سے بڑا ہے۔</div>
+                <div class="english">Allah is the Greatest.</div>
+                <div class="bangla">আল্লাহ সর্বশ্রেষ্ঠ।</div>
+                <button class="counter-btn" onclick="updateCount(this, 33, 'card7')">0 / 33</button>
+            </div>
+
+            <div class="card" id="card7">
+                <div class="section-title" id="title_hundred">100 کا عدد مکمل کریں</div>
+                <div class="arabic">لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ</div>
+                <div class="urdu">اللہ کے سوا کوئی معبود نہیں، وہ اکیلا ہے اس کا کوئی شریک نہیں، اسی کی بادشاہت ہے اور اسی کے لئے تمام تعریفیں ہیں اور وہ ہر چیز پر کامل قدرت رکھنے والا ہے۔</div>
+                <div class="english">None has the right to be worshipped but Allah alone, Who has no partner. His is the dominion and His is the praise, and He is Able to do all things.</div>
+                <div class="bangla">আল্লাহ ছাড়া অন্য কোনো উপাস্য নেই, তিনি এক, তাঁর কোনো শরীক নেই। রাজত্ব তাঁরই এবং প্রশংসাও তাঁর। তিনি সবকিছুর ওপর ক্ষমতাবান।</div>
+                <span class="ref">(Muslim: 597)</span>
+                <button class="counter-btn" onclick="updateCount(this, 1, 'card8')">0 / 1</button>
+            </div>
+
+            <div class="card" id="card8">
+                <div class="section-title" id="title_kursi">آیت الکرسی</div>
+                
+                <div class="instruction-box urdu">جو شخص ہر فرض نماز کے بعد اسے پڑھے، اسے جنت میں جانے سے موت کے سوا کوئی چیز نہیں روک سکتی۔</div>
+                <div class="instruction-box english">Whoever recites this after every obligatory prayer, nothing will prevent him from entering Paradise except death.</div>
+                <div class="instruction-box bangla">যে ব্যক্তি প্রত্যেক ফরজ নামাজের পর এটি পাঠ করবে, মৃত্যু ছাড়া অন্য কোনো কিছুই তাকে জান্নাতে প্রবেশ করতে বাধা দিতে পারবে না।</div>
+
+                <div class="arabic">اللَّهُ لَا إِلَهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ مَنْ ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ وَلَا يُحِيطُونَ بِشَيْءٍ مِنْ عِلْمِهِ إِلَّا بِمَا شَاءَ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ وَلَا يَئُودُهُ حِفْظُهُمَا وَهُوَ الْعَلِيُّ الْعَظِيمُ</div>
+                <div class="urdu">ترجمہ: اللہ کے سوا کوئی معبود نہیں، وہ زندہ اور سب کو تھامنے والا ہے، نہ اسے اونگھ آتی ہے نہ نیند، اسی کا ہے جو آسمانوں میں ہے اور جو زمین میں ہے۔ کون ہے جو اس کے پاس سفارش کرے مگر اس کی اجازت کے ساتھ؟ وہ جانتا ہے جو ان کے آگے ہے اور جو ان کے پیچھے ہے، اور وہ اس کے علم میں سے کسی چیز کا احاطہ نہیں کر سکتے مگر جتنا وہ چاہے۔ اس کی کرسی نے آسمانوں اور زمین کو گھیر رکھا ہے، اور اسے ان دونوں کی حفاظت نہیں تھکاتی، اور وہ بہت بلند اور بہت عظمت والا ہے۔</div>
+                <div class="english">Allah - there is no deity except Him, the Ever-Living, the Sustainer of [all] existence. Neither drowsiness overtakes Him nor sleep. To Him belongs whatever is in the heavens and whatever is on the earth. Who is it that can intercede with Him except by His permission? He knows what is [presently] before them and what will be after them, and they encompass not a thing of His knowledge except for what He wills. His Kursi extends over the heavens and the earth, and their preservation tires Him not. And He is the Most High, the Most Great.</div>
+                <div class="bangla">আল্লাহ ছাড়া অন্য কোনো উপাস্য নেই, তিনি জীবিত, সবকিছুর ধারক। তাঁকে তন্দ্রাও স্পর্শ করতে পারে না এবং নিদ্রাও নয়। আকাশ ও ভূমণ্ডলে যা কিছু রয়েছে, সবই তাঁর। কে আছে এমন, যে সুপারিশ করবে তাঁর কাছে তাঁর অনুমতি ছাড়া? দৃষ্টির সামনে কিংবা পেছনে যা কিছু রয়েছে সে সবই তিনি জানেন। তাঁর জ্ঞানসীমা থেকে তারা কোনো কিছুকেই পরিবেষ্টিত করতে পারে না, কিন্তু যতটুকু তিনি ইচ্ছা করেন। তাঁর সিংহাসন সমস্ত আকাশ ও ভূমণ্ডলকে পরিবেষ্টিত করে আছে। আর সেগুলোকে ধারণ করা তাঁর পক্ষে কঠিন নয়। তিনিই সর্বোচ্চ এবং সর্বাপেক্ষা মহান।</div>
+                <span class="ref">(Nasa'i: 100)</span>
+                <button class="counter-btn" onclick="updateCount(this, 1, 'card9')">0 / 1</button>
+            </div>
+
+            <div class="card" id="card9">
+                <div class="section-title" id="title_3qul">معوّذات (تینوں سورتیں)</div>
+                
+                <div class="instruction-box urdu">ظہر، عصر، اور عشاء کے بعد 1 مرتبہ۔ جبکہ فجر اور مغرب کے بعد 3 مرتبہ پڑھیں۔</div>
+                <div class="instruction-box english">Read 1 time after Dhuhr, Asr, and Isha. Read 3 times after Fajr and Maghrib prayers.</div>
+                <div class="instruction-box bangla">যোহর, আসর ও ইশার পর ১ বার। আর ফজর ও মাগরিবের পর ৩ বার পড়বেন।</div>
+                
+                <div class="arabic">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ<br>قُلْ هُوَ اللَّهُ أَحَدٌ ۝ اللَّهُ الصَّمَدُ ۝ لَمْ يَلِدْ وَلَمْ يُولَدْ ۝ وَلَمْ يَكُنْ لَهُ كُفُوًا أَحَدٌ ۝</div>
+                <div class="urdu">ترجمہ: کہہ دیجیے وہ اللہ ایک ہے۔ اللہ بے نیاز ہے۔ نہ اس کی کوئی اولاد ہے اور نہ وہ کسی کی اولاد ہے۔ اور اس کے برابر کوئی نہیں۔</div>
+                <div class="english">Say, "He is Allah, [who is] One, Allah, the Eternal Refuge. He neither begets nor is born, Nor is there to Him any equivalent."</div>
+                <div class="bangla">বলুন, তিনি আল্লাহ, এক, অদ্বিতীয়। আল্লাহ অমুখাপেক্ষী। তিনি কাউকে জন্ম দেননি এবং তাঁকেও জন্ম দেয়া হয়নি। এবং তাঁর সমতুল্য কেউ নেই।</div>
+                
+                <hr style="border: 0; border-top: 1px dashed #ccc; margin: 15px 0;">
+
+                <div class="arabic">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ<br>قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ ۝ مِنْ شَرِّ مَا خَلَقَ ۝ وَمِنْ شَرِّ غَاسِقٍ إِذَا وَقَبَ ۝ وَمِنْ شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ ۝ وَمِنْ شَرِّ حَاسِدٍ إِذَا حَسَدَ ۝</div>
+                <div class="urdu">ترجمہ: کہہ دیجیے! میں صبح کے رب کی پناہ مانگتا ہوں، ہر اس چیز کے شر سے جو اس نے پیدا کی، اور اندھیری رات کے شر سے جب وہ چھا جائے، اور گرہوں میں پھونکنے والیوں کے شر سے، اور حسد کرنے والے کے شر سے جب وہ حسد کرے۔</div>
+                <div class="english">Say, "I seek refuge in the Lord of daybreak, From the evil of that which He created, And from the evil of darkness when it settles, And from the evil of the blowers in knots, And from the evil of an envier when he envies."</div>
+                <div class="bangla">বলুন, আমি আশ্রয় গ্রহণ করছি প্রভাতের পালনকর্তার। তিনি যা সৃষ্টি করেছেন, তার অনিষ্ট থেকে। এবং অন্ধকার রাত্রির অনিষ্ট থেকে, যখন তা সমাগত হয়। এবং গ্রন্থিতে ফুৎকার দিয়ে জাদুকারিণীদের অনিষ্ট থেকে। এবং হিংসুকের অনিষ্ট থেকে, যখন সে হিংসা করে।</div>
+
+                <hr style="border: 0; border-top: 1px dashed #ccc; margin: 15px 0;">
+
+                <div class="arabic">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ<br>قُلْ أَعُوذُ بِرَبِّ النَّاسِ ۝ مَلِكِ النَّاسِ ۝ إِلَٰهِ النَّاسِ ۝ مِنْ شَرِّ الْوَسْوَاسِ الْخَنَّاسِ ۝ الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ ۝ مِنَ الْجِنَّةِ وَالنَّاسِ ۝</div>
+                <div class="urdu">ترجمہ: کہہ دیجیے! میں لوگوں کے رب کی پناہ مانگتا ہوں، لوگوں کے بادشاہ کی، لوگوں کے معبود کی، وسوسہ ڈالنے والے پیچھے ہٹ جانے والے (شیطان) کے شر سے، جو لوگوں کے سینوں میں وسوسہ ڈالتا ہے، چاہے وہ جنوں میں سے ہو یا انسانوں میں سے۔</div>
+                <div class="english">Say, "I seek refuge in the Lord of mankind, The King of mankind, The God of mankind, From the evil of the retreating whisperer - Who whispers [evil] into the breasts of mankind - From among the jinn and mankind."</div>
+                <div class="bangla">বলুন, আমি আশ্রয় চাই মানুষের পালনকর্তার। মানুষের অধিপতির, মানুষের মাবুদের। তার কুমন্ত্রণার অনিষ্ট থেকে, যে কুমন্ত্রণা দেয় ও আত্মগোপন করে। যে মানুষের অন্তরে কুমন্ত্রণা দেয়। জিন ও মানুষের মধ্য থেকে।</div>
+                
+                <span class="ref">(Abu Dawud: 1523)</span>
+                <button class="counter-btn" onclick="updateCount(this, 1, 'card10')">پڑھ لیا ✅</button>
+            </div>
+
+            <div class="card" id="card10">
+                <div class="section-title" id="title_fajr">صرف فجر کے بعد کی دعا</div>
+                <div class="arabic">اللَّهُمَّ إِنِّي أَسْأَلُكَ عِلْمًا نَافِعًا، وَرِزْقًا طَيِّبًا، وَعَمَلًا مُتَقَبَّلًا</div>
+                <div class="urdu">اے اللہ! میں تجھ سے نفع بخش علم، پاکیزہ رزق اور قبول ہونے والے عمل کا سوال کرتا ہوں۔</div>
+                <div class="english">O Allah, I ask You for knowledge that is of benefit, a good provision, and deeds that will be accepted.</div>
+                <div class="bangla">হে আল্লাহ! আমি আপনার নিকট উপকারী জ্ঞান, পবিত্র রিজিক এবং কবুলযোগ্য আমলের প্রার্থনা করছি।</div>
+                <span class="ref">(Ibn Majah: 925)</span>
+                <button class="counter-btn" onclick="updateCount(this, 1, 'end')">0 / 1</button>
+            </div>
+
+            <a href="azkar_menu.html" class="back-btn" id="btnBack">واپس جائیں</a>
+
+        </div>
+    </div>
+
+    <script>
+        // 🌟 1. Hardware Back Button Fix 🌟
+        window.addEventListener("popstate", function (event) {
+            window.location.href = 'azkar_menu.html';
+        });
+        history.pushState(null, document.title, location.href);
+
+        const uiText = {
+            ur: { 
+                title: "نماز کے بعد کے اذکار", btn_count: "گنتی: ", btn_done: "مکمل ✅", back: "واپس جائیں", 
+                msg_done: "ماشاءاللہ! نماز کے اذکار مکمل ہوئے۔ اللہ قبول فرمائے! 🤲", 
+                title_tasbeeh: "تسبیح فاطمی", title_hundred: "100 کا عدد مکمل کریں", title_kursi: "آیت الکرسی", 
+                title_3qul: "معوّذات (تینوں سورتیں)", title_fajr: "صرف فجر کے بعد کی دعا"
+            },
+            ar: { 
+                title: "أذكار بعد الصلاة", btn_count: "العدد: ", btn_done: "تم ✅", back: "رجوع", 
+                msg_done: "ما شاء الله! تقبل الله طاعتكم. 🤲", 
+                title_tasbeeh: "التسبيح", title_hundred: "تمام المائة", title_kursi: "آية الكرسي", 
+                title_3qul: "المعوذات", title_fajr: "دعاء بعد صلاة الفجر فقط"
+            },
+            en: { 
+                title: "After Salah Azkar", btn_count: "Count: ", btn_done: "Done ✅", back: "Go Back", 
+                msg_done: "MashaAllah! Azkar Completed. May Allah accept it! 🤲", 
+                title_tasbeeh: "Tasbeeh", title_hundred: "Completion of 100", title_kursi: "Ayatul Kursi", 
+                title_3qul: "The 3 Quls", title_fajr: "Dua After Fajr Prayer Only"
+            },
+            bn: { 
+                title: "সালাতের পরের আজকার", btn_count: "গণনা: ", btn_done: "সম্পন্ন ✅", back: "ফিরে যান", 
+                msg_done: "মাশাআল্লাহ! আজকার সম্পন্ন হয়েছে। আল্লাহ কবুল করুন! 🤲", 
+                title_tasbeeh: "তাসবীহ", title_hundred: "১০০ বার পূর্ণ করুন", title_kursi: "আয়াতুল কুরসী", 
+                title_3qul: "৩ কুল", title_fajr: "শুধুমাত্র ফজরের পরের দোয়া"
+            }
+        };
+
+        let currentLang = 'ur'; 
+
+        window.onload = function() {
+            currentLang = localStorage.getItem('selectedLang') || 'ur';
+            document.documentElement.lang = currentLang;
+
+            const text = uiText[currentLang];
+            if(text) {
+                // UI Titles
+                document.getElementById('pageTitle').innerText = text.title;
+                document.getElementById('btnBack').innerText = text.back;
+                
+                // Section Titles
+                if(document.getElementById('title_tasbeeh')) document.getElementById('title_tasbeeh').innerText = text.title_tasbeeh;
+                if(document.getElementById('title_hundred')) document.getElementById('title_hundred').innerText = text.title_hundred;
+                if(document.getElementById('title_kursi')) document.getElementById('title_kursi').innerText = text.title_kursi;
+                if(document.getElementById('title_3qul')) document.getElementById('title_3qul').innerText = text.title_3qul;
+                if(document.getElementById('title_fajr')) document.getElementById('title_fajr').innerText = text.title_fajr;
+            }
+
+            // Update Counter Buttons Initial Text
+            let btns = document.querySelectorAll('.counter-btn');
+            btns.forEach(btn => {
+                if(!btn.innerText.includes('✅')) {
+                    let parts = btn.innerText.split('/');
+                    if(parts.length > 1) {
+                        btn.innerText = text.btn_count + parts[0].trim() + " / " + parts[1].trim();
+                    }
+                }
+            });
+        };
+
+        function updateCount(btn, max, nextCardId) {
+            let textData = uiText[currentLang];
+
+            // 🟢 Agar pehle se complete hai, to direct auto-scroll ho jaye 🟢
+            if (btn.innerText.includes('✅')) {
+                autoScroll(nextCardId, textData);
+                return;
+            }
+
+            // Number Counter logic
+            let currentText = btn.innerText; 
+            let parts = currentText.split('/'); 
+            let current = parseInt(parts[0].replace(/\D/g, '')); 
+            
+            if (current < max) {
+                current++;
+                btn.innerText = textData.btn_count + current + " / " + max;
+                
+                if (current == max) {
+                    btn.style.backgroundColor = "#c8e6c9";
+                    btn.style.color = "#1b5e20";
+                    btn.style.borderColor = "#2e7d32";
+                    btn.innerText = textData.btn_done;
+                    
+                    let card = btn.parentElement;
+                    card.classList.add('completed');
+                    autoScroll(nextCardId, textData);
+                }
+            }
+        }
+
+        function autoScroll(nextCardId, textData) {
+            if(nextCardId === 'end') {
+                setTimeout(() => {
+                    alert(textData.msg_done);
+                }, 200);
+                return;
+            }
+            setTimeout(() => {
+                let nextCard = document.getElementById(nextCardId);
+                if(nextCard) {
+                    nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 400);
+        }
+    </script>
+
+</body>
+</html>
