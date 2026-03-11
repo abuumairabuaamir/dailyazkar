@@ -1,4 +1,4 @@
-const CACHE_NAME = 'daily-azkar-v2';
+const CACHE_NAME = 'daily-azkar-v3';
 
 // Yahan humne aapki saari files ka naam likh diya hai taaki offline save ho jayein
 const ASSETS_TO_CACHE = [
@@ -67,3 +67,4 @@ self.addEventListener('fetch', (event) => {
   );
 
 });
+
