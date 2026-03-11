@@ -70,8 +70,8 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.2);
         }
         .prayer-item { display: flex; flex-direction: column; align-items: center; width: 16%; }
-        .p-name { color: #a5d6a7; font-size: 14px; margin-bottom: 0px; line-height: 1.2; white-space: nowrap; font-weight: normal; }
-        .p-time { color: #ffeb3b; font-size: 16px; margin-top: -2px; direction: ltr; font-weight: normal; }
+        .p-name { color: #a5d6a7; font-size: 14px; margin-bottom: 0px; line-height: 1.2; white-space: nowrap; }
+        .p-time { color: #ffeb3b; font-size: 16px; margin-top: -2px; direction: ltr; }
         .hanafi-label { color: #ffcc80; }
 
         /* --- 🌟 ISLAMIC DOME HERO SECTION --- */
@@ -88,8 +88,8 @@
             box-sizing: border-box; overflow: hidden; 
         }
         .date-title { color: #a5d6a7; font-size: 11px; margin-bottom: 5px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 2px;}
-        .date-value { color: #fff; font-size: 13px; font-weight: bold; text-align: center; line-height: 1.4;}
-        .date-value.ar-date { font-family: 'Amiri', serif; color: #e0f7fa; font-size: 15px; font-weight: normal;}
+        .date-value { color: #fff; font-size: 13px; text-align: center; line-height: 1.4;}
+        .date-value.ar-date { font-family: 'Amiri', serif; color: #e0f7fa; font-size: 15px; }
 
         .mini-ramadan {
             margin-top: 8px; padding-top: 5px; border-top: 1px dashed rgba(255, 255, 255, 0.3);
@@ -97,10 +97,10 @@
         }
         
         .mini-r-title { color: #ffcc80; font-size: 12px; display: block; margin-bottom: 2px; }
-        html[lang="ur"] .mini-r-title { font-size: 20px; font-weight: normal; }
-        html[lang="ar"] .mini-r-title { font-size: 16px; font-weight: normal; }
+        html[lang="ur"] .mini-r-title { font-size: 20px; }
+        html[lang="ar"] .mini-r-title { font-size: 16px; }
         
-        .mini-r-time { color: #ffffff; font-size: 13px; font-weight: bold; direction: ltr; display: block; }
+        .mini-r-time { color: #ffffff; font-size: 13px; direction: ltr; display: block; }
 
         .dome-box {
             flex: 2; 
@@ -114,10 +114,10 @@
             padding: 12px 5px; text-align: center; box-sizing: border-box;
             display: flex; flex-direction: column; justify-content: center;
         }
-        .embed-header { color: #d84315; font-size: 13px; font-weight: bold; margin-bottom: 4px; border-bottom: 1px dashed #ccc; padding-bottom: 2px; }
-        .embed-arabic { font-family: 'Amiri', serif; font-size: 17px; color: #004d40; line-height: 1.4; margin-bottom: 4px; font-weight: normal;}
+        .embed-header { color: #d84315; font-size: 13px; margin-bottom: 4px; border-bottom: 1px dashed #ccc; padding-bottom: 2px; }
+        .embed-arabic { font-family: 'Amiri', serif; font-size: 17px; color: #004d40; line-height: 1.4; margin-bottom: 4px; }
         .embed-trans { font-size: 12px; color: #424242; line-height: 1.3; margin-bottom: 3px; }
-        .embed-ref { font-size: 11px; color: #757575; font-weight: bold; direction: ltr; }
+        .embed-ref { font-size: 11px; color: #757575; direction: ltr; }
 
         /* --- 🎛️ BOTTOM CONTROL STRIP --- */
         .control-strip {
@@ -134,12 +134,35 @@
         html[dir="rtl"] .ctrl-item { border-left: none; border-right: 1px solid rgba(255,255,255,0.3); }
         .ctrl-item:first-child { border: none !important; }
         
-        .ctrl-item.loc-item { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #ffeb3b; font-weight: bold; display: block; cursor: pointer;}
+        .ctrl-item.loc-item { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #ffeb3b; display: block; cursor: pointer;}
         .lang-select-transparent {
             background: transparent; color: white; border: none; font-size: 14px; 
             font-family: inherit; width: auto; text-align: center; outline: none; cursor: pointer; flex-grow: 1;
         }
         .lang-select-transparent option { background: #004d40; color: white; }
+
+        /* --- 🟢 PLAY STORE PROMO BOX 🟢 --- */
+        .playstore-box {
+            background: rgba(255, 255, 255, 0.95); margin: 0 0 15px 0; padding: 15px; border-radius: 12px;
+            text-align: center; border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .ps-title { font-size: 16px; color: #1b5e20; margin-bottom: 12px; }
+        .play-btn {
+            display: inline-flex; align-items: center; background-color: #000;
+            color: #fff !important; padding: 8px 18px; border-radius: 10px; text-decoration: none !important;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2); transition: transform 0.2s;
+        }
+        .play-btn:active { transform: scale(0.95); }
+        .play-icon { width: 24px; height: 24px; margin-inline-end: 10px; }
+        .ps-text-group { text-align: left; display: flex; flex-direction: column; line-height: 1.1; }
+        .ps-get-it { font-size: 10px; font-family: sans-serif; text-transform: uppercase; letter-spacing: 0.5px;}
+        .ps-google { font-size: 16px; font-family: sans-serif; }
+
+        .lang-ur, .lang-en, .lang-ar, .lang-bn { display: none; }
+        html[lang="ur"] .lang-ur { display: block; }
+        html[lang="en"] .lang-en { display: block; }
+        html[lang="ar"] .lang-ar { display: block; }
+        html[lang="bn"] .lang-bn { display: block; }
 
         /* --- MENU BUTTONS GRID --- */
         .button-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -150,7 +173,7 @@
         }
         .menu-button:active { transform: scale(0.96); }
         .icon svg { width: 28px; height: 28px; margin-bottom: 5px; }
-        .button-text { color: #1b5e20; font-size: 15px; font-weight: bold; flex-grow: 1; margin: 0; padding: 0; text-align: center !important; }
+        .button-text { color: #1b5e20; font-size: 15px; flex-grow: 1; margin: 0; padding: 0; text-align: center !important; }
         .btn-azkar { border-color: #FBC02D; }
         .btn-azkar .button-text { color: #F57F17; }
 
@@ -171,9 +194,9 @@
         }
         
         html[dir="ltr"] .modal-content { text-align: left; }
-        .modal-title { font-size: 22px; font-weight: bold; color: #1b5e20; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 15px; text-align: center; }
+        .modal-title { font-size: 22px; color: #1b5e20; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 15px; text-align: center; }
         .setting-group { margin-bottom: 15px; background: #f9f9f9; padding: 10px; border-radius: 8px; border: 1px solid #eee; }
-        .setting-label { font-size: 16px; font-weight: bold; color: #00695C; display: block; margin-bottom: 5px; }
+        .setting-label { font-size: 16px; color: #00695C; display: block; margin-bottom: 5px; }
         .adj-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: center; }
         .adj-item { display: flex; justify-content: space-between; background: #fff; padding: 5px 10px; border-radius: 5px; border: 1px solid #ddd; }
         .adj-item input, .setting-group select { width: 60px; padding: 4px; border-radius: 5px; border: 1px solid #ccc; text-align: center; font-size: 16px; font-family: sans-serif; }
@@ -190,13 +213,13 @@
             background: #ffffff; border: 3px solid #1b5e20; text-align: center; direction: ltr; font-family: sans-serif;
             max-height: 90vh; overflow-y: auto; margin: auto;
         }
-        .ob-title { color: #1b5e20; font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+        .ob-title { color: #1b5e20; font-size: 24px; margin-bottom: 10px; }
         .ob-desc { color: #555; font-size: 16px; margin-bottom: 20px; line-height: 1.5;}
         .ob-step { display: none; }
         .ob-step.active { display: block; }
         .ob-select { width: 100%; padding: 12px; font-size: 18px; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 15px; background: #f1f8e9;}
-        .ob-btn-next { background: #E65100; color: white; padding: 12px; width: 100%; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer;}
-        .ob-btn-start { background: #1b5e20; color: white; padding: 12px; width: 100%; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer;}
+        .ob-btn-next { background: #E65100; color: white; padding: 12px; width: 100%; border: none; border-radius: 8px; font-size: 18px; cursor: pointer;}
+        .ob-btn-start { background: #1b5e20; color: white; padding: 12px; width: 100%; border: none; border-radius: 8px; font-size: 18px; cursor: pointer;}
         
         /* 🌟 LANDSCAPE SCROLL FIX (PATTI) 🌟 */
         @media screen and (orientation: landscape) and (max-height: 600px) {
@@ -242,12 +265,12 @@
                 
                 <button class="btn-loc" style="padding: 12px; font-size: 16px; background: #1976D2; margin-bottom: 15px;" onclick="autoDetectLocation(true)">📍 Auto Detect (GPS) / تحديد تلقائي</button>
                 
-                <div style="margin: 10px 0; color: #757575; font-weight: bold;">OR / أو</div>
+                <div style="margin: 10px 0; color: #757575;">OR / أو</div>
 
                 <input type="text" id="ob_city_input" class="manual-loc-input" placeholder="City Name (e.g. Mecca, London)" style="padding: 12px; text-align: center;">
                 <button class="btn-loc" style="padding: 10px; font-size: 16px; background: #00897b;" onclick="searchObLocation()">🔍 Search / بحث</button>
                 
-                <div id="ob_loc_status" style="font-size: 14px; margin-top: 10px; color: #d32f2f; font-weight: bold;"></div>
+                <div id="ob_loc_status" style="font-size: 14px; margin-top: 10px; color: #d32f2f;"></div>
 
                 <button class="ob-btn-start" id="ob_btn_start" style="margin-top: 20px; display: none;" onclick="finishOnboarding()">Start App / ابدأ التطبيق ✅</button>
             </div>
@@ -307,7 +330,7 @@
                 <div class="ctrl-item loc-item" onclick="openSettings()" id="cityName">تلاش جاری...</div>
                 
                 <div class="ctrl-item">
-                    <span id="digitalClock" style="direction: ltr; display: inline-block; font-weight: bold; font-size: 15px;">00:00:00</span>
+                    <span id="digitalClock" style="direction: ltr; display: inline-block; font-size: 15px;">00:00:00</span>
                 </div>
                 
                 <div class="ctrl-item">
@@ -325,6 +348,21 @@
         </div>
 
         <div class="scrollable-content">
+
+            <div class="playstore-box">
+                <div class="ps-title lang-ur">مکمل فیچرز اور آف لائن تلاوت کے لیے اینڈرائیڈ ایپ ڈاؤن لوڈ کریں</div>
+                <div class="ps-title lang-en">Download Android App for Full Features & Offline Use</div>
+                <div class="ps-title lang-ar">حمل تطبيق الأندرويد للميزات الكاملة</div>
+                <div class="ps-title lang-bn">সম্পূর্ণ ফিচারের জন্য অ্যান্ড্রয়েড অ্যাপ ডাউনলোড করুন</div>
+
+             <a href="https://play.google.com/store/apps/details?id=com.abuumair.dailyazkar" class="play-btn">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play" class="play-icon">
+    <div class="ps-text-group">
+        <span class="ps-get-it">GET IT ON</span>
+        <span class="ps-google">Google Play</span>
+    </div>
+</a>
+            </div>
 
             <div class="button-grid">
                 <a href="azkar_menu.html" class="menu-button btn-azkar">
@@ -433,7 +471,7 @@
 
                 <input type="text" id="manual_city_input" class="manual-loc-input" placeholder="مثلاً: Lucknow, Makkah">
                 <button class="btn-loc" id="btn_search_loc" onclick="searchManualLocation()">شہر تلاش کریں</button>
-                <div id="loc_search_status" style="font-size: 14px; margin-top: 5px; color: #d32f2f; text-align: center; font-weight: bold;"></div>
+                <div id="loc_search_status" style="font-size: 14px; margin-top: 5px; color: #d32f2f; text-align: center;"></div>
             </div>
 
             <div class="setting-group">
