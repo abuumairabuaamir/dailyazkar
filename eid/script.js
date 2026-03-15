@@ -1,7 +1,7 @@
 // === SETTINGS ===
 const templateImageName = 'template.jpg'; 
 const textColor = '#333333'; 
-const nameColor = '#b8860b'; 
+const nameColor = '#0B4A28'; 
 const nameFontSize = 55; // Naam ka size thoda bada rakha hai
 
 const textStartX = 0; 
