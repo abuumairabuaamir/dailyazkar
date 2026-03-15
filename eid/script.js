@@ -1,12 +1,12 @@
 // === SETTINGS ===
 const templateImageName = 'template.jpg'; 
-const textColor = '#333333'; 
+const textColor = '#041F11'; 
 const nameColor = '#0B4A28'; 
 const nameFontSize = 55; // Naam ka size thoda bada rakha hai
 
 const textStartX = 0; 
-const textStartY = -150; 
-const lineSpacing = 55; 
+const textStartY = -180; 
+const lineSpacing = 65; 
 
 // === MESSAGES DICTIONARY ===
 const langData = {
