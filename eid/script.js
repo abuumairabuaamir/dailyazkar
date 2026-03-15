@@ -1,50 +1,120 @@
-// === YAHAN SE APNI SETTINGS CHANGE KAREIN ===
+// === SETTINGS ===
+const templateImageName = 'template.jpg'; 
+const textColor = '#333333'; // Message ka color (Dark Grey)
+const nameColor = '#b8860b'; // Naam ka color (Dark Gold)
+const nameFontSize = 50; 
+const nameFontFamily = "'Poppins', sans-serif"; 
 
-const templateImageName = 'template.jpg'; // Aapki blank image ka naam
-const textColor = '#d4af37'; // Text ka color (Jaise ye ek Gold color ka code hai)
-const fontSize = '60px'; // Font ka size
-const fontFamily = 'Amiri'; // Font ka style
+const textStartX = 0; // Left/Right adjust (0 means center)
+const textStartY = -150; // IBARAT ab thoda aur upar se shuru hogi kyunki lines zyada hain
+const lineSpacing = 45; // Ek line se dusri line ke beech ka fasla
 
-// Position Settings: In numbers ko change karke text ko aage-peeche, upar-neeche karein
-const adjustX = 0; // Left/Right set karne ke liye. (Minus - me likhenge to left jayega, Plus + me right)
-const adjustY = -685; // Up/Down set karne ke liye. (Minus - me upar jayega, Plus + me neeche)
-
-// =============================================
+// === MESSAGES & FONTS DICTIONARY ===
+// Har language ko 5 se 6 lines mein tod diya gaya hai taaki chaudayi kam rahe
+const langData = {
+    arabic: {
+        text: "عيد فطر سعيد،\nأعاده الله علينا وعليكم بالخير والبركات.\nتقبل الله طاعاتكم،\nوجعل أيامكم مليئة بالفرح والسعادة.\nكل عام وأنتم إلى الله أقرب،\nوعيدكم مبارك.",
+        font: "'Amiri', serif",
+        size: 35 
+    },
+    urdu: {
+        text: "عید الفطر کی دلی مبارکباد!\nاللہ تعالیٰ ہماری عبادات\nکو قبول فرمائے اور\nاس مبارک دن کو ہمارے لیے\nخوشیوں کا باعث بنائے۔\nعید مبارک!",
+        font: "'Noto Nastaliq Urdu', serif",
+        size: 45 
+    },
+    english: {
+        text: "May Allah bring you joy,\nhappiness, peace, and prosperity.\nWishing you and your family\na very happy and\nblessed Eid!\nEid Mubarak!",
+        font: "'Poppins', sans-serif",
+        size: 30
+    },
+    hindi: {
+        text: "आपको और आपके परिवार को\nईद-उल-फितर की दिली मुबारकबाद।\nअल्लाह आपकी सभी\nदुआएं कबूल फरमाए और\nआपकी जिंदगी को खुशियों से भर दे।\nईद मुबारक!",
+        font: "'Noto Sans Devanagari', sans-serif",
+        size: 30
+    },
+    bangla: {
+        text: "পবিত্র ঈদুল ফিতরের\nআন্তরিক শুভেচ্ছা!\nআল্লাহ আপনার রোজা ও\nইবাদত কবুল করুন এবং\nআপনার জীবনে বয়ে আনুক আনন্দ।\nঈদ মোবারক!",
+        font: "'Noto Sans Bengali', sans-serif",
+        size: 28
+    },
+    tamil: {
+        text: "இனிய ஈகைத் திருநாள்\nநல்வாழ்த்துக்கள்!\nஎல்லாம் வல்ல இறைவன்\nஉங்கள் வாழ்வில்\nமகிழ்ச்சியையும் அமைதியையும் பொழியட்டும்.\nஈத் முபாரக்!",
+        font: "'Noto Sans Tamil', sans-serif",
+        size: 26
+    },
+    malayalam: {
+        text: "ഹൃദയം നിറഞ്ഞ\nചെറിയ പെരുന്നാൾ ആശംസകൾ!\nഅല്ലാഹു നിങ്ങളുടെ\nപ്രാർത്ഥനകൾ സ്വീകരിക്കുകയും\nജീവിതത്തിൽ സന്തോഷം നൽകുകയും ചെയ്യട്ടെ.\nഈദ് മുബാറക്!",
+        font: "'Noto Sans Malayalam', sans-serif",
+        size: 24 
+    },
+    gujarati: {
+        text: "ઈદ-ઉલ-ફિત્રની\nહાર્દિક શુભકામનાઓ!\nઅલ્લાહ તમારી દુઆઓ\nકબૂલ કરે અને\nતમારા જીવનમાં ખુશીઓ લાવે.\nઈદ મુબારક!",
+        font: "'Noto Sans Gujarati', sans-serif",
+        size: 30
+    }
+};
 
 const canvas = document.getElementById('greetingCanvas');
 const ctx = canvas.getContext('2d');
 const nameInput = document.getElementById('nameInput');
+const languageSelect = document.getElementById('languageSelect');
 const downloadBtn = document.getElementById('downloadBtn');
 
 const image = new Image();
 image.src = templateImageName; 
 
-image.onload = function() {
-    canvas.width = image.width;
-    canvas.height = image.height;
-    drawGreeting();
-};
+// Fonts load hone ka wait karna taaki original fonts aayein
+document.fonts.ready.then(function() {
+    image.onload = function() {
+        canvas.width = image.width;
+        canvas.height = image.height;
+        drawGreeting();
+    };
+    if(image.complete) {
+        drawGreeting();
+    }
+});
 
 nameInput.addEventListener('input', drawGreeting);
+languageSelect.addEventListener('change', drawGreeting);
 
 function drawGreeting() {
+    if(!canvas.width) return; // Agar canvas load nahi hua to rok dein
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
     const userName = nameInput.value;
+    const selectedLang = languageSelect.value;
+    
+    // Selected language ka data nikalna
+    const currentData = langData[selectedLang];
+    const messageText = currentData.text;
+    const msgFont = currentData.font;
+    const msgSize = currentData.size;
 
+    // 1. Ibarat (Message) likhna
+    ctx.fillStyle = textColor; 
+    ctx.textAlign = 'center';
+    
+    const x = (canvas.width / 2) + textStartX;
+    let y = (canvas.height / 2) + textStartY; 
+
+    // Message ko canvas par likhna
+    const lines = messageText.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+        // Font normal rakha gaya hai
+        ctx.font = `normal ${msgSize}px ${msgFont}`;
+        ctx.fillText(lines[i], x, y);
+        y += lineSpacing; 
+    }
+
+    // 2. User ka Naam likhna
     if (userName) {
-        // Yahan font set ho raha hai, font-weight normal rakha hai
-        ctx.font = `normal ${fontSize} ${fontFamily}`; 
-        ctx.fillStyle = textColor; 
-        ctx.textAlign = 'center';
-
-        // X (Left/Right) ka hisaab
-        const x = (canvas.width / 2) + adjustX;
-        
-        // Y (Up/Down) ka hisaab
-        const y = canvas.height + adjustY; 
-
+        y += 20; // Ibarat aur naam ke beech gap
+        // Naam ka font bold aur bada rakha gaya hai
+        ctx.font = `bold ${nameFontSize}px ${nameFontFamily}`; 
+        ctx.fillStyle = nameColor; 
         ctx.fillText(userName, x, y);
     }
 }
@@ -52,10 +122,8 @@ function drawGreeting() {
 downloadBtn.addEventListener('click', function() {
     const dataURL = canvas.toDataURL('image/jpeg', 1.0);
     const link = document.createElement('a');
-    
     let fileNameName = nameInput.value ? nameInput.value.trim().replace(/\s+/g, '_') : 'Greeting';
-    link.download = 'Eid_Mubarak_' + fileNameName + '.jpg';
-    
+    link.download = 'DailyAzkar_Eid_Mubarak_' + fileNameName + '.jpg';
     link.href = dataURL;
     link.click();
 });
