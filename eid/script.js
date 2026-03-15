@@ -2,7 +2,7 @@
 const templateImageName = 'template.jpg'; 
 const textColor = '#041F11'; 
 const nameColor = '#0B4A28'; 
-const nameFontSize = 55; // Naam ka size thoda bada rakha hai
+const nameFontSize = 45; // Naam ka size thoda bada rakha hai
 
 const textStartX = 0; 
 const textStartY = -180; 
