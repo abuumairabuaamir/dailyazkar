@@ -2,11 +2,11 @@
 const templateImageName = 'template.jpg'; 
 const textColor = '#333333'; 
 const nameColor = '#b8860b'; 
-const nameFontSize = 50; 
+const nameFontSize = 55; // Naam ka size thoda bada rakha hai
 
 const textStartX = 0; 
 const textStartY = -150; 
-const lineSpacing = 45; 
+const lineSpacing = 55; 
 
 // === MESSAGES DICTIONARY ===
 const langData = {
@@ -59,41 +59,26 @@ const languageSelect = document.getElementById('languageSelect');
 const downloadBtn = document.getElementById('downloadBtn');
 
 const image = new Image();
-image.src = templateImageName; 
 
-// === YAHAN FIX KIYA GAYA HAI ===
-document.fonts.ready.then(function() {
-    if (image.complete) {
-        canvas.width = image.width;
-        canvas.height = image.height;
-        drawGreeting();
-    } else {
-        image.onload = function() {
-            canvas.width = image.width;
-            canvas.height = image.height;
-            drawGreeting();
-        };
-    }
-});
-
-nameInput.addEventListener('input', drawGreeting);
-languageSelect.addEventListener('change', drawGreeting);
-
+// === MAIN DRAW FUNCTION ===
 function drawGreeting() {
-    if(!canvas.width) return; 
+    // Agar image ki asli width 0 hai, matlab image abhi load nahi hui, to ruk jaye
+    if (!image.complete || image.naturalWidth === 0) return; 
+
+    // Canvas ka size hamesha image ke asli size (naturalWidth) ke barabar set karein
+    canvas.width = image.naturalWidth;
+    canvas.height = image.naturalHeight;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
     const userName = nameInput.value;
     const selectedLang = languageSelect.value;
-    
     const currentData = langData[selectedLang];
-    const messageText = currentData.text;
     const msgFont = currentData.font;
     const msgSize = currentData.size;
 
-    // RTL FIX
+    // RTL (Commas aur full stop ka fix)
     if (selectedLang === 'arabic' || selectedLang === 'urdu') {
         ctx.direction = 'rtl';
     } else {
@@ -106,20 +91,41 @@ function drawGreeting() {
     const x = canvas.width / 2;
     let y = (canvas.height / 2) + textStartY; 
 
-    const lines = messageText.split('\n');
+    // 1. IBARAT LIKHNA
+    const lines = currentData.text.split('\n');
     for (let i = 0; i < lines.length; i++) {
         ctx.font = `normal ${msgSize}px ${msgFont}`;
         ctx.fillText(lines[i], x, y);
         y += lineSpacing; 
     }
 
+    // 2. NAAM LIKHNA (Language ke apne makhsoos font mein)
     if (userName) {
         y += 20; 
-        ctx.font = `bold ${nameFontSize}px ${msgFont}`; 
+        // Yahan 'bold' hata kar 'normal' kar diya hai taaki font crash na ho
+        ctx.font = `normal ${nameFontSize}px ${msgFont}`; 
         ctx.fillStyle = nameColor; 
         ctx.fillText(userName, x, y);
     }
 }
+
+// === IMAGE LOAD HONE KA PERFECT TAREEQA ===
+document.fonts.ready.then(function() {
+    // Pehle batayein ki load hone par kya karna hai
+    image.onload = drawGreeting;
+    
+    // Agar koi error aaye toh console mein pata chal jaye
+    image.onerror = function() {
+        console.error("Tasweer load nahi ho saki. Image ka naam ya size check karein.");
+    };
+
+    // Sabse aakhir mein image ka link (src) dein
+    image.src = templateImageName; 
+});
+
+// Event Listeners
+nameInput.addEventListener('input', drawGreeting);
+languageSelect.addEventListener('change', drawGreeting);
 
 downloadBtn.addEventListener('click', function() {
     const dataURL = canvas.toDataURL('image/jpeg', 1.0);
