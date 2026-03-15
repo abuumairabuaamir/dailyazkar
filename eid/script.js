@@ -5,7 +5,7 @@ const nameColor = '#b8860b';
 const nameFontSize = 50; 
 
 const textStartX = 0; 
-const textStartY = -150; // Agar text upar-neeche karna ho to ise badlein
+const textStartY = -150; 
 const lineSpacing = 45; 
 
 // === MESSAGES DICTIONARY ===
@@ -61,14 +61,18 @@ const downloadBtn = document.getElementById('downloadBtn');
 const image = new Image();
 image.src = templateImageName; 
 
+// === YAHAN FIX KIYA GAYA HAI ===
 document.fonts.ready.then(function() {
-    image.onload = function() {
+    if (image.complete) {
         canvas.width = image.width;
         canvas.height = image.height;
         drawGreeting();
-    };
-    if(image.complete) {
-        drawGreeting();
+    } else {
+        image.onload = function() {
+            canvas.width = image.width;
+            canvas.height = image.height;
+            drawGreeting();
+        };
     }
 });
 
@@ -89,7 +93,7 @@ function drawGreeting() {
     const msgFont = currentData.font;
     const msgSize = currentData.size;
 
-    // RTL FIX: Arabic aur Urdu mein commas aur alignment sahi karne ke liye
+    // RTL FIX
     if (selectedLang === 'arabic' || selectedLang === 'urdu') {
         ctx.direction = 'rtl';
     } else {
@@ -109,7 +113,6 @@ function drawGreeting() {
         y += lineSpacing; 
     }
 
-    // NAAM: Language ke original font mein hi aayega
     if (userName) {
         y += 20; 
         ctx.font = `bold ${nameFontSize}px ${msgFont}`; 
