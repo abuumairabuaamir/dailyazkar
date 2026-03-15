@@ -3,14 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eid Greetings - Abu Umair</title>
+    <title>Eid Greetings - Daily Azkar</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Amiri&display=swap" rel="stylesheet">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Amiri&family=Noto+Nastaliq+Urdu&family=Noto+Sans+Bengali&family=Noto+Sans+Devanagari&family=Noto+Sans+Gujarati&family=Noto+Sans+Malayalam&family=Noto+Sans+Tamil&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
+
+    <div style="font-family: 'Amiri'; display: none;">.</div>
+    <div style="font-family: 'Noto Nastaliq Urdu'; display: none;">.</div>
+    <div style="font-family: 'Noto Sans Devanagari'; display: none;">.</div>
+    <div style="font-family: 'Noto Sans Bengali'; display: none;">.</div>
+    <div style="font-family: 'Noto Sans Tamil'; display: none;">.</div>
+    <div style="font-family: 'Noto Sans Malayalam'; display: none;">.</div>
+    <div style="font-family: 'Noto Sans Gujarati'; display: none;">.</div>
+    <div style="font-family: 'Poppins'; display: none;">.</div>
+
     <div class="container">
-        <h1>Eid Mubarak Greeting Generator</h1>
-        <p>Apna naam likhein aur image download karein</p>
+        <h1>Eid Greeting Generator</h1>
+        
+        <select id="languageSelect">
+            <option value="arabic">Arabic (العربية)</option>
+            <option value="urdu">Urdu (اردو)</option>
+            <option value="english">English</option>
+            <option value="hindi">Hindi (हिंदी)</option>
+            <option value="bangla">Bangla (বাংলা)</option>
+            <option value="tamil">Tamil (தமிழ்)</option>
+            <option value="malayalam">Malayalam (മലയാളം)</option>
+            <option value="gujarati">Gujarati (ગુજરાતી)</option>
+        </select>
 
         <input type="text" id="nameInput" placeholder="Apna Naam Yahan Likhein...">
 
