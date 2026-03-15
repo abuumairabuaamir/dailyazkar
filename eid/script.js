@@ -6,7 +6,7 @@ const nameFontSize = 45; // Naam ka size thoda bada rakha hai
 
 const textStartX = 0; 
 const textStartY = -180; 
-const lineSpacing = 65; 
+const lineSpacing = 75; 
 
 // === MESSAGES DICTIONARY ===
 const langData = {
@@ -18,7 +18,7 @@ const langData = {
     urdu: {
         text: "عید الفطر کی دلی مبارکباد!\nاللہ تعالیٰ ہماری عبادتوں\nکو قبول فرمائے اور\nاس مبارک دن کو ہمارے لیے\nخوشیوں کا باعث بنائے۔\nعید مبارک!",
         font: "'Noto Nastaliq Urdu', serif",
-        size: 55 
+        size: 50 
     },
     english: {
         text: "May Allah bring you joy,\nhappiness, peace, and prosperity.\nWishing you and your family\na very happy and\nblessed Eid!\nEid Mubarak!",
@@ -28,12 +28,12 @@ const langData = {
     hindi: {
         text: "आपको और आपके परिवार को\nईद-उल-फितर की दिली मुबारकबाद।\nअल्लाह आपकी सभी\nदुआएं कबूल फरमाए और\nआपकी जिंदगी को खुशियों से भर दे।\nईद मुबारक!",
         font: "'Noto Sans Devanagari', sans-serif",
-        size: 50
+        size: 40
     },
     bangla: {
         text: "পবিত্র ঈদুল ফিতরের\nআন্তরিক শুভেচ্ছা!\nআল্লাহ আপনার রোজা ও\nইবাদত কবুল করুন এবং\nআপনার জীবনে বয়ে আনুক আনন্দ।\nঈদ মোবারক!",
         font: "'Noto Sans Bengali', sans-serif",
-        size: 48
+        size: 40
     },
     tamil: {
         text: "இனிய ஈகைத் திருநாள்\nநல்வாழ்த்துக்கள்!\nஎல்லாம் வல்ல இறைவன்\nஉங்கள் வாழ்வில்\nமகிழ்ச்சியையும் அமைதியையும் பொழியட்டும்.\nஈத் முபாரக்!",
