@@ -1,102 +1,30 @@
-/* === GENERAL STYLING === */
+/* === LOCAL FONTS LOAD KARNE KA TAREEQA === */
+@font-face {
+    font-family: 'Amiri';
+    src: url('Amiri-Regular.ttf') format('truetype'); /* Agar font kisi aur folder me ho to url('fonts/Amiri-Regular.ttf') likhein */
+    font-weight: normal;
+}
+
+@font-face {
+    font-family: 'Noto Nastaliq Urdu';
+    src: url('NotoNastaliqUrdu-Regular.ttf') format('truetype');
+    font-weight: normal;
+}
+
+@font-face {
+    font-family: 'Poppins';
+    src: url('Poppins-Regular.ttf') format('truetype');
+    font-weight: normal;
+}
+
+@font-face {
+    font-family: 'Poppins';
+    src: url('Poppins-Bold.ttf') format('truetype');
+    font-weight: bold;
+}
+
+/* Iske niche aapka baaki ka CSS code same rahega... */
 body {
     font-family: 'Amiri', Arial, sans-serif;
-    font-weight: normal;
-    background-color: #f4f4f9;
-    text-align: center;
-    padding: 20px;
-    margin: 0;
-}
-
-.container {
-    max-width: 600px;
-    margin: 0 auto;
-    background: #ffffff;
-    padding: 30px 20px;
-    border-radius: 12px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-}
-
-h1 {
-    font-weight: normal;
-    color: #2c3e50;
-    margin-bottom: 15px;
-}
-
-/* === DROPDOWN (LANGUAGE SELECT) === */
-select {
-    width: 85%;
-    padding: 12px;
-    margin: 10px 0;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-size: 16px;
-    font-family: Arial, sans-serif;
-    font-weight: normal;
-    background-color: #f8f9fa;
-    color: #333;
-    cursor: pointer;
-    outline: none;
-    appearance: auto;
-}
-
-select:focus {
-    border-color: #28a745;
-    box-shadow: 0 0 5px rgba(40, 167, 69, 0.3);
-}
-
-/* === NAME INPUT BOX === */
-input[type="text"] {
-    width: 80%;
-    padding: 12px;
-    margin: 10px 0 20px 0;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-size: 18px;
-    font-family: 'Amiri', Arial, sans-serif;
-    font-weight: normal;
-    outline: none;
-    transition: all 0.3s ease;
-}
-
-input[type="text"]:focus {
-    border-color: #28a745;
-    box-shadow: 0 0 5px rgba(40, 167, 69, 0.3);
-}
-
-/* === DOWNLOAD BUTTON === */
-button {
-    background-color: #28a745;
-    color: white;
-    border: none;
-    padding: 14px 28px;
-    font-size: 18px;
-    font-family: Arial, sans-serif;
-    font-weight: normal;
-    border-radius: 8px;
-    cursor: pointer;
-    margin-top: 20px;
-    transition: background-color 0.3s ease;
-    width: 85%;
-}
-
-button:hover {
-    background-color: #218838;
-}
-
-/* === CANVAS (IMAGE PREVIEW AREA) === */
-.canvas-container {
-    margin-top: 15px;
-    padding: 10px;
-    background-color: #f1f1f1;
-    border-radius: 8px;
-}
-
-canvas {
-    max-width: 100%;
-    height: auto;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    display: block;
-    margin: 0 auto;
+    /* ... */
 }
