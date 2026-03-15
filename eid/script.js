@@ -1,16 +1,14 @@
 // === SETTINGS ===
 const templateImageName = 'template.jpg'; 
-const textColor = '#333333'; // Message ka color (Dark Grey)
-const nameColor = '#b8860b'; // Naam ka color (Dark Gold)
+const textColor = '#333333'; 
+const nameColor = '#b8860b'; 
 const nameFontSize = 50; 
-const nameFontFamily = "'Poppins', sans-serif"; 
 
-const textStartX = 0; // Left/Right adjust (0 means center)
-const textStartY = -150; // IBARAT ab thoda aur upar se shuru hogi kyunki lines zyada hain
-const lineSpacing = 45; // Ek line se dusri line ke beech ka fasla
+const textStartX = 0; 
+const textStartY = -150; // Agar text upar-neeche karna ho to ise badlein
+const lineSpacing = 45; 
 
-// === MESSAGES & FONTS DICTIONARY ===
-// Har language ko 5 se 6 lines mein tod diya gaya hai taaki chaudayi kam rahe
+// === MESSAGES DICTIONARY ===
 const langData = {
     arabic: {
         text: "عيد فطر سعيد،\nأعاده الله علينا وعليكم بالخير والبركات.\nتقبل الله طاعاتكم،\nوجعل أيامكم مليئة بالفرح والسعادة.\nكل عام وأنتم إلى الله أقرب،\nوعيدكم مبارك.",
@@ -63,7 +61,6 @@ const downloadBtn = document.getElementById('downloadBtn');
 const image = new Image();
 image.src = templateImageName; 
 
-// Fonts load hone ka wait karna taaki original fonts aayein
 document.fonts.ready.then(function() {
     image.onload = function() {
         canvas.width = image.width;
@@ -79,7 +76,7 @@ nameInput.addEventListener('input', drawGreeting);
 languageSelect.addEventListener('change', drawGreeting);
 
 function drawGreeting() {
-    if(!canvas.width) return; // Agar canvas load nahi hua to rok dein
+    if(!canvas.width) return; 
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
@@ -87,33 +84,35 @@ function drawGreeting() {
     const userName = nameInput.value;
     const selectedLang = languageSelect.value;
     
-    // Selected language ka data nikalna
     const currentData = langData[selectedLang];
     const messageText = currentData.text;
     const msgFont = currentData.font;
     const msgSize = currentData.size;
 
-    // 1. Ibarat (Message) likhna
+    // RTL FIX: Arabic aur Urdu mein commas aur alignment sahi karne ke liye
+    if (selectedLang === 'arabic' || selectedLang === 'urdu') {
+        ctx.direction = 'rtl';
+    } else {
+        ctx.direction = 'ltr';
+    }
+
     ctx.fillStyle = textColor; 
     ctx.textAlign = 'center';
     
-    const x = (canvas.width / 2) + textStartX;
+    const x = canvas.width / 2;
     let y = (canvas.height / 2) + textStartY; 
 
-    // Message ko canvas par likhna
     const lines = messageText.split('\n');
     for (let i = 0; i < lines.length; i++) {
-        // Font normal rakha gaya hai
         ctx.font = `normal ${msgSize}px ${msgFont}`;
         ctx.fillText(lines[i], x, y);
         y += lineSpacing; 
     }
 
-    // 2. User ka Naam likhna
+    // NAAM: Language ke original font mein hi aayega
     if (userName) {
-        y += 20; // Ibarat aur naam ke beech gap
-        // Naam ka font bold aur bada rakha gaya hai
-        ctx.font = `bold ${nameFontSize}px ${nameFontFamily}`; 
+        y += 20; 
+        ctx.font = `bold ${nameFontSize}px ${msgFont}`; 
         ctx.fillStyle = nameColor; 
         ctx.fillText(userName, x, y);
     }
