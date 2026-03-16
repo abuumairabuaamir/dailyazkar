@@ -23,7 +23,7 @@ const langData = {
     english: {
         text: "May Allah bring you joy,\nhappiness, peace, and prosperity.\nWishing you and your family\na very happy and\nblessed Eid!\nEid Mubarak!",
         font: "'Poppins', sans-serif",
-        size: 50
+        size: 45
     },
     hindi: {
         text: "आपको और आपके परिवार को\nईद-उल-फितर की दिली मुबारकबाद।\nअल्लाह आपकी सभी\nदुआएं कबूल फरमाए और\nआपकी जिंदगी को खुशियों से भर दे।\nईद मुबारक!",
