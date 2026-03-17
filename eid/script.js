@@ -126,3 +126,35 @@ downloadBtn.addEventListener('click', function() {
     link.href = dataURL;
     link.click();
 });
+// === WHATSAPP SHARE PHOTO (POST-DOWNLOAD) ===
+const modalShareBtn = document.getElementById('modalShareBtn');
+
+modalShareBtn.addEventListener('click', async () => {
+    const dataUrl = canvas.toDataURL('image/jpeg');
+    
+    // User ki select ki hui language check karein
+    const lang = document.getElementById('languageSelect').value;
+    
+    // langData se usi language ka message uthayega
+    const message = langData[lang].shareMsg;
+    
+    // DataURL ko file mein badalna
+    const blob = await (await fetch(dataUrl)).blob();
+    const file = new File([blob], 'Eid_Greeting.jpg', { type: 'image/jpeg' });
+
+    // Web Share API (Direct Photo WhatsApp par bhejega)
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                files: [file],
+                title: 'Eid Greeting',
+                text: message,
+            });
+        } catch (error) {
+            console.log('Sharing failed', error);
+        }
+    } else {
+        // Agar browser support na kare
+        alert("Aapka browser direct image share support nahi karta. Photo download karke share karein.");
+    }
+});
