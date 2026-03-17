@@ -117,15 +117,35 @@ function shareOnWhatsApp() {
     window.open(whatsappUrl, '_blank');
 }
 
-// Download Logic
+// === DOWNLOAD LOGIC WITH POPUP ===
 downloadBtn.addEventListener('click', function() {
+    // Download procedure
     const dataURL = canvas.toDataURL('image/jpeg', 1.0);
     const link = document.createElement('a');
     let fileName = nameInput.value ? nameInput.value.trim().replace(/\s+/g, '_') : 'Greeting';
     link.download = 'DailyAzkar_Eid_' + fileName + '.jpg';
     link.href = dataURL;
     link.click();
+
+    // Jab photo download ho jaye, popup show karein
+    showDownloadModal(dataURL);
 });
+
+// Popup Show karne ka function
+const modal = document.getElementById('downloadModal');
+const closeBtn = document.querySelector('.close-btn');
+
+function showDownloadModal(dataUrl) {
+    const modalImage = document.getElementById('downloadedPhoto');
+    modalImage.src = dataUrl; // Popup mein card dikhao
+    modal.style.display = 'block'; // Popup open karo
+}
+
+// Popup Close karne ka function
+closeBtn.addEventListener('click', () => {
+    modal.style.display = 'none';
+});
+
 // === WHATSAPP SHARE PHOTO (POST-DOWNLOAD) ===
 const modalShareBtn = document.getElementById('modalShareBtn');
 
