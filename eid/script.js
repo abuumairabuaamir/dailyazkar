@@ -117,55 +117,23 @@ function shareOnWhatsApp() {
     window.open(whatsappUrl, '_blank');
 }
 
- // === DOWNLOAD LOGIC (FACEBOOK FIX) ===
+// === ORIGINAL FAST DOWNLOAD LOGIC ===
 downloadBtn.addEventListener('click', function() {
-    // Canvas se photo banayein
     const dataURL = canvas.toDataURL('image/jpeg', 1.0);
+    const link = document.createElement('a');
+    let fileName = nameInput.value ? nameInput.value.trim().replace(/\s+/g, '_') : 'Greeting';
     
-    // Direct Popup khol dein (auto-download hata diya hai taaki error na aaye)
-    showDownloadModal(dataURL);
+    // Seedha file download hogi aur mobile 'Open' ka option dega
+    link.download = 'DailyAzkar_Eid_' + fileName + '.jpg';
+    link.href = dataURL;
+    link.click();
 });
 
-// Popup variables
-const modal = document.getElementById('downloadModal');
-const closeBtn = document.querySelector('.close-btn');
-
-function showDownloadModal(dataUrl) {
-    const modalImage = document.getElementById('downloadedPhoto');
-    modalImage.src = dataUrl; // Popup mein photo lagayein
-    modal.style.display = 'block'; // Popup open karein
+// === WHATSAPP DIRECT LINK SHARE ===
+function shareOnWhatsApp() {
+    const selectedLang = languageSelect.value;
+    const url = "https://dailyazkar.abuumair.in/eid/";
+    const message = langData[selectedLang].shareMsg;
+    const whatsappUrl = "https://api.whatsapp.com/send?text=" + encodeURIComponent(message + url);
+    window.open(whatsappUrl, '_blank');
 }
-
-// Popup band karne ka button
-closeBtn.addEventListener('click', () => {
-    modal.style.display = 'none';
-});
-
-// === WHATSAPP SHARE PHOTO (POST-DOWNLOAD) ===
-const modalShareBtn = document.getElementById('modalShareBtn');
-
-modalShareBtn.addEventListener('click', async () => {
-    const dataUrl = canvas.toDataURL('image/jpeg');
-    const lang = document.getElementById('languageSelect').value;
-    const message = langData[lang].shareMsg;
-    
-    try {
-        const blob = await (await fetch(dataUrl)).blob();
-        const file = new File([blob], 'Eid_Greeting.jpg', { type: 'image/jpeg' });
-
-        // Check karein ke browser image share support karta hai ya nahi
-        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({
-                files: [file],
-                title: 'Eid Greeting',
-                text: message,
-            });
-        } else {
-            // Agar Facebook browser rok raha ho, toh direct WhatsApp par link bhej dein
-            const fallbackUrl = "https://api.whatsapp.com/send?text=" + encodeURIComponent(message + "https://dailyazkar.abuumair.in/eid/");
-            window.open(fallbackUrl, '_blank');
-        }
-    } catch (error) {
-        console.log('Sharing failed', error);
-    }
-});
