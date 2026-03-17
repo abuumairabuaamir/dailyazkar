@@ -126,4 +126,45 @@ canvas { max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 5
 .playstore-button:hover {
     background: #218838;
 }
+/* === POPUP (MODAL) STYLING === */
+.modal {
+    display: none; /* Pehle se hidden rahega */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.7); /* Background dhundla ho jaye */
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border-radius: 12px;
+    width: 80%;
+    max-width: 400px;
+    text-align: center;
+    position: relative;
+    font-family: 'Poppins', sans-serif;
+}
+
+.close-btn {
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.close-btn:hover { color: black; }
+
+#downloadedPhoto {
+    max-width: 100%;
+    border-radius: 8px;
+    margin: 15px 0;
+    border: 1px solid #ddd;
+}
 
