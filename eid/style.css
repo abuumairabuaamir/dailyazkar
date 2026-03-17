@@ -63,3 +63,67 @@ button:hover { background-color: #218838; }
 
 .canvas-container { margin-top: 15px; padding: 10px; background-color: #f1f1f1; border-radius: 8px; }
 canvas { max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 5px; display: block; margin: 0 auto; }
+/* === NEW: APP PROMO & WHATSAPP SHARE === */
+
+.whatsapp-share-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: #25D366; /* WhatsApp Green */
+    color: white;
+    padding: 14px 28px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 18px;
+    font-family: 'Poppins', Arial, sans-serif;
+    border: none;
+    cursor: pointer;
+    width: 85%;
+    margin-top: 20px;
+    transition: 0.3s;
+}
+
+.whatsapp-share-btn:hover {
+    background: #128C7E;
+}
+
+.app-promo-banner {
+    background: #f0fdf4; /* Light green */
+    border: 2px dashed #28a745; /* Matching your button green */
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 30px;
+    text-align: center;
+    width: 85%;
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+}
+
+.app-promo-text {
+    font-size: 16px;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    line-height: 1.6;
+}
+
+.playstore-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: #2c3e50; /* Dark color to stand out */
+    color: white !important;
+    padding: 12px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 15px;
+    font-family: 'Poppins', sans-serif;
+    transition: 0.3s;
+}
+
+.playstore-button:hover {
+    background: #218838;
+}
+
