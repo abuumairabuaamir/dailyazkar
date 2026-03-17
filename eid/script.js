@@ -70,7 +70,6 @@ function drawGreeting() {
 
     canvas.width = image.naturalWidth;
     canvas.height = image.naturalHeight;
-
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
@@ -108,28 +107,63 @@ document.fonts.ready.then(function() {
 nameInput.addEventListener('input', drawGreeting);
 languageSelect.addEventListener('change', drawGreeting);
 
-// WhatsApp Share Logic
-function shareOnWhatsApp() {
-    const selectedLang = languageSelect.value;
-    const url = "https://dailyazkar.abuumair.in/eid/";
-    const message = langData[selectedLang].shareMsg;
-    const whatsappUrl = "https://api.whatsapp.com/send?text=" + encodeURIComponent(message + url);
-    window.open(whatsappUrl, '_blank');
+// === FACEBOOK BROWSER DETECTOR ===
+function isFacebookApp() {
+    var ua = navigator.userAgent || navigator.vendor || window.opera;
+    return (ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf("Instagram") > -1);
 }
 
-// === ORIGINAL FAST DOWNLOAD LOGIC ===
+// === DOWNLOAD LOGIC & AUTO POPUP ===
 downloadBtn.addEventListener('click', function() {
+    // 1. Agar Facebook hai, toh sidha Alert do aur rok do
+    if (isFacebookApp()) {
+        alert("⚠️ Facebook browser does not allow direct downloads. Please click the 3 dots (⋮) at the top right and select 'Open in Chrome' or 'Open in system browser'.");
+        return; 
+    }
+
+    // 2. Normal Download Process
     const dataURL = canvas.toDataURL('image/jpeg', 1.0);
     const link = document.createElement('a');
     let fileName = nameInput.value ? nameInput.value.trim().replace(/\s+/g, '_') : 'Greeting';
     
-    // Seedha file download hogi aur mobile 'Open' ka option dega
     link.download = 'DailyAzkar_Eid_' + fileName + '.jpg';
     link.href = dataURL;
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
+
+    // 3. Download ke foran baad Popup dikhao
+    showDynamicPopup(dataURL);
 });
 
-// === WHATSAPP DIRECT LINK SHARE ===
+// === JAVASCRIPT SE BANNE WALA POPUP ===
+function showDynamicPopup(imgSrc) {
+    const oldPopup = document.getElementById('myAutoPopup');
+    if(oldPopup) oldPopup.remove();
+
+    const popup = document.createElement('div');
+    popup.id = 'myAutoPopup';
+    popup.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; display:flex; align-items:center; justify-content:center;";
+    
+    const content = document.createElement('div');
+    content.style.cssText = "background:#fff; padding:20px; border-radius:15px; width:85%; max-width:400px; text-align:center; font-family:sans-serif;";
+    
+    // Popup ka HTML Design
+    content.innerHTML = `
+        <h3 style="color:#28a745; margin-top:0; font-family: 'Poppins', sans-serif;">Download Successful! ✅</h3>
+        <p style="font-size:14px; color:#555;">Image has been saved to your gallery. You can now share it with your friends!</p>
+        <img src="${imgSrc}" style="width:100%; border-radius:10px; margin:15px 0; border:1px solid #ddd;">
+        <div style="display:flex; justify-content:space-between; gap:10px;">
+            <button onclick="document.getElementById('myAutoPopup').remove()" style="background:#dc3545; color:#fff; border:none; padding:12px; border-radius:8px; width:50%; font-size:16px; cursor:pointer;">Close</button>
+            <button onclick="shareOnWhatsApp()" style="background:#25D366; color:#fff; border:none; padding:12px; border-radius:8px; width:50%; font-size:16px; cursor:pointer;"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+        </div>
+    `;
+    
+    popup.appendChild(content);
+    document.body.appendChild(popup);
+}
+
+// === WHATSAPP SHARE ===
 function shareOnWhatsApp() {
     const selectedLang = languageSelect.value;
     const url = "https://dailyazkar.abuumair.in/eid/";
